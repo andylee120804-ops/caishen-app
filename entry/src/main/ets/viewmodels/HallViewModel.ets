@@ -1,8 +1,9 @@
 // entry/src/main/ets/viewmodels/HallViewModel.ets
 // 财神殿 ViewModel：管理「心意值」经济、长明灯、上香、殿内装扮解锁。
 //
-// 合规要点（与整体方案一致）：灯与香绝不售卖，付费只走殿内装扮（复用打赏档 tip_8/18_2/88_2/188/888），
-// 不新建 AGC 商品；心意值靠每日行为获取、每日清零，屏幕上看不到「钱换香」的因果链。
+// 合规要点（与整体方案一致）：灯与香绝不售卖，付费只走殿内装扮（独立装扮商品 decor_8/18/88/188/888，
+// 与打赏 tip_* 分开），装扮只改变视觉、不承诺祈福效力；心意值靠每日行为获取、每日清零，
+// 屏幕上看不到「钱换香」的因果链。
 import { preferences } from '@kit.ArkData'
 import { DeityRotator } from '../engine/DeityRotator'
 import { DeityInfo } from '../model/PrayerTypes'
@@ -39,21 +40,21 @@ export interface HallDecorMap {
 /** 殿内装扮静态定义（tier 与打赏档一一对应，越买越多） */
 export const HALL_DECOR: HallDecorMap = {
   lamp: {
-    key: 'lamp', title: '灯样式（打赏 ¥8 解锁）', opts: [
+    key: 'lamp', title: '灯样式（¥8 解锁）', opts: [
       { id: 'palace', name: '宫灯', tier: 0 },
       { id: 'lotus', name: '莲灯', tier: 8 },
       { id: 'glass', name: '琉璃灯', tier: 8 }
     ]
   },
   burner: {
-    key: 'burner', title: '香炉（打赏 ¥18 解锁）', opts: [
+    key: 'burner', title: '香炉（¥18 解锁）', opts: [
       { id: 'bronze', name: '青铜炉', tier: 0 },
       { id: 'threeleg', name: '三足炉', tier: 18 },
       { id: 'gilt', name: '鎏金炉', tier: 18 }
     ]
   },
   theme: {
-    key: 'theme', title: '殿宇主题（打赏 ¥88 解锁）', opts: [
+    key: 'theme', title: '殿宇主题（¥88 解锁）', opts: [
       { id: 'vermilion', name: '朱红昼殿', tier: 0 },
       { id: 'gold', name: '金辉殿', tier: 88 },
       { id: 'night', name: '夜殿', tier: 88 },
@@ -249,7 +250,7 @@ export class HallViewModel {
     return false
   }
 
-  /** 打赏解锁某档：解锁该档及更低档对应装扮（越买越多，¥888 解锁全部尊享） */
+  /** 解锁某档装扮：解锁该档及更低档对应装扮（越买越多，¥888 解锁全部尊享） */
   unlockTier(tier: number): void {
     let changed = false
     for (const t of TIERS) {
@@ -287,7 +288,7 @@ export class HallViewModel {
     return this.wareLit[item] === true
   }
 
-  /** 购买/解锁某件陈设（复用打赏档位，购买即拥有） */
+  /** 购买/解锁某件陈设（独立装扮商品 decor_*，购买即拥有） */
   setWareOwned(item: string, v: boolean): void {
     const next: Record<string, boolean> = {}
     for (const k of this.wareOrder) {

@@ -42,19 +42,70 @@ export interface TipProduct {
  * 否则同一档再买会被 1001860051 拦截。
  */
 // label 后半段刻意不带「香/供奉/祈福」字样：打赏是对开发者的支持，不应被理解为购买仪式结果。
-// 注：tip_188 对应殿内「聚宝盆」陈设（¥188），AGC 控制台须存在同名消耗型商品；
-// 其余三档（8/18/88）复用原打赏档，购买即解锁对应陈设（见 HallViewModel.setWareOwned）。
+// 注（2026-10-20 拆分后）：打赏 tip_* 为纯赠与，不再解锁任何摆件；
+// 财神殿装扮/陈设由独立商品 DECOR_PRODUCTS（decor_*）解锁（见 HallViewModel.setWareOwned）。
 export const TIP_PRODUCTS: TipProduct[] = [
   { productId: 'tip_8', amount: 8, label: '支持 · 心意' },
   { productId: 'tip_18_2', amount: 18, label: '祝愿 · 顺遂' },
   { productId: 'tip_88_2', amount: 88, label: '福田 · 同行' },
-  { productId: 'tip_188', amount: 188, label: '殿设 · 聚宝' },
+  { productId: 'tip_188', amount: 188, label: '厚意 · 圆满' },
   { productId: 'tip_888', amount: 888, label: '至诚 · 厚爱' }
 ]
 
 /** 打赏是否属于本表商品（recoverPending 用它做跨产品隔离） */
 export function isTipProduct(productId: string): boolean {
   for (const p of TIP_PRODUCTS) {
+    if (p.productId === productId) {
+      return true
+    }
+  }
+  return false
+}
+
+/** 财神殿装扮 / 陈设商品（与打赏 tip_* 分开的独立消耗型商品） */
+export interface DecorProduct {
+  productId: string   // AGC 商品 ID（decor_8 / decor_18 / decor_88 / decor_188 / decor_888）
+  amount: number      // 价格（元，与 AGC 定价档一致）
+  label: string       // 解锁的装扮 / 陈设名称
+}
+
+/**
+ * 财神殿装扮/陈设独立商品（2026-10-20 自打赏 tip_* 拆出，便于审核区分「装扮」与「打赏」）。
+ * 三方一致：AGC 控制台消耗型商品 / 本表 / HallDecorDialog、CaiShenHallPage 摆件购买入口。
+ * 与打赏的关键区别：购买只解锁殿内视觉效果，**不进公益排行榜**、不调用 CloudService.recordDonation。
+ * 同样消耗型，付款成功后必须 finishPurchase 消耗，否则同档再买被 1001860051 拦截。
+ */
+export const DECOR_PRODUCTS: DecorProduct[] = [
+  { productId: 'decor_8', amount: 8, label: '灯样式 · 莲灯 / 琉璃灯' },
+  { productId: 'decor_18', amount: 18, label: '香炉 · 三足炉 / 鎏金炉' },
+  { productId: 'decor_88', amount: 88, label: '殿宇 · 金辉殿 / 夜殿' },
+  { productId: 'decor_188', amount: 188, label: '陈设 · 聚宝盆' },
+  { productId: 'decor_888', amount: 888, label: '殿宇 · 水晶殿（尊享）' }
+]
+
+/** 由金额反查装扮/陈设商品（摆件购买入口按价格档定位） */
+export function decorByAmount(amount: number): DecorProduct {
+  for (const p of DECOR_PRODUCTS) {
+    if (p.amount === amount) {
+      return p
+    }
+  }
+  return DECOR_PRODUCTS[0]
+}
+
+/** 由华为返回的 productId 反查装扮/陈设商品（补单路径用） */
+export function decorById(productId: string): DecorProduct {
+  for (const p of DECOR_PRODUCTS) {
+    if (p.productId === productId) {
+      return p
+    }
+  }
+  return DECOR_PRODUCTS[0]
+}
+
+/** 是否属于装扮/陈设商品（补单跨产品隔离：打赏 / 额外次数 / 装扮互不干扰） */
+export function isDecorProduct(productId: string): boolean {
+  for (const p of DECOR_PRODUCTS) {
     if (p.productId === productId) {
       return true
     }
@@ -122,4 +173,20 @@ export interface ITipService {
 
   /** 补单：找出一笔「已支付未消耗」的打赏订单（只认 TIP_PRODUCTS，与额外次数商品隔离） */
   recoverTipPending(): Promise<ExtraDrawResult | null>
+}
+
+/**
+ * 财神殿装扮/陈设支付服务（独立消耗型商品）。
+ * 购买只解锁殿内视觉效果、不进公益榜（不调用 recordDonation），
+ * 因此 consume 紧跟解锁成功调用；崩溃在消耗前由 recoverDecorPending 补齐。
+ */
+export interface IDecorService {
+  /** 购买指定装扮/陈设档位（拉起华为收银台）。取消 → canceled；前置错误 → PaymentError */
+  purchaseDecor(product: DecorProduct): Promise<ExtraDrawResult>
+
+  /** 补单：找出一笔「已支付未消耗」的装扮/陈设订单（只认 DECOR_PRODUCTS，与打赏/次数隔离） */
+  recoverDecorPending(): Promise<ExtraDrawResult | null>
+
+  /** 消耗商品——解锁完成后调用，否则下次购买被 1001860051 拦截 */
+  consume(result: ExtraDrawResult): Promise<void>
 }

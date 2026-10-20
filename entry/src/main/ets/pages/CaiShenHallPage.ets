@@ -11,12 +11,12 @@
 //
 // 元素：AI 大殿背景图 / 神像呼吸光晕 / 匾额 / 财神像 / 供桌 / 正中香炉 / 殿内四件真实贴图陈设 /
 //       点亮金色辉光 / 落座金光特效 / 心意值条 / 合规说明。
-// 交互：上香免费（心意值）、四件陈设付费（复用打赏 tip_8/18/88/188，不新建 AGC 商品）。
+// 交互：上香免费（心意值）、四件陈设付费（独立装扮商品 decor_8/18/88/188，与打赏 tip_* 分开）。
 // 合规铁律：灯与香绝不售卖，屏幕上看不到「钱换香」的因果链；心意值每日清零、靠每日行为获取。
 import { HallViewModel } from '../viewmodels/HallViewModel'
-import { DonateDialog } from '../components/DonateDialog'
+import { DecorPayDialog } from '../components/DecorPayDialog'
 import { CloudService } from '../service/CloudService'
-import { TIP_PRODUCTS, TipProduct } from '../service/IPaymentService'
+import { DecorProduct, decorByAmount } from '../service/IPaymentService'
 
 /** 四件殿内陈设（img 为已裁掉透明边的真实贴图，槽位内统一 Contain） */
 interface WareDef {
@@ -240,29 +240,29 @@ export struct CaiShenHallPage {
     }
   }
 
-  /** 未拥有 → 直接按对应档位（¥8/18/88/188）拉起打赏支付，成功后解锁该陈设 */
+  /** 未拥有 → 直接按对应档位（¥8/18/88/188）拉起装扮解锁支付，成功后解锁该陈设 */
   private openWarePay(item: string): void {
     const target = WARES.find((d: WareDef): boolean => d.key === item)
     if (target === undefined) {
       return
     }
-    const product = TIP_PRODUCTS.find((p: TipProduct): boolean => p.amount === target.price) as TipProduct
+    const product: DecorProduct = decorByAmount(target.price)
     const dlg = new CustomDialogController({
-      builder: DonateDialog({
-        locked: product,
-        lockTitle: `财神殿陈设 · ${target.name}`,
+      builder: DecorPayDialog({
+        product: product,
+        title: `财神殿陈设 · ${target.name}`,
         onClose: (): void => {
-          // 关闭兜底：用本页持有的 payController 引用关掉打赏弹窗（该引用必然有效）
+          // 关闭兜底：用本页持有的 payController 引用关掉解锁弹窗（该引用必然有效）
           const c = this.payController
           if (c !== undefined && c !== null) {
             try {
               c.close()
             } catch (err) {
-              console.error('[Hall] donate dialog onClose failed')
+              console.error('[Hall] decor dialog onClose failed')
             }
           }
         },
-        onSuccess: (p: TipProduct): void => {
+        onSuccess: (p: DecorProduct): void => {
           // 必须按「实际付款档位」定位陈设，不能用点击时捕获的 target：
           // 补单路径（上次已付款但没消耗完）回调的是历史订单档位，固定解 target
           // 会出现「¥8 补单却解锁 ¥188 聚宝盆」的越档解锁。
@@ -277,7 +277,7 @@ export struct CaiShenHallPage {
             this.hallVM.toggleWareLit(paid.key)
           }
           this.playPlace(paid.key)
-          // 注意：不要在这里 dlg.close()——DonateDialog 拉起收银台前已自行关闭，
+          // 注意：不要在这里 dlg.close()——DecorPayDialog 拉起收银台前已自行关闭，
           // 重复 close 会命中已销毁的弹窗（闪退）。
         }
       }),

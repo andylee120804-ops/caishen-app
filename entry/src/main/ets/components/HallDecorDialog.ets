@@ -1,10 +1,10 @@
 // entry/src/main/ets/components/HallDecorDialog.ets
 // 殿内装扮弹窗：展示灯样式 / 香炉 / 殿宇主题三组分档装扮。
-// 已解锁项可「使用」切换；未解锁项点击 → 复用 DonateDialog 打赏对应档位，
-// 支付成功后 unlockTier 解锁（不新建 AGC 商品，复用打赏档 tip_8/18_2/88_2/188/888 五档）。
+// 已解锁项可「使用」切换；未解锁项点击 → DecorPayDialog 解锁对应装扮档位（独立商品 decor_*），
+// 支付成功后 unlockTier 解锁（2026-10-20 自打赏 tip_* 拆出，装扮不再走打赏/公益榜）。
 import { HallViewModel, HALL_DECOR_ORDER, DecorGroup, DecorOption } from '../viewmodels/HallViewModel'
-import { DonateDialog } from './DonateDialog'
-import { TIP_PRODUCTS, TipProduct } from '../service/IPaymentService'
+import { DecorPayDialog } from './DecorPayDialog'
+import { DecorProduct, decorByAmount } from '../service/IPaymentService'
 
 @CustomDialog
 export struct HallDecorDialog {
@@ -12,32 +12,33 @@ export struct HallDecorDialog {
   hallVM!: HallViewModel
   /** 关闭兜底：注入的 controller 可能为 undefined，由创建方用自己持有的引用关闭 */
   onClose: () => void = () => {}
-  private donateController: CustomDialogController | null = null
+  private decorController: CustomDialogController | null = null
 
-  /** 打开打赏解锁指定档位（tier = 8/18/88/888） */
-  private openPay(tier: number): void {
+  /** 打开装扮解锁指定单品（tier = 8/18/88/888） */
+  private openPay(opt: DecorOption): void {
     // 先取局部引用：收银台会把应用切后台，ArkUI 可能把本装扮弹窗一并销毁，
     // 支付成功回调里再读 this.hallVM 就是访问已销毁组件（与打赏弹窗闪退同一类）。
     const hall = this.hallVM
-    const idx = TIP_PRODUCTS.findIndex((p: TipProduct): boolean => p.amount === tier)
+    const product: DecorProduct = decorByAmount(opt.tier)
     const dlg = new CustomDialogController({
-      builder: DonateDialog({
-        selectedIndex: idx >= 0 ? idx : 0,
+      builder: DecorPayDialog({
+        product: product,
+        title: `装扮 · ${opt.name}`,
         onClose: (): void => {
-          // 关闭兜底：用本弹窗持有的 donateController 引用关掉打赏弹窗
-          const c = this.donateController
+          // 关闭兜底：用本弹窗持有的 decorController 引用关掉解锁弹窗
+          const c = this.decorController
           if (c !== undefined && c !== null) {
             try {
               c.close()
             } catch (err) {
-              console.error('[HallDecorDialog] donate dialog onClose failed')
+              console.error('[HallDecorDialog] decor dialog onClose failed')
             }
           }
         },
-        onSuccess: (p: TipProduct): void => {
-          // 打赏成功即解锁该档及更低档装扮（与公益记账解耦）
+        onSuccess: (p: DecorProduct): void => {
+          // 解锁成功即解锁该档及更低档装扮（本地，不记公益榜）
           hall.unlockTier(p.amount)
-          // 不再 close()：收银台期间应用退后台，ArkUI 会把本装扮弹窗与打赏弹窗
+          // 不再 close()：收银台期间应用退后台，ArkUI 会把本装扮弹窗与解锁弹窗
           // 一并销毁；回到前台后再 close 已销毁的弹窗会闪退。
         }
       }),
@@ -45,7 +46,7 @@ export struct HallDecorDialog {
       alignment: DialogAlignment.Center,
       customStyle: true
     })
-    this.donateController = dlg
+    this.decorController = dlg
     dlg.open()
   }
 
@@ -139,7 +140,7 @@ export struct HallDecorDialog {
               .backgroundColor('#FFD700')
               .fontColor('#1a1a0a')
               .onClick(() => {
-                this.openPay(opt.tier)
+                this.openPay(opt)
               })
           }
         }

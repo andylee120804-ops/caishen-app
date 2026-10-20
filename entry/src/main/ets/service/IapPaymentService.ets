@@ -17,7 +17,7 @@ import { iap } from '@kit.IAPKit'
 import { common } from '@kit.AbilityKit'
 import { util } from '@kit.ArkTS'
 import { BusinessError } from '@kit.BasicServicesKit'
-import { IExtraDrawService, ExtraDrawProduct, ExtraDrawResult, EXTRA_DRAW_PRODUCT, PaymentError, PaymentErrorKind, ITipService, TipProduct, isTipProduct } from './IPaymentService'
+import { IExtraDrawService, ExtraDrawProduct, ExtraDrawResult, EXTRA_DRAW_PRODUCT, PaymentError, PaymentErrorKind, ITipService, TipProduct, isTipProduct, IDecorService, DecorProduct, isDecorProduct } from './IPaymentService'
 
 // IAP 错误码（@hms.core.iap）
 const ERR_USER_CANCEL = 1001860000
@@ -106,7 +106,7 @@ function getDeviceUid(): string {
   }
 }
 
-export class IapPaymentService implements IExtraDrawService, ITipService {
+export class IapPaymentService implements IExtraDrawService, ITipService, IDecorService {
   private readonly context: common.UIAbilityContext
 
   constructor(context: common.UIAbilityContext) {
@@ -145,6 +145,44 @@ export class IapPaymentService implements IExtraDrawService, ITipService {
         continue
       }
       if (!isTipProduct(data.productId)) {
+        continue
+      }
+      return {
+        success: true,
+        canceled: false,
+        productId: data.productId,
+        purchaseToken: data.purchaseToken,
+        orderId: data.purchaseOrderId,
+        purchaseData: raw
+      }
+    }
+    return null
+  }
+
+  async purchaseDecor(product: DecorProduct): Promise<ExtraDrawResult> {
+    return this.purchaseBy(product.productId)
+  }
+
+  /** 装扮/陈设补单：只认 DECOR_PRODUCTS（与打赏 tip_*、额外次数 qiu_extra 严格隔离） */
+  async recoverDecorPending(): Promise<ExtraDrawResult | null> {
+    let list: string[]
+    try {
+      const result = await iap.queryPurchases(this.context, {
+        productType: iap.ProductType.CONSUMABLE,
+        queryType: iap.PurchaseQueryType.UNFINISHED
+      })
+      list = result.purchaseDataList || []
+    } catch (err) {
+      console.warn('[IapDecor] queryPurchases 跳过（未登录/网络）:', JSON.stringify(err))
+      return null
+    }
+    for (const raw of list) {
+      const data = parsePurchaseData(raw)
+      if (data === null) {
+        console.error('[IapDecor] 恢复遇不可解析订单，跳过: raw(0-300)=' + raw.substring(0, 300))
+        continue
+      }
+      if (!isDecorProduct(data.productId)) {
         continue
       }
       return {
