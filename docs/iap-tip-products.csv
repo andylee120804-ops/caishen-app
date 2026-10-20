@@ -1,6 +1,6 @@
-productId,productType,status,defaultLanguage,name,description,price,country
-tip_8,consumable,1,zh-CN,支持 · 心意,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,8.00,CN
-tip_18_2,consumable,1,zh-CN,祝愿 · 顺遂,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,18.00,CN
-tip_88_2,consumable,1,zh-CN,福田 · 同行,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,88.00,CN
-tip_188,consumable,1,zh-CN,殿设 · 聚宝,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,188.00,CN
-tip_888,consumable,1,zh-CN,至诚 · 厚爱,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,888.00,CN
+productNo,productName,productDesc,purchaseType,defaultLocale,country,currency,price
+tip_8,支持 · 心意,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,consumable,zh_CN,CN,CNY,8
+tip_18_2,祝愿 · 顺遂,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,consumable,zh_CN,CN,CNY,18
+tip_88_2,福田 · 同行,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,consumable,zh_CN,CN,CNY,88
+tip_188,殿设 · 聚宝,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,consumable,zh_CN,CN,CNY,188
+tip_888,至诚 · 厚爱,对开发者的自愿支持，用于应用后续开发与维护（部分将捐赠公益）。不承诺任何祈福效果，也不解锁任何权益。,consumable,zh_CN,CN,CNY,888
