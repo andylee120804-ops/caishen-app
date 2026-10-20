@@ -1,0 +1,13 @@
+{
+  "src": [
+    "pages/MainTabs",
+    "pages/HomePage",
+    "pages/NameCard",
+    "pages/PrayerCard",
+    "pages/BlessingCard",
+    "pages/EntryShell",
+    "pages/CustomizePage",
+    "pages/DonationDetailPage",
+    "pages/DonationBoardPage"
+  ]
+}

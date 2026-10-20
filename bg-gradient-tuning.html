@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财神保佑 · 背景渐变调色预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { color-scheme: dark; }
+  body {
+    background: #0d0b0c; color: #eee;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 34px 16px 80px;
+  }
+  h1 { text-align: center; font-weight: 600; letter-spacing: 2px; margin-bottom: 4px; }
+  .sub { text-align: center; color: #9a9a9a; font-size: 13px; margin-bottom: 26px; line-height: 1.7; }
+  .note { color: #c0392b; }
+
+  /* ===== 手机模型 ===== */
+  .grid { display: flex; flex-wrap: wrap; gap: 26px; justify-content: center; max-width: 1180px; margin: 0 auto 50px; }
+  .cell { width: 252px; }
+  .phone {
+    width: 252px; height: 524px; border-radius: 36px; overflow: hidden; position: relative;
+    border: 9px solid #2a2a2a; box-shadow: 0 16px 44px rgba(0,0,0,.6);
+  }
+  .statusbar { position: absolute; top: 0; left: 0; right: 0; height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; font-size: 11px; z-index: 6; opacity: .9; }
+  .glow { position: absolute; top: -6%; left: 50%; width: 120%; height: 46%; transform: translateX(-50%); z-index: 1; pointer-events: none; }
+  .deco { position: absolute; top: 46px; left: 0; right: 0; text-align: center; font-size: 11px; letter-spacing: 1px; z-index: 3; }
+  .deities { position: absolute; top: 92px; left: 0; right: 0; display: flex; justify-content: center; align-items: flex-end; gap: 6px; z-index: 3; }
+  .deities .d { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 1.5px solid currentColor; }
+  .deities .d.big { width: 56px; height: 56px; font-size: 28px; }
+  /* 样本红卡：模拟 BlessingCard/WishItem 用的 #c0392b 卡片 */
+  .sample-card {
+    position: absolute; top: 175px; left: 22px; right: 22px; height: 150px; border-radius: 16px;
+    z-index: 4; padding: 16px; color: #fff5e8; display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 10px 26px rgba(0,0,0,.4);
+  }
+  .sample-card .big { font-size: 30px; font-weight: 700; }
+  .sample-card .row { display: flex; align-items: center; gap: 8px; font-size: 12px; opacity: .92; }
+  .sample-card .dot { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-size:12px; }
+  .subtitle { position: absolute; top: 352px; left: 0; right: 0; text-align: center; font-size: 12px; font-style: italic; z-index: 3; opacity: .75; }
+  .tabbar { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: space-around; font-size: 11px; z-index: 5; }
+  .tabbar .t { opacity: .5; text-align: center; }
+  .tabbar .t.on { opacity: 1; }
+  .label { text-align: center; margin-top: 16px; font-weight: 600; font-size: 15px; }
+  .label small { display: block; font-weight: 400; color: #aaa; font-size: 12px; margin-top: 5px; line-height: 1.5; }
+  .swatches { display: flex; justify-content: center; gap: 5px; margin-top: 11px; }
+  .sw { width: 27px; height: 27px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); }
+  .btn-pick { display:block; margin: 10px auto 0; padding: 7px 14px; border-radius: 18px; border: 1px solid #555; background:#222; color:#eee; font-size:12px; cursor:pointer; }
+  .btn-pick:hover { background:#333; }
+
+  /* ===== 调参面板 ===== */
+  .panel { max-width: 1180px; margin: 0 auto; background: #161314; border: 1px solid #2c2628; border-radius: 18px; padding: 26px; display: flex; gap: 34px; flex-wrap: wrap; }
+  .panel .preview-wrap { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; }
+  .panel .controls { flex: 1 1 360px; min-width: 320px; }
+  .controls h3 { font-size: 15px; margin-bottom: 14px; letter-spacing: 1px; }
+  .ctrl { display: flex; align-items: center; gap: 12px; margin-bottom: 13px; }
+  .ctrl label { width: 78px; font-size: 13px; color: #ccc; }
+  .ctrl input[type=color] { width: 46px; height: 30px; border: none; background: none; border-radius: 6px; cursor: pointer; }
+  .ctrl .hex { font-family: monospace; font-size: 12px; color: #8fd; width: 78px; }
+  .ctrl input[type=range] { flex: 1; }
+  .ctrl .val { width: 42px; font-size: 12px; color: #ccc; text-align: right; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .presets button { padding: 8px 14px; border-radius: 16px; border: 1px solid #444; background: #1e1a1b; color: #eee; font-size: 13px; cursor: pointer; }
+  .presets button:hover { background: #2c2628; }
+  .out { margin-top: 18px; background: #0d0b0c; border: 1px solid #2c2628; border-radius: 12px; padding: 14px; }
+  .out h4 { font-size: 13px; color: #bbb; margin-bottom: 8px; }
+  .out pre { font-size: 12px; line-height: 1.6; color: #9fe; white-space: pre-wrap; word-break: break-all; }
+  .copybtn { margin-top: 10px; padding: 7px 16px; border-radius: 16px; border: 1px solid #c0392b; background: #c0392b; color: #fff; font-size: 13px; cursor: pointer; }
+  .copybtn:hover { opacity: .9; }
+  .tabs-hint { font-size: 11px; color: #888; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <h1>财神保佑 · 背景渐变调色预览</h1>
+  <div class="sub">
+    当前问题：背景最底部 <b>#4B0C12</b>（近黑酱红）与卡片红 <span class="note">#c0392b</span>（明亮砖红）不在同一色系，底部卡片显得「悬浮/脱节」。<br>
+    下方方案把底部颜色调整为卡片红同一 hue 的深色版本，让整条竖向渐变与卡片红和谐统一。先用手机模型预览，再用下方调参面板微调确认。
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <!-- 调参面板 -->
+  <div class="panel">
+    <div class="preview-wrap">
+      <div class="phone" id="livePhone">
+        <div class="statusbar"><span>9:41</span><span>财神保佑</span></div>
+        <div class="glow" id="liveGlow"></div>
+        <div class="deco" id="liveDeco">✦ 财神赐福 · 财气长虹 ✦</div>
+        <div class="deities" id="liveDeities" style="color:#ffd700">
+          <div class="d">神</div><div class="d">神</div><div class="d big">财</div><div class="d">神</div><div class="d">神</div>
+        </div>
+        <div class="sample-card" id="liveCard">
+          <div class="big">福</div>
+          <div class="row"><span class="dot">🧧</span>心意卡 · 招财进宝</div>
+        </div>
+        <div class="subtitle" id="liveSub">「心诚则灵，财运亨通」</div>
+        <div class="tabbar" id="liveTab">
+          <div class="t on">🀄<br>祈福</div>
+          <div class="t">🧧<br>我的</div>
+        </div>
+      </div>
+      <div class="tabs-hint">实时预览 · 改右侧参数即时生效</div>
+    </div>
+
+    <div class="controls">
+      <h3>实时调参</h3>
+      <div class="presets" id="presets"></div>
+
+      <div class="ctrl"><label>顶部色</label><input type="color" id="cTop" value="#c0392b"><span class="hex" id="hTop">#c0392b</span></div>
+      <div class="ctrl"><label>中部色</label><input type="color" id="cMid" value="#8e201c"><span class="hex" id="hMid">#8e201c</span></div>
+      <div class="ctrl"><label>底部色</label><input type="color" id="cBot" value="#5a0f12"><span class="hex" id="hBot">#5a0f12</span></div>
+      <div class="ctrl"><label>卡片红</label><input type="color" id="cCard" value="#c0392b"><span class="hex" id="hCard">#c0392b</span></div>
+      <div class="ctrl"><label>光晕强度</label><input type="range" id="rGlow" min="0" max="60" value="32"><span class="val" id="vGlow">0.32</span></div>
+
+      <div class="out">
+        <h4>导出参数（确认后我直接写入 .ets）</h4>
+        <pre id="outCode"></pre>
+        <button class="copybtn" id="copyBtn">复制参数</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---- 预设方案 ----
+const PRESETS = [
+  { name: 'A 同源绛红', desc: '底部=卡片红同色系深红，整体最统一', top:'#aa2e28', mid:'#7e1814', bot:'#56100e', card:'#c0392b', glow:32 },
+  { name: 'B 朱漆正红', desc: '更明亮喜庆，卡片红同步提亮', top:'#d23b2e', mid:'#a51d16', bot:'#6f120e', card:'#d23b2e', glow:40 },
+  { name: 'C 胭脂暖夜', desc: '顶部直接取卡片红，卡片在顶部自然融合', top:'#c0392b', mid:'#93201b', bot:'#5e110f', card:'#c0392b', glow:50 },
+  { name: 'D 酒红雅致', desc: '微紫酒红，偏文人雅致', top:'#b32d36', mid:'#861920', bot:'#540f16', card:'#c0392b', glow:28 },
+  { name: 'E 当前对照', desc: '现状：底部近黑，与卡片脱节', top:'#880E1F', mid:'#720F18', bot:'#4B0C12', card:'#c0392b', glow:32 },
+];
+
+// 手机模型模板
+function phoneHTML(p, idx){
+  const bg = `linear-gradient(180deg, ${p.top} 0%, ${p.mid} 55%, ${p.bot} 100%)`;
+  const glow = `radial-gradient(circle at 50% 12%, rgba(255,209,0,${(p.glow/100).toFixed(2)}), rgba(255,209,0,0) 46%)`;
+  return `
+  <div class="cell">
+    <div class="phone" style="background:${bg}">
+      <div class="statusbar"><span>9:41</span><span>财神保佑</span></div>
+      <div class="glow" style="background:${glow}"></div>
+      <div class="deco" style="color:rgba(255,235,180,.65)">✦ 财神赐福 · 财气长虹 ✦</div>
+      <div class="deities" style="color:#ffd700">
+        <div class="d">神</div><div class="d">神</div><div class="d big">财</div><div class="d">神</div><div class="d">神</div>
+      </div>
+      <div class="sample-card" style="background:${p.card}">
+        <div class="big">福</div>
+        <div class="row"><span class="dot">🧧</span>心意卡 · 招财进宝</div>
+      </div>
+      <div class="subtitle" style="color:rgba(255,255,255,.7)">「心诚则灵，财运亨通」</div>
+      <div class="tabbar" style="background:${p.bot};color:#ffd700">
+        <div class="t on">🀄<br>祈福</div>
+        <div class="t">🧧<br>我的</div>
+      </div>
+    </div>
+    <div class="label">${p.name}<small>${p.desc}</small></div>
+    <div class="swatches">
+      <div class="sw" style="background:${p.top}"></div>
+      <div class="sw" style="background:${p.mid}"></div>
+      <div class="sw" style="background:${p.bot}"></div>
+      <div class="sw" style="background:${p.card}"></div>
+    </div>
+    <button class="btn-pick" onclick="loadPreset(${idx})">载入到调参面板 →</button>
+  </div>`;
+}
+document.getElementById('grid').innerHTML = PRESETS.map(phoneHTML).join('');
+
+// ---- 调参面板逻辑 ----
+const $ = id => document.getElementById(id);
+function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function rgbToArk(h){ const [r,g,b]=hexToRgb(h); return `rgb(${r}, ${g}, ${b})`; }
+
+let state = { top:'#c0392b', mid:'#8e201c', bot:'#5a0f12', card:'#c0392b', glow:32 };
+
+function renderLive(){
+  const bg = `linear-gradient(180deg, ${state.top} 0%, ${state.mid} 55%, ${state.bot} 100%)`;
+  const glow = `radial-gradient(circle at 50% 12%, rgba(255,209,0,${(state.glow/100).toFixed(2)}), rgba(255,209,0,0) 46%)`;
+  $('livePhone').style.background = bg;
+  $('liveGlow').style.background = glow;
+  $('liveCard').style.background = state.card;
+  $('liveTab').style.background = state.bot;
+  // 同步 hex 显示
+  $('hTop').textContent = state.top; $('hMid').textContent = state.mid;
+  $('hBot').textContent = state.bot; $('hCard').textContent = state.card;
+  $('vGlow').textContent = (state.glow/100).toFixed(2);
+  // 导出
+  const code =
+`.linearGradient({ angle: 180, colors: [['${state.top.toUpperCase()}', 0.0], ['${state.mid.toUpperCase()}', 0.55], ['${state.bot.toUpperCase()}', 1.0]] })\n\n// 卡片红（BlessingCard / WishItem / DonateDialog 等）\n.backgroundColor('${state.card.toUpperCase()}')\n\n// 底部 Tab 栏背景（MainTabs.ets 等）\n.barBackgroundColor('${state.bot.toUpperCase()}')\n\n// 顶部光晕（GlowOverlay，rgba 金 0,209,0）\n.radialGradient({ center: ['50%','12%'], radius:'58%', colors: [['rgba(255, 209, 0, ${ (state.glow/100).toFixed(2) })', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })`;
+  $('outCode').textContent = code;
+}
+
+function syncInputs(){
+  $('cTop').value = state.top; $('cMid').value = state.mid;
+  $('cBot').value = state.bot; $('cCard').value = state.card;
+  $('rGlow').value = state.glow;
+}
+
+$('cTop').oninput = e => { state.top = e.target.value; renderLive(); };
+$('cMid').oninput = e => { state.mid = e.target.value; renderLive(); };
+$('cBot').oninput = e => { state.bot = e.target.value; renderLive(); };
+$('cCard').oninput = e => { state.card = e.target.value; renderLive(); };
+$('rGlow').oninput = e => { state.glow = +e.target.value; renderLive(); };
+
+function loadPreset(i){
+  const p = PRESETS[i];
+  state = { top:p.top, mid:p.mid, bot:p.bot, card:p.card, glow:p.glow };
+  syncInputs(); renderLive();
+  window.scrollTo({ top: document.querySelector('.panel').offsetTop - 20, behavior:'smooth' });
+}
+
+// 预设按钮
+$('presets').innerHTML = PRESETS.map((p,i)=>`<button onclick="loadPreset(${i})">${p.name}</button>`).join('');
+
+$('copyBtn').onclick = () => {
+  navigator.clipboard.writeText($('outCode').textContent).then(()=>{
+    $('copyBtn').textContent = '已复制 ✓'; setTimeout(()=>$('copyBtn').textContent='复制参数',1500);
+  });
+};
+
+// 初始化为方案 C（推荐）
+loadPreset(2);
+</script>
+</body>
+</html>

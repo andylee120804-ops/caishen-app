@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>铜器陈设 · Q版卡通方案</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 26px 14px 60px; background: radial-gradient(circle at 50% 0%, #241016, #0d0809 72%);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #fdf6e3; }
+  h1 { text-align: center; font-size: 20px; color: #ffd700; letter-spacing: 2px; margin: 0 0 4px; }
+  .sub { text-align: center; font-size: 12px; color: rgba(253,246,227,.6); margin-bottom: 18px; line-height: 1.9; }
+  .cmp { max-width: 720px; margin: 0 auto 22px; display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .cmp img { width: 96px; border-radius: 10px; box-shadow: 0 8px 20px rgba(0,0,0,.45); }
+  .cmp .chip { background:#1a0e10; padding:6px; border-radius:10px; }
+  .cmp .vs { font-size: 13px; color: #ffb84d; }
+  .cmp .cap { width:100%; text-align:center; font-size:11px; color:rgba(255,184,77,.8); margin-top:4px; }
+  .grid { max-width: 720px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .card { background: rgba(40,12,18,.5); border: 1px solid rgba(255,184,77,.28); border-radius: 14px;
+    padding: 8px; text-align: center; box-shadow: 0 12px 30px rgba(0,0,0,.4); }
+  .card .chip { background:#1a0e10; border-radius:8px; padding:4px; }
+  .card img { width: 100%; height: 170px; object-fit: contain; display:block; }
+  .card .name { margin-top: 8px; font-size: 13px; color: #ffd700; }
+  .card .file { margin-top: 2px; font-size: 9px; color: rgba(253,246,227,.45); word-break: break-all; }
+  .note { max-width: 720px; margin: 26px auto 0; font-size: 12px; color: rgba(253,246,227,.7); line-height: 1.9;
+    background: rgba(40,12,18,.5); border: 1px solid rgba(255,184,77,.2); border-radius: 14px; padding: 14px 16px; }
+  .note b { color: #ffb84d; }
+</style>
+</head>
+<body>
+  <h1>铜器陈设 · Q版国风卡通方案</h1>
+  <div class="sub">按项目画风约束：Q版 chibi 国风、鲜艳饱和、digital painting、米色背景（走 rembg 抠图）。</div>
+
+  <div class="cmp">
+    <div class="chip"><img src="entry/src/main/resources/rawfile/props/incense_burner.png" alt="香炉"></div>
+    <span class="vs">↔ 画风对齐</span>
+    <div class="chip"><img src="entry/src/main/resources/rawfile/props/ware_basin.png" alt="聚宝盆卡通"></div>
+    <div class="cap">左：项目现有香炉（Q版）　右：本次生成的聚宝盆卡通（同款画风）</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="chip"><img src="entry/src/main/resources/rawfile/props/ware_lamp.png" alt="宫灯"></div>
+      <div class="name">宫灯</div>
+      <div class="file">Q_version_chibi_...15-55-55.png</div>
+    </div>
+    <div class="card">
+      <div class="chip"><img src="entry/src/main/resources/rawfile/props/ware_vase.png" alt="金瓶"></div>
+      <div class="name">金瓶（梅瓶）</div>
+      <div class="file">Q_version_chibi_...15-56-03.png</div>
+    </div>
+    <div class="card">
+      <div class="chip"><img src="entry/src/main/resources/rawfile/props/ware_flower.png" alt="鲜花"></div>
+      <div class="name">鲜花（提梁花篮）</div>
+      <div class="file">Q_version_chibi_...15-56-05.png</div>
+    </div>
+    <div class="card">
+      <div class="chip"><img src="entry/src/main/resources/rawfile/props/Q_version_chibi_Chinese_cartoo_2026-10-18T15-56-08.png" alt="聚宝盆"></div>
+      <div class="name">聚宝盆</div>
+      <div class="file">Q_version_chibi_...15-56-08.png</div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>已就位：</b>4 张 Q版卡通铜器已落在 <b>props/</b>，与香炉/财神同画风（米色背景，便于走项目既有 <b>rembg 抠图</b>流程）。<br>
+    <b>下一步（你确认画风后）：</b><br>
+    1. 重命名为项目命名（如 <code>ware_lamp.png / ware_vase.png / ware_flower.png / ware_basin.png</code>）；<br>
+    2. 跑 <code>python scripts/remove-bg-props.py</code> 抠成透明 PNG；<br>
+    3. 我把它们替换进 <code>caiShenHall_v7.html</code>（替换原 SVG 的 lamp/vase/fresh/basin），原交互（上香/点亮/付费解锁）不动。<br>
+    <b>若某件想微调：</b>告诉我哪件（如"宫灯再萌一点/花篮花朵再多/聚宝盆元宝更高"），我单独重生成。
+  </div>
+</body>
+</html>

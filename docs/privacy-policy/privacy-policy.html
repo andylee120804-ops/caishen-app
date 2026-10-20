@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>隐私政策 · 财神保佑</title>
+<meta name="description" content="「财神保佑」应用隐私政策。我们深知个人信息对您的重要性，本隐私政策帮助您了解我们如何收集、使用和保护您的信息。">
+<style>
+  :root {
+    --paper: #f5e6c8;        /* 浅色签纸 */
+    --ink: #4a3520;          /* 深色油墨（浅底正文，9.35:1） */
+    --ink-soft: #6b5438;     /* 次级文字 */
+    --line: rgba(74, 53, 32, 0.18);
+    --accent: #a0342b;       /* 朱红细线（浅底实色，5.64:1） */
+    --surface: #fffaf0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    line-height: 1.85;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 72px;
+  }
+  header.policy-head {
+    border-bottom: 3px double var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  .app-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.4;
+    margin: 12px 0 8px;
+    font-weight: 700;
+  }
+  .meta {
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .intro {
+    margin: 0 0 28px;
+  }
+  section {
+    margin-bottom: 30px;
+  }
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  ul { list-style: none; }
+  li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 10px;
+  }
+  li::before {
+    content: "◆";
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    font-size: 0.6em;
+    color: var(--accent);
+    line-height: 2.4;
+  }
+  strong { color: var(--ink); }
+  .contact {
+    margin-top: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+  }
+  .contact a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  footer.policy-foot {
+    margin-top: 40px;
+    padding-top: 18px;
+    border-top: 3px double var(--line);
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  @media (max-width: 480px) {
+    .page { padding: 28px 18px 56px; }
+    h1 { font-size: 24px; }
+  }
+  @media print {
+    body { background: #fff; }
+    .page { padding: 0; }
+    header.policy-head, footer.policy-foot { border-color: #999; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="policy-head">
+    <div class="app-name">财神保佑 · Caishen</div>
+    <h1>隐私政策</h1>
+    <div class="meta">更新日期：2026 年 10 月 20 日 · 版本 1.0.0</div>
+  </header>
+
+  <p class="intro">感谢您使用「财神保佑」应用（以下简称"本应用"）。我们深知个人信息对您的重要性，本隐私政策将帮助您了解我们如何收集、使用和保护您的信息。</p>
+
+  <section>
+    <h2>一、我们收集的信息</h2>
+    <ul>
+      <li><strong>祈福者姓名</strong>：您在祈福时输入的名称。上传云端时仅展示脱敏昵称（首字 + ***，如"张***"），不展示完整姓名。</li>
+      <li><strong>设备匿名标识符</strong>：应用首次启动时随机生成的匿名 ID（不包含设备型号、序列号等可识别设备的信息），用于区分不同用户的祈福记录与心愿归属。</li>
+      <li><strong>祈福行为数据</strong>：祈福次数、磕头次数、连续签到天数，用于生成祈福排行榜。</li>
+      <li><strong>传感器运动数据</strong>：为识别「摇晃求签」动作，应用会短暂读取加速度传感器数据，但仅在本机即时处理、不存储不上传，不构成对您信息的收集（详见「三、权限说明」）。</li>
+      <li><strong>心愿内容</strong>：您在心愿墙发布的文字内容，将公开展示给所有用户。</li>
+      <li><strong>收支记录内容</strong>：您在收支记录功能中录入的每笔盈亏结果、幅度与备注，用于财运回顾；经您同意后自动上传至华为云服务器备份，仅本人可见，用于防止本地数据丢失。</li>
+      <li><strong>打赏记录</strong>：您自愿打赏作者时，应用会将打赏档位、金额、脱敏昵称与订单标识符上传至华为云服务器，用于生成公益排行榜并公开展示；不包含您的真实姓名或华为账号信息。</li>
+      <li><strong>本地记录</strong>：祈福历史、最近使用名称、签到记录、求签记录、日记便签、成就徽章等，仅存储在您的设备本地。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>二、信息的使用方式</h2>
+    <ul>
+      <li>祈福统计、脱敏昵称与设备匿名标识符会上传至华为云服务器（AppGallery Connect 云服务），用于生成并展示祈福排行榜。</li>
+      <li>心愿内容会上传至华为云服务器，并在心愿墙向所有用户公开展示，用于实现许愿 / 还愿功能。</li>
+      <li>收支记录会上传至华为云服务器（AppGallery Connect 云服务）进行备份，仅本人通过设备匿名标识符可访问，用于防止本地记录意外丢失。</li>
+      <li>打赏记录会上传至华为云服务器（AppGallery Connect 云服务），用于生成公益排行榜并向所有用户公开展示打赏金额与脱敏昵称。</li>
+      <li>除上述云服务功能外，其余记录仅存储在您的设备本地，用于为您展示历史回顾与提升输入体验。</li>
+      <li>本应用不接入任何广告、统计或第三方数据分析 SDK，不会将您的信息用于广告营销或提供给其他第三方。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>三、权限说明</h2>
+    <ul>
+      <li><strong>网络权限</strong>：用于访问排行榜、心愿墙、收支记录云备份等云端功能。</li>
+      <li><strong>振动权限</strong>：用于祈福叩拜时的触觉反馈，提升仪式感。</li>
+      <li><strong>加速度传感器（摇动数据）</strong>：目的为检测摇晃手机的动作以完成求签；仅在您进入求签页且应用处于前台时实时读取；摇动数据在设备本地即时判断后即丢弃，不上传、不存储，退出求签页即停止读取。</li>
+      <li><strong>音频权限</strong>：用于播放祈福背景音乐和音效。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>四、信息保护</h2>
+    <ul>
+      <li>云端数据存储于华为云服务器，受华为云安全措施保护。</li>
+      <li>收支记录云备份仅关联设备匿名标识符，不包含姓名等可识别身份的信息，且不向其他用户公开展示。</li>
+      <li>公益排行榜仅公开展示打赏档位、金额与脱敏昵称，不展示您的真实姓名或华为账号等可识别身份的信息。</li>
+      <li>您可以在心愿墙删除自己发布的心愿，删除后云端记录将一并移除。</li>
+      <li>您可以在应用中随时清除本地历史记录。</li>
+      <li>卸载应用将自动删除设备本地数据。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>五、您的权利</h2>
+    <ul>
+      <li>您有权随时清除祈福历史等本地记录。</li>
+      <li>您有权删除自己发布的心愿。</li>
+      <li>您有权拒绝提供姓名，仅影响排行榜与心愿墙的展示效果。</li>
+      <li>如对本隐私政策有任何疑问，请联系客服：<span class="contact"><strong>andyli0912@petalmail.com</strong></span>。</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>六、更新说明</h2>
+    <ul>
+      <li>我们可能会适时更新本隐私政策，更新后的政策将在应用内公示。</li>
+    </ul>
+    <p style="margin-top:14px;font-weight:600;">本政策自发布之日起生效。</p>
+  </section>
+
+  <footer class="policy-foot">
+    财神保佑 · 隐私政策　|　如对本隐私政策有任何疑问，请联系客服：
+    <a href="mailto:andyli0912@petalmail.com">andyli0912@petalmail.com</a>
+  </footer>
+</div>
+</body>
+</html>

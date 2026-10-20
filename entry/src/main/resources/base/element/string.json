@@ -1,0 +1,68 @@
+{
+  "string": [
+    {
+      "name": "app_name",
+      "value": "财神保佑"
+    },
+    {
+      "name": "vibrate_reason",
+      "value": "提供磕头祈福时的触感反馈"
+    },
+    {
+      "name": "internet_reason",
+      "value": "用于同步祈福排行榜与心愿墙数据"
+    },
+    {
+      "name": "accelerometer_reason",
+      "value": "用于摇晃手机求签：检测摇晃动作抽出签支"
+    },
+    {
+      "name": "audio_reason",
+      "value": "用于调整应用内祈福背景音乐与音效音量"
+    },
+    {
+      "name": "widget_form_label",
+      "value": "财神桌面卡片"
+    },
+    {
+      "name": "widget_form_desc",
+      "value": "每日求签 / 敲木鱼 / 今日主财神 桌面服务卡片"
+    },
+    {
+      "name": "sign_card_desc",
+      "value": "每日求签"
+    },
+    {
+      "name": "sign_card_2x4_desc",
+      "value": "每日求签（大卡）"
+    },
+    {
+      "name": "muyu_card_desc",
+      "value": "敲木鱼"
+    },
+    {
+      "name": "deity_card_desc",
+      "value": "今日主财神"
+    },
+    {
+      "name": "deity_east_card_desc",
+      "value": "东路财神·比干"
+    },
+    {
+      "name": "deity_west_card_desc",
+      "value": "西路财神·关羽"
+    },
+    {
+      "name": "deity_south_card_desc",
+      "value": "南路财神·柴荣"
+    },
+    {
+      "name": "deity_north_card_desc",
+      "value": "北路财神·赵公明"
+    },
+    {
+      "name": "kowtow_card_desc",
+      "value": "给财神磕头"
+    }
+  ]
+}

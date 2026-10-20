@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>财神殿 Tab · 设计预览稿</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px; padding: 24px 12px;
+    background: radial-gradient(circle at 50% 0%, #2a1418, #100a0c 70%);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #fdf6e3;
+  }
+  .tip {
+    font-size: 12px; color: rgba(255,209,0,.7); max-width: 390px;
+    text-align: center; line-height: 1.6;
+  }
+  /* 手机框 */
+  .phone {
+    position: relative; width: 390px; height: 844px; border-radius: 44px;
+    overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 0 0 10px #1c1014;
+    background: #4b0c12;
+  }
+  /* 殿宇背景 */
+  .hall {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, #880e1f 0%, #720f18 55%, #4b0c12 100%);
+  }
+  .glow {
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 50% 30%, rgba(255,209,0,.30), rgba(255,209,0,0) 60%);
+  }
+  /* 殿柱 */
+  .pillar {
+    position: absolute; top: 150px; width: 16px; height: 520px;
+    background: linear-gradient(90deg, #3c0a10, #5a0f16 40%, #5a0f16 60%, #3c0a10);
+    border: 1px solid rgba(255,209,0,.35); border-radius: 8px;
+  }
+  .pillar.left { left: 42px; }
+  .pillar.right { right: 42px; }
+  /* 匾额 */
+  .plaque {
+    position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+    width: 150px; height: 46px; border-radius: 8px;
+    background: linear-gradient(180deg, #5a0f16, #3c0a10);
+    border: 1.5px solid rgba(255,209,0,.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; color: #ffd700; letter-spacing: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+  }
+  /* 财神像（示意，正式版用 deities/1~5.png） */
+  .deity {
+    position: absolute; top: 230px; left: 50%; transform: translateX(-50%);
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #ffe9a8, #d99a2b 60%, #9c6b1f);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 92px; box-shadow: 0 0 40px rgba(255,209,0,.45), inset 0 0 30px rgba(120,70,10,.5);
+    cursor: pointer; transition: transform .2s, box-shadow .3s;
+  }
+  .deity:active { transform: translateX(-50%) scale(.97); }
+  .deity-note {
+    position: absolute; top: 416px; left: 50%; transform: translateX(-50%);
+    font-size: 11px; color: rgba(255,209,0,.55);
+  }
+  /* 长明灯（左） */
+  .lamp { position: absolute; top: 500px; left: 64px; width: 110px; text-align: center; cursor: pointer; }
+  .lamp-glow {
+    position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 130px; border-radius: 50%; background: #ffd700;
+    opacity: 0; filter: blur(18px); transition: opacity .4s; pointer-events: none;
+  }
+  .lamp-body {
+    position: relative; width: 42px; height: 54px; margin: 0 auto; border-radius: 8px;
+    background: linear-gradient(180deg, #e0514a, #c0392b); box-shadow: 0 4px 10px rgba(0,0,0,.3);
+  }
+  .lamp-fire {
+    width: 14px; height: 14px; margin: 6px auto 0; border-radius: 50%;
+    background: #7a6a3a; transition: background .3s;
+  }
+  .lamp-base { width: 52px; height: 14px; margin: 4px auto 0; border-radius: 4px; background: #8a6d3b; }
+  .lamp .label { margin-top: 10px; font-size: 11px; color: rgba(253,246,227,.75); }
+  /* 香炉（右） */
+  .censer { position: absolute; top: 500px; right: 64px; width: 110px; text-align: center; cursor: pointer; }
+  .censer-img {
+    font-size: 70px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4));
+  }
+  /* 上香动画元素 */
+  .stick {
+    position: absolute; top: 8px; left: 50%; width: 4px; height: 42px; border-radius: 2px;
+    background: #e8d9b5; transform: translate(-50%, -40px); opacity: 0;
+  }
+  .ember {
+    position: absolute; top: 6px; left: 50%; width: 6px; height: 6px; border-radius: 50%;
+    background: #ff7b39; transform: translate(-50%, -62px); opacity: 0;
+  }
+  .smoke { position: absolute; left: 50%; border-radius: 50%; background: #fff; opacity: 0; }
+  .censer .label { margin-top: 10px; font-size: 11px; color: rgba(253,246,227,.75); }
+  @keyframes smokeUp {
+    0% { transform: translate(-50%, -70px) scale(.6); opacity: 0; }
+    30% { opacity: .5; }
+    100% { transform: translate(-50%, -160px) scale(1.6); opacity: 0; }
+  }
+  @keyframes stickDown {
+    0% { transform: translate(-50%, -40px); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translate(-50%, 0); opacity: 1; }
+  }
+  /* 顶部栏 */
+  .topbar {
+    position: absolute; top: 0; left: 0; right: 0; padding: 50px 16px 8px;
+    display: flex; align-items: center; z-index: 5;
+  }
+  .topbar .title { font-size: 20px; font-weight: 700; color: #ffd700; flex: 1; }
+  .decor-btn {
+    font-size: 13px; color: #ffd700; padding: 6px 12px;
+    border: 1px solid rgba(255,209,0,.4); border-radius: 16px; cursor: pointer;
+  }
+  /* 底部信息条 */
+  .infobar {
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 18px 16px 32px;
+    display: flex; z-index: 5;
+  }
+  .infocell { flex: 1; text-align: center; }
+  .infocell .v { font-size: 18px; font-weight: 700; color: #ffd100; }
+  .infocell .k { font-size: 11px; color: rgba(253,246,227,.6); margin-top: 2px; }
+  /* 飘字 */
+  .fly {
+    position: absolute; top: 250px; left: 50%; transform: translateX(-50%);
+    font-size: 17px; font-weight: 700; color: #ffd100; opacity: 0; pointer-events: none;
+  }
+  @keyframes flyUp {
+    0% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -120px); }
+  }
+  .fly.show { animation: flyUp 1.1s ease-out forwards; }
+  /* 弹窗 */
+  .mask {
+    position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 20;
+    display: none; align-items: center; justify-content: center;
+  }
+  .mask.show { display: flex; }
+  .sheet {
+    width: 86%; max-height: 80%; overflow: auto; border-radius: 16px;
+    background: #580e15; border: 1.5px solid rgba(255,209,0,.3); padding: 18px;
+  }
+  .sheet h3 { margin: 0; font-size: 18px; color: #ffd700; display: flex; }
+  .sheet h3 .close { margin-left: auto; color: rgba(253,246,227,.6); cursor: pointer; font-weight: 400; }
+  .group-title { font-size: 13px; color: rgba(255,209,0,.85); margin: 14px 0 6px; }
+  .opt {
+    display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,209,0,.12);
+  }
+  .opt .name { flex: 1; font-size: 14px; color: #fdf6e3; }
+  .opt button {
+    font-size: 12px; padding: 6px 14px; border: none; border-radius: 14px; cursor: pointer;
+  }
+  .btn-unlock { background: #ffd700; color: #1a1a0a; }
+  .btn-use { background: rgba(255,209,0,.15); color: #ffd700; }
+  .btn-using { color: rgba(46,204,113,.9); background: none; }
+  .note { font-size: 10px; color: rgba(253,246,227,.45); margin-top: 10px; }
+  /* 打赏确认 */
+  .pay {
+    width: 78%; background: #6b0f18; border-radius: 16px; padding: 22px 18px; border: 1px solid rgba(255,209,0,.3);
+  }
+  .pay .amt { font-size: 30px; font-weight: 800; color: #ffd700; text-align: center; }
+  .pay .desc { font-size: 12px; color: rgba(253,246,227,.7); text-align: center; margin: 6px 0 16px; line-height: 1.6; }
+  .pay button {
+    width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 15px; cursor: pointer; margin-top: 8px;
+  }
+  .pay .ok { background: linear-gradient(90deg,#ffd700,#e8b730); color: #1a1a0a; font-weight: 700; }
+  .pay .cancel { background: rgba(255,255,255,.08); color: #fdf6e3; }
+</style>
+</head>
+<body>
+  <div class="tip">📱 财神殿 Tab · 设计预览稿（可交互）<br/>点击「长明灯 / 香炉 / 装扮」体验。正式版视觉用美术神像图与 incense_burner 实图。</div>
+
+  <div class="phone">
+    <div class="hall"></div>
+    <div class="glow"></div>
+    <div class="pillar left"></div>
+    <div class="pillar right"></div>
+    <div class="plaque">財神殿</div>
+
+    <div class="topbar">
+      <div class="title">財神殿</div>
+      <div class="decor-btn" onclick="openDecor()">🎨 装扮</div>
+    </div>
+
+    <div class="deity" onclick="appear()">🧧
+      <div class="deity-note">财神像示意（正式版用 deities 神像图）</div>
+    </div>
+
+    <!-- 长明灯 -->
+    <div class="lamp" onclick="onLamp()">
+      <div class="lamp-glow" id="lampGlow"></div>
+      <div class="lamp-body"><div class="lamp-fire" id="lampFire"></div></div>
+      <div class="lamp-base"></div>
+      <div class="label" id="lampLabel">点亮长明灯</div>
+    </div>
+
+    <!-- 香炉 -->
+    <div class="censer" onclick="onCenser()">
+      <div class="stick" id="stick"></div>
+      <div class="ember" id="ember"></div>
+      <div class="smoke" id="smoke1"></div>
+      <div class="smoke" id="smoke2"></div>
+      <div class="smoke" id="smoke3"></div>
+      <div class="censer-img">🕯️</div>
+      <div class="label" id="censerLabel">上一炷香</div>
+    </div>
+
+    <div class="fly" id="fly"></div>
+
+    <!-- 底部信息条 -->
+    <div class="infobar">
+      <div class="infocell"><div class="v" id="heartV">5</div><div class="k">心意值</div></div>
+      <div class="infocell"><div class="v" id="stickV">0 支</div><div class="k">今日上香</div></div>
+      <div class="infocell"><div class="v" id="streakV">1 天</div><div class="k">连续点亮</div></div>
+    </div>
+
+    <!-- 装扮弹窗 -->
+    <div class="mask" id="decorMask">
+      <div class="sheet">
+        <h3>殿内装扮 <span class="close" onclick="closeDecor()">✕</span></h3>
+        <div id="decorGroups"></div>
+        <div class="note">装扮仅改变殿内视觉效果，不涉及任何祈福效力；解锁为对开发者的自愿支持。</div>
+      </div>
+    </div>
+
+    <!-- 打赏确认 -->
+    <div class="mask" id="payMask">
+      <div class="pay">
+        <div class="amt" id="payAmt">¥8</div>
+        <div class="desc" id="payDesc">支持开发者 · 解锁殿内装扮样式<br/>（自愿赠与，不承诺任何效果）</div>
+        <button class="ok" onclick="confirmPay()">确认支持 ¥8</button>
+        <button class="cancel" onclick="closePay()">取消</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ── 状态 ──
+  const state = {
+    heart: 5,            // 模拟当日进殿 +5
+    lampLit: false,
+    sticks: 0,
+    streak: 1,
+    unlocked: { 8:false, 18:false, 88:false, 888:false },
+    active: { lamp:'palace', burner:'bronze', theme:'vermilion' }
+  };
+  // 装扮定义（tier: 0=默认免费, 8/18/88/888=打赏档）
+  const DECOR = {
+    lamp: { title:'灯样式（打赏 ¥8 解锁）', opts:[
+      {id:'palace', name:'宫灯', tier:0}, {id:'lotus', name:'莲灯', tier:8}, {id:'glass', name:'琉璃灯', tier:8}
+    ]},
+    burner: { title:'香炉（打赏 ¥18 解锁）', opts:[
+      {id:'bronze', name:'青铜炉', tier:0}, {id:'threeleg', name:'三足炉', tier:18}, {id:'gilt', name:'鎏金炉', tier:18}
+    ]},
+    theme: { title:'殿宇主题（打赏 ¥88 解锁）', opts:[
+      {id:'vermilion', name:'朱红昼殿', tier:0}, {id:'gold', name:'金辉殿', tier:88}, {id:'night', name:'夜殿', tier:88},
+      {id:'crystal', name:'水晶殿（尊享）', tier:888}
+    ]}
+  };
+  let pendingTier = 8;
+
+  const $ = id => document.getElementById(id);
+  function render() {
+    $('heartV').textContent = state.heart;
+    $('stickV').textContent = state.sticks + ' 支';
+    $('streakV').textContent = state.streak + ' 天';
+    $('lampLabel').textContent = state.lampLit ? '长明灯亮' : '点亮长明灯';
+    $('lampFire').style.background = state.lampLit ? '#fff3b0' : '#7a6a3a';
+    $('lampGlow').style.opacity = state.lampLit ? 0.9 : 0;
+    $('censerLabel').textContent = state.heart >= 3 ? '上一炷香' : '心意值不足';
+    renderDecor();
+  }
+  function isUnlocked(tier){ return tier <= 0 || state.unlocked[tier]; }
+
+  // ── 点灯 ──
+  function onLamp() {
+    if (state.lampLit) { toast('今日长明灯已点亮'); return; }
+    if (state.heart < 2) { toast('心意值不足，进殿或上一炷香可积攒'); return; }
+    state.heart -= 2; state.lampLit = true; state.streak += 1;
+    render(); boostFly('长明灯亮');
+  }
+  // ── 上香 ──
+  let burning = false;
+  function onCenser() {
+    if (burning) return;
+    if (state.heart < 3) { toast('心意值不足，进殿可积攒'); return; }
+    burning = true; state.heart -= 3; render();
+    $('stick').style.animation = 'stickDown .28s ease-out forwards';
+    $('ember').style.opacity = 1;
+    startSmoke();
+    setTimeout(() => {
+      state.sticks += 1; state.heart += 1; // 财运回向 +1
+      burning = false;
+      $('stick').style.animation = ''; $('stick').style.opacity = 0;
+      $('ember').style.opacity = 0;
+      render(); boostFly('财源广进');
+    }, 2500);
+  }
+  function startSmoke() {
+    [['smoke1',-10,-70],['smoke2',0,-86],['smoke3',10,-76]].forEach(([id,x,y],i)=>{
+      const s = $(id); s.style.width = '10px'; s.style.height='10px';
+      s.style.left = 'calc(50% + '+x+'px)'; s.style.top = '0'; s.style.opacity = 0;
+      setTimeout(()=>{
+        s.style.animation = 'smokeUp 1.9s linear infinite';
+        s.style.animationDelay = (i*0.3)+'s';
+      }, 200);
+    });
+  }
+  // ── 财神像点击 ──
+  function appear() {
+    const g = $('lampGlow');
+    g.style.opacity = 0.5; setTimeout(()=> g.style.opacity = state.lampLit?0.9:0, 240);
+    toast('心诚则灵 · 写下心愿可前往「还愿」');
+  }
+  // ── 飘字 ──
+  function boostFly(t){ const f=$('fly'); f.textContent=t; f.classList.remove('show'); void f.offsetWidth; f.classList.add('show'); }
+  let toastTimer;
+  function toast(msg){
+    let t=$('tipToast'); if(!t){ t=document.createElement('div'); t.id='tipToast';
+      t.style.cssText='position:absolute;bottom:120px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#ffd700;padding:8px 16px;border-radius:20px;font-size:13px;z-index:30;white-space:nowrap;';
+      document.querySelector('.phone').appendChild(t); }
+    t.textContent=msg; t.style.opacity=1;
+    clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.style.opacity=0, 2200);
+  }
+
+  // ── 装扮弹窗 ──
+  function openDecor(){ $('decorMask').classList.add('show'); renderDecor(); }
+  function closeDecor(){ $('decorMask').classList.remove('show'); }
+  function renderDecor(){
+    const box = $('decorGroups'); if(!box) return; box.innerHTML='';
+    for (const key of ['lamp','burner','theme']) {
+      const g = DECOR[key];
+      const wrap = document.createElement('div');
+      wrap.innerHTML = '<div class="group-title">'+g.title+'</div>';
+      g.opts.forEach(o=>{
+        const row = document.createElement('div'); row.className='opt';
+        const unlocked = isUnlocked(o.tier);
+        const active = state.active[key] === o.id;
+        let btn;
+        if (!unlocked) btn = '<button class="btn-unlock" onclick="openPay('+o.tier+')">¥'+o.tier+' 解锁</button>';
+        else if (active) btn = '<button class="btn-using">使用中</button>';
+        else btn = '<button class="btn-use" onclick="useDecor(\''+key+'\',\''+o.id+'\')">使用</button>';
+        row.innerHTML = '<div class="name">'+o.name+'</div>'+btn;
+        wrap.appendChild(row);
+      });
+      box.appendChild(wrap);
+    }
+  }
+  function useDecor(key,id){ state.active[key]=id; renderDecor(); toast('已切换装扮'); }
+
+  // ── 打赏确认 ──
+  function openPay(tier){
+    pendingTier = tier;
+    $('payAmt').textContent = '¥'+tier;
+    const ok = document.querySelector('.pay .ok');
+    ok.textContent = '确认支持 ¥'+tier; ok.setAttribute('onclick','confirmPay()');
+    $('payMask').classList.add('show');
+  }
+  function closePay(){ $('payMask').classList.remove('show'); }
+  function confirmPay(){
+    // 解锁该档及更低档对应装扮（越买越多，888 解锁全部尊享）
+    [8,18,88,888].forEach(t=>{ if (pendingTier >= t) state.unlocked[t]=true; });
+    closePay(); render(); toast('装扮已解锁 · 殿宇焕新');
+  }
+
+  render();
+</script>
+</body>
+</html>

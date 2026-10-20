@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财神保佑 · 背景方案预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111; color: #eee;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 32px 16px 60px;
+  }
+  h1 { text-align: center; font-weight: 600; letter-spacing: 2px; margin-bottom: 6px; }
+  .sub { text-align: center; color: #999; font-size: 13px; margin-bottom: 30px; }
+  .grid {
+    display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; max-width: 1100px; margin: 0 auto;
+  }
+  .card { width: 250px; }
+  .phone {
+    width: 250px; height: 520px; border-radius: 34px; overflow: hidden;
+    position: relative; border: 8px solid #2a2a2a;
+    box-shadow: 0 14px 40px rgba(0,0,0,.55);
+  }
+  .phone .statusbar {
+    position: absolute; top: 0; left: 0; right: 0; height: 30px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px; font-size: 11px; z-index: 5; opacity: .85;
+  }
+  .deco-top {
+    position: absolute; top: 52px; left: 0; right: 0; text-align: center;
+    font-size: 11px; letter-spacing: 1px; z-index: 4;
+  }
+  .deities {
+    position: absolute; top: 95px; left: 0; right: 0;
+    display: flex; justify-content: center; align-items: flex-end; gap: 6px; z-index: 3;
+  }
+  .deities .d {
+    width: 40px; height: 40px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    border: 1.5px solid currentColor;
+  }
+  .deities .d.big { width: 56px; height: 56px; font-size: 28px; }
+  .subtitle {
+    position: absolute; top: 360px; left: 0; right: 0; text-align: center;
+    font-size: 13px; font-style: italic; z-index: 3; opacity: .8;
+  }
+  .btn {
+    position: absolute; top: 400px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 24px; border-radius: 25px; font-weight: 700; font-size: 17px;
+    z-index: 4; white-space: nowrap;
+  }
+  .btn .yb { width: 20px; height: 20px; border-radius: 4px; }
+  .tabbar {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 58px;
+    display: flex; align-items: center; justify-content: space-around;
+    font-size: 11px; z-index: 4;
+  }
+  .tabbar .t { opacity: .55; text-align: center; }
+  .tabbar .t.on { opacity: 1; }
+  .label { text-align: center; margin-top: 14px; font-weight: 600; font-size: 15px; }
+  .label small { display: block; font-weight: 400; color: #aaa; font-size: 12px; margin-top: 4px; line-height: 1.5; }
+  .swatches { display: flex; justify-content: center; gap: 5px; margin-top: 10px; }
+  .sw { width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(255,255,255,.15); }
+
+  /* ===== 方案 A 玄夜鎏金 ===== */
+  .A .phone {
+    background:
+      radial-gradient(circle at 50% 26%, rgba(249,202,36,.18), rgba(249,202,36,0) 46%),
+      radial-gradient(circle at 50% 30%, #1c1a12 0%, #0e0d0b 60%, #070605 100%);
+    color: #f9ca24;
+  }
+  .A .deco-top, .A .subtitle { color: rgba(249,202,36,.6); }
+  .A .btn { background: #f9ca24; color: #1a1a0a; box-shadow: 0 4px 20px rgba(249,202,36,.4); }
+  .A .btn .yb { background: #1a1a0a; }
+  .A .tabbar { background: #1a1a0a; color: #f9ca24; }
+
+  /* ===== 方案 B 朱阙迎财 ===== */
+  .B .phone {
+    background:
+      radial-gradient(circle at 50% 12%, rgba(255,210,120,.35), rgba(255,210,120,0) 42%),
+      linear-gradient(180deg, #8c1c13 0%, #5e1109 55%, #3d0a07 100%);
+    color: #ffd95e;
+  }
+  .B .deco-top, .B .subtitle { color: rgba(255,217,94,.75); }
+  .B .btn { background: #ffd95e; color: #5e1109; box-shadow: 0 4px 20px rgba(255,217,94,.45); }
+  .B .btn .yb { background: #5e1109; }
+  .B .tabbar { background: #3d0a07; color: #ffd95e; }
+
+  /* ===== 方案 C 金碧辉煌 ===== */
+  .C .phone {
+    background: linear-gradient(180deg, #f7ead0 0%, #ecd49a 60%, #e8c879 100%);
+    color: #9d2933;
+  }
+  .C .deco-top, .C .subtitle { color: #9d2933; opacity: .7; }
+  .C .btn { background: #9d2933; color: #f7ead0; box-shadow: 0 4px 16px rgba(157,41,51,.3); }
+  .C .btn .yb { background: #f7ead0; }
+  .C .tabbar { background: #e3c887; color: #9d2933; }
+  .C .statusbar { color: #6a4a12; }
+
+  /* ===== 方案 D 叠翠招财 ===== */
+  .D .phone {
+    background: linear-gradient(180deg, #1f3a5f 0%, #1d3b50 50%, #2c4a3e 100%);
+    color: #f9ca24;
+  }
+  .D .deco-top, .D .subtitle { color: rgba(249,202,36,.65); }
+  .D .btn { background: #f9ca24; color: #16324a; box-shadow: 0 4px 20px rgba(249,202,36,.35); }
+  .D .btn .yb { background: #16324a; }
+  .D .tabbar { background: #16324a; color: #f9ca24; }
+</style>
+</head>
+<body>
+  <h1>财神保佑 · 背景方案预览</h1>
+  <div class="sub">以下为真实色值/渐变还原，浏览器打开即所见即所得</div>
+
+  <div class="grid">
+
+    <!-- A -->
+    <div class="card A">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>财神保佑</span></div>
+        <div class="deco-top">✦ 财神赐福 · 财气长虹 ✦</div>
+        <div class="deities">
+          <div class="d">神</div><div class="d">神</div>
+          <div class="d big">财</div>
+          <div class="d">神</div><div class="d">神</div>
+        </div>
+        <div class="subtitle">「心诚则灵，财运亨通」</div>
+        <div class="btn"><span class="yb"></span>开始祈福</div>
+        <div class="tabbar">
+          <div class="t on">🀄<br>祈福</div>
+          <div class="t">🧧<br>我的</div>
+        </div>
+      </div>
+      <div class="label">A 玄夜鎏金<small>暗底径向渐变 + 暖金光晕<br>最稳、改动最小</small></div>
+      <div class="swatches">
+        <div class="sw" style="background:#0e0d0b"></div>
+        <div class="sw" style="background:#1c1a12"></div>
+        <div class="sw" style="background:rgba(249,202,36,.18)"></div>
+        <div class="sw" style="background:#f9ca24"></div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="card B">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>财神保佑</span></div>
+        <div class="deco-top">✦ 财神赐福 · 财气长虹 ✦</div>
+        <div class="deities">
+          <div class="d">神</div><div class="d">神</div>
+          <div class="d big">财</div>
+          <div class="d">神</div><div class="d">神</div>
+        </div>
+        <div class="subtitle">「心诚则灵，财运亨通」</div>
+        <div class="btn"><span class="yb"></span>开始祈福</div>
+        <div class="tabbar">
+          <div class="t on">🀄<br>祈福</div>
+          <div class="t">🧧<br>我的</div>
+        </div>
+      </div>
+      <div class="label">B 朱阙迎财<small>中国红/朱砂宫殿渐变<br>最招财喜庆</small></div>
+      <div class="swatches">
+        <div class="sw" style="background:#8c1c13"></div>
+        <div class="sw" style="background:#5e1109"></div>
+        <div class="sw" style="background:#3d0a07"></div>
+        <div class="sw" style="background:#ffd95e"></div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="card C">
+      <div class="phone">
+        <div class="statusbar" style="color:#6a4a12"><span>9:41</span><span>财神保佑</span></div>
+        <div class="deco-top">✦ 财神赐福 · 财气长虹 ✦</div>
+        <div class="deities">
+          <div class="d">神</div><div class="d">神</div>
+          <div class="d big">财</div>
+          <div class="d">神</div><div class="d">神</div>
+        </div>
+        <div class="subtitle">「心诚则灵，财运亨通」</div>
+        <div class="btn"><span class="yb"></span>开始祈福</div>
+        <div class="tabbar">
+          <div class="t on">🀄<br>祈福</div>
+          <div class="t">🧧<br>我的</div>
+        </div>
+      </div>
+      <div class="label">C 金碧辉煌<small>宣纸/锦缎暖金亮底<br>喜气、年画感</small></div>
+      <div class="swatches">
+        <div class="sw" style="background:#f7ead0"></div>
+        <div class="sw" style="background:#ecd49a"></div>
+        <div class="sw" style="background:#e8c879"></div>
+        <div class="sw" style="background:#9d2933"></div>
+      </div>
+    </div>
+
+    <!-- D -->
+    <div class="card D">
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>财神保佑</span></div>
+        <div class="deco-top">✦ 财神赐福 · 财气长虹 ✦</div>
+        <div class="deities">
+          <div class="d">神</div><div class="d">神</div>
+          <div class="d big">财</div>
+          <div class="d">神</div><div class="d">神</div>
+        </div>
+        <div class="subtitle">「心诚则灵，财运亨通」</div>
+        <div class="btn"><span class="yb"></span>开始祈福</div>
+        <div class="tabbar">
+          <div class="t on">🀄<br>祈福</div>
+          <div class="t">🧧<br>我的</div>
+        </div>
+      </div>
+      <div class="label">D 叠翠招财<small>石青/黛绿深青渐变<br>文人雅财</small></div>
+      <div class="swatches">
+        <div class="sw" style="background:#1f3a5f"></div>
+        <div class="sw" style="background:#1d3b50"></div>
+        <div class="sw" style="background:#2c4a3e"></div>
+        <div class="sw" style="background:#f9ca24"></div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

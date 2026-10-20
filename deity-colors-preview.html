@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财神保佑 · 五路财神代表色预览</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0b0c; color: #eee; font-family: "PingFang SC","Microsoft YaHei",sans-serif; padding: 34px 16px 70px; }
+  h1 { text-align:center; font-weight:600; letter-spacing:2px; margin-bottom:4px; }
+  .sub { text-align:center; color:#9a9a9a; font-size:13px; margin-bottom:8px; line-height:1.7; }
+  .note { color:#ffd95e; font-size:12px; }
+  .grid { display:flex; flex-wrap:wrap; gap:26px; justify-content:center; max-width:1180px; margin:24px auto 40px; }
+  .cell { width:252px; }
+  .phone { width:252px; height:500px; border-radius:36px; overflow:hidden; position:relative; border:9px solid #2a2a2a; box-shadow:0 16px 44px rgba(0,0,0,.6);
+    background: linear-gradient(180deg,#D23B2E 0%,#A51D16 55%,#6F120E 100%); }
+  .glow { position:absolute; top:-6%; left:50%; width:120%; height:46%; transform:translateX(-50%); z-index:1;
+    background: radial-gradient(circle at 50% 12%, rgba(255,209,0,.40), rgba(255,209,0,0) 46%); }
+  .badge { position:absolute; transform:translate(-50%,-50%); z-index:3; text-align:center; width:84px; }
+  .av { width:50px; height:50px; border-radius:50%; margin:0 auto; display:flex; align-items:center; justify-content:center;
+    font-size:22px; font-weight:700; color:#fff5e8; }
+  .nm { font-size:13px; font-weight:700; color:#FFD700; margin-top:5px; text-shadow:0 1px 3px rgba(0,0,0,.5); }
+  .dir { font-size:10px; color:rgba(253,246,227,.7); margin-top:1px; }
+  .label { text-align:center; margin-top:14px; font-weight:600; font-size:15px; }
+  .label small { display:block; font-weight:400; color:#aaa; font-size:12px; margin-top:5px; line-height:1.5; }
+  .swatches { display:flex; justify-content:center; gap:5px; margin-top:11px; }
+  .sw { width:26px; height:26px; border-radius:6px; border:1px solid rgba(255,255,255,.15); }
+
+  .panel { max-width:1180px; margin:0 auto; background:#161314; border:1px solid #2c2628; border-radius:18px; padding:26px; display:flex; gap:34px; flex-wrap:wrap; }
+  .preview-wrap { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; }
+  .controls { flex:1 1 360px; min-width:320px; }
+  .controls h3 { font-size:15px; margin-bottom:14px; letter-spacing:1px; }
+  .ctrl { display:flex; align-items:center; gap:12px; margin-bottom:11px; }
+  .ctrl label { width:64px; font-size:13px; color:#ccc; }
+  .ctrl input[type=color] { width:46px; height:30px; border:none; background:none; border-radius:6px; cursor:pointer; }
+  .ctrl .hex { font-family:monospace; font-size:12px; color:#8fd; }
+  .presets { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .presets button { padding:8px 13px; border-radius:16px; border:1px solid #444; background:#1e1a1b; color:#eee; font-size:13px; cursor:pointer; }
+  .presets button:hover { background:#2c2628; }
+  .out { margin-top:16px; background:#0d0b0c; border:1px solid #2c2628; border-radius:12px; padding:14px; }
+  .out h4 { font-size:13px; color:#bbb; margin-bottom:8px; }
+  .out pre { font-size:12px; line-height:1.6; color:#9fe; white-space:pre-wrap; word-break:break-all; }
+  .copybtn { margin-top:10px; padding:7px 16px; border-radius:16px; border:1px solid #c0392b; background:#c0392b; color:#fff; font-size:13px; cursor:pointer; }
+  .copybtn:hover { opacity:.9; }
+</style>
+</head>
+<body>
+  <h1>财神保佑 · 五路财神代表色预览</h1>
+  <div class="sub">
+    现状：五路财神的「代表色」字段目前只是数据，主 app 里财神头像统一用金色 <b>#FFD700</b>。<br>
+    下方把代表色<b>当作头像描边/光晕</b>渲染在红底上，对比协调度。确认后用它替换 FIVE_DEITIES 的 color，并可选择是否接入 UI 描边。<br>
+    <span class="note">提示：蓝色 #4a90d9、绿色 #2ecc71 偏冷，与暖红底略有冲撞；赵公明 #1a1a0a 近黑，在暗红底部易“隐身”。</span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="panel">
+    <div class="preview-wrap">
+      <div class="phone" id="livePhone">
+        <div class="glow"></div>
+        <div id="liveBadges"></div>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:8px">实时预览 · 改右侧参数即时生效</div>
+    </div>
+    <div class="controls">
+      <h3>实时调参（每路财神代表色）</h3>
+      <div class="presets" id="presets"></div>
+      <div id="pickers"></div>
+      <div class="out">
+        <h4>导出 FIVE_DEITIES 的 color（确认后我写入 PrayerTypes.ets）</h4>
+        <pre id="outCode"></pre>
+        <button class="copybtn" id="copyBtn">复制参数</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const NAMES = [
+  { key:'wang', name:'王亥', dir:'中路·主位', pos:{x:50,y:30} },
+  { key:'bi',   name:'比干', dir:'东路',      pos:{x:22,y:22} },
+  { key:'guan', name:'关羽', dir:'西路',      pos:{x:78,y:22} },
+  { key:'chai', name:'柴荣', dir:'南路',      pos:{x:39,y:10} },
+  { key:'zhao', name:'赵公明', dir:'北路',    pos:{x:61,y:10} },
+];
+// 首字做头像占位
+const CH = { wang:'王', bi:'比', guan:'关', chai:'柴', zhao:'赵' };
+
+// 方案：现状 + 三种协调配色
+const SCHEMES = [
+  { name:'现状·原色', desc:'金/蓝/绿/橙/黑，冷暖混搭',
+    c:{wang:'#d4a017', bi:'#4a90d9', guan:'#2ecc71', chai:'#e67e22', zhao:'#1a1a0a'} },
+  { name:'A 暖金同源', desc:'全暖色金铜系，最融入红金',
+    c:{wang:'#e6b422', bi:'#c9881f', guan:'#b5532a', chai:'#e8901e', zhao:'#6e4a16'} },
+  { name:'B 红金点缀', desc:'以卡片红本身作关羽色，极致和谐',
+    c:{wang:'#f0c419', bi:'#d98c2b', guan:'#c0392b', chai:'#e8741e', zhao:'#8a5a1e'} },
+  { name:'C 宝石互补', desc:'降饱和的青/玉/橙，互补不打架',
+    c:{wang:'#e6b422', bi:'#2f7d72', guan:'#3a9d6e', chai:'#d9772e', zhao:'#3a2a18'} },
+];
+
+function badgeHTML(d, c){
+  const col = c[d.key];
+  return `<div class="badge" style="left:${d.pos.x}%; top:${d.pos.y}%">
+    <div class="av" style="background:${shade(col,-0.15)}; border:3px solid ${col}; box-shadow:0 0 14px ${col}99">${CH[d.key]}</div>
+    <div class="nm">${d.name}</div>
+    <div class="dir">${d.dir}</div>
+  </div>`;
+}
+// 简单调暗
+function shade(hex, amt){
+  hex=hex.replace('#',''); let r=parseInt(hex.slice(0,2),16),g=parseInt(hex.slice(2,4),16),b=parseInt(hex.slice(4,6),16);
+  r=Math.max(0,Math.round(r*(1+amt))); g=Math.max(0,Math.round(g*(1+amt))); b=Math.max(0,Math.round(b*(1+amt)));
+  return `rgb(${r},${g},${b})`;
+}
+
+function schemeHTML(s, idx){
+  const badges = NAMES.map(d=>badgeHTML(d,s.c)).join('');
+  const sw = NAMES.map(d=>`<div class="sw" style="background:${s.c[d.key]}"></div>`).join('');
+  return `<div class="cell">
+    <div class="phone"><div class="glow"></div>${badges}</div>
+    <div class="label">${s.name}<small>${s.desc}</small></div>
+    <div class="swatches">${sw}</div>
+    <button class="copybtn" style="display:block;margin:10px auto 0" onclick="loadScheme(${idx})">载入调参 →</button>
+  </div>`;
+}
+document.getElementById('grid').innerHTML = SCHEMES.map(schemeHTML).join('');
+
+let state = Object.assign({}, SCHEMES[1].c); // 默认 A
+
+function renderLive(){
+  document.getElementById('liveBadges').innerHTML = NAMES.map(d=>badgeHTML(d,state)).join('');
+  // pickers
+  document.getElementById('pickers').innerHTML = NAMES.map(d=>
+    `<div class="ctrl"><label>${d.name}</label><input type="color" data-k="${d.key}" value="${state[d.key]}"><span class="hex">${state[d.key]}</span></div>`
+  ).join('');
+  document.querySelectorAll('#pickers input').forEach(inp=>{
+    inp.oninput = e=>{ state[e.target.dataset.k]=e.target.value; renderLive(); };
+  });
+  const code = NAMES.map(d=>`    ${d.key==='wang'?'':''}${d.name} color: '${state[d.key].toUpperCase()}',`).join('\n');
+  document.getElementById('outCode').textContent = code;
+}
+
+document.getElementById('presets').innerHTML = SCHEMES.map((s,i)=>`<button onclick="loadScheme(${i})">${s.name}</button>`).join('');
+function loadScheme(i){ state = Object.assign({}, SCHEMES[i].c); renderLive(); window.scrollTo({top:document.querySelector('.panel').offsetTop-20,behavior:'smooth'}); }
+document.getElementById('copyBtn').onclick = ()=>{ navigator.clipboard.writeText(document.getElementById('outCode').textContent).then(()=>{ const b=document.getElementById('copyBtn'); b.textContent='已复制 ✓'; setTimeout(()=>b.textContent='复制参数',1500);});};
+
+renderLive();
+</script>
+</body>
+</html>

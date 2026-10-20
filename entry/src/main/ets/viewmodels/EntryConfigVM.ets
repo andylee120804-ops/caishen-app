@@ -1,0 +1,298 @@
+// entry/src/main/ets/viewmodels/EntryConfigVM.ets
+// 界面定制：可配置入口的 Tab 开关与排序（v1.3.0 个性化显示）。
+// 祈福（固定第一个 Tab）与我的（固定最后一个 Tab）不在此配置，不可隐藏。
+import { preferences } from '@kit.ArkData'
+
+/** 可配置入口静态定义 */
+export interface EntryDef {
+  id: string
+  icon: string
+  title: string
+  /** 底部 Tab 短标题（列表/定制页用完整 title，Tab 栏宽度有限用 tabTitle） */
+  tabTitle?: string
+}
+
+/** 入口运行时配置项 */
+export interface EntryItem {
+  id: string
+  enabled: boolean   // 是否作为底部 Tab 显示
+  order: number       // 排序权重（越小越靠前，Tab 与「我的入口」共用）
+}
+
+/**
+ * 入口池（id → 页面组件映射见 MainTabs/EntryShell）。
+ * 财神历·神诞已并入运势·黄历页（v1.3.0 反馈），不再作为独立入口。
+ */
+export const ENTRY_POOL: EntryDef[] = [
+  // ☯ 太极：纯字形（无 emoji 变体），Tab/列表里随主题色渲染成金色，比彩色 🗓️ 更贴项目古文化调性
+  { id: 'fortune', icon: '☯', title: '运势·黄历' },
+  { id: 'qiuqian', icon: '🎋', title: '求签' },
+  { id: 'muyu', icon: '🪵', title: '木鱼' },
+  // Tab 栏每项约 72vp，「还愿·感谢财神」会被截断，Tab 上只显示「还愿」
+  { id: 'wishwall', icon: '🙏', title: '还愿·感谢财神', tabTitle: '还愿' },
+  { id: 'leaderboard', icon: '🏆', title: '祈福排行榜' },
+  { id: 'encyclopedia', icon: '📜', title: '财神百科' },
+  // 🎲 骰子：与 🎋🙏🏆 等功能入口同风格。收支记录在「我的」页置顶固定展示、
+  // 不随开关消失（MyPage 顶部卡即入口，不入「功能入口」行），开启后额外以底部 Tab 直达。
+  { id: 'gamerecord', icon: '🎲', title: '收支记录' },
+  { id: 'caishenhall', icon: '🏯', title: '财神殿' }
+]
+
+/** 中间可配置 Tab 上限（底部导航最多 5 项：祈福 + 3 + 我的） */
+const MAX_TABS = 3
+const PREF_NAME = 'mashen_entry_prefs'
+const KEY_ENTRY_CONFIG = 'entryConfig'
+/** 默认 Tab 版本：老用户已持久化过配置，改 DEFAULT_ITEMS 不会生效，
+ *  靠这个标记做一次性补齐（见 migrateDefaults） */
+const KEY_DEFAULT_VER = 'entryDefaultVer'
+const CURRENT_DEFAULT_VER = 4
+/** AppStorage 版本信号：UI v1 下 @StorageLink 只观察顶层键，@Observed 嵌套属性
+ *  变更不会自动通知读取方（MainTabs 的 Tab 列表等），每次持久化变更后 +1，
+ *  各消费页以 @StorageLink('entryConfigRev') + @Watch 重取派生数据。 */
+const KEY_CONFIG_REV = 'entryConfigRev'
+
+/** 默认配置（v4 起）：祈福 | 财神殿 | 还愿 | 求签 | 我的（底部 5 项上限）；
+ *  其余（运势、木鱼、排行榜、百科、收支）走「我的 → 界面定制」按需开启。 */
+const DEFAULT_ITEMS: EntryItem[] = [
+  { id: 'caishenhall', enabled: true, order: 1 },
+  { id: 'wishwall', enabled: true, order: 2 },
+  { id: 'qiuqian', enabled: true, order: 3 },
+  { id: 'fortune', enabled: false, order: 4 },
+  { id: 'muyu', enabled: false, order: 5 },
+  { id: 'leaderboard', enabled: false, order: 6 },
+  { id: 'encyclopedia', enabled: false, order: 7 },
+  { id: 'gamerecord', enabled: false, order: 8 }
+]
+
+@Observed
+export class EntryConfigVM {
+  items: EntryItem[] = DEFAULT_ITEMS.map((it: EntryItem): EntryItem => {
+    return { id: it.id, enabled: it.enabled, order: it.order }
+  })
+  private dataPrefs: preferences.Preferences | null = null
+
+  async initialize(context: Context): Promise<void> {
+    this.dataPrefs = await preferences.getPreferences(context, PREF_NAME)
+    try {
+      const savedStr = await this.dataPrefs.get(KEY_ENTRY_CONFIG, '') as string
+      if (savedStr !== '') {
+        const saved: EntryItem[] = JSON.parse(savedStr)
+        // 以池为准合并：新增入口补默认值，已下线入口忽略
+        // （无存档时保持 DEFAULT_ITEMS，migrateDefaults 仍需执行以写版本标记）
+        if (Array.isArray(saved) && saved.length > 0) {
+          this.items = ENTRY_POOL.map((def: EntryDef): EntryItem => {
+            const found = saved.find((it: EntryItem): boolean => it.id === def.id)
+            if (found) {
+              return { id: found.id, enabled: found.enabled === true, order: found.order }
+            }
+            const fallback = DEFAULT_ITEMS.find((it: EntryItem): boolean => it.id === def.id)
+            if (fallback) {
+              return { id: fallback.id, enabled: fallback.enabled, order: fallback.order }
+            }
+            return { id: def.id, enabled: false, order: 99 }
+          })
+        }
+      }
+    } catch (err) {
+      console.error('[EntryConfigVM] Failed to load prefs:', JSON.stringify(err))
+    }
+    await this.migrateDefaults()
+    this.notifyChanged()
+  }
+
+  /**
+   * 默认 Tab 一次性升级：v4 起默认底栏 = 祈福 | 财神殿 | 还愿 | 求签 | 我的。
+   * 老设备已存过配置，只改 DEFAULT_ITEMS 不生效，这里按版本标记补齐：
+   *   ① 当前开关仍是历史默认（v1=木鱼+求签 / v2=还愿+求签 / v3=还愿+求签+木鱼，
+   *      说明用户没手动调过）→ 整组换成 v4 默认（财神殿 + 还愿 + 求签 三开）；
+   *   ② 用户手动调过的设备 → 财神殿为常驻强制开启；若因此超出上限，
+   *      关掉 order 最大（除财神殿外）的可配入口，保证底部 Tab 不超过 5 项。
+   */
+  private async migrateDefaults(): Promise<void> {
+    if (!this.dataPrefs) {
+      return
+    }
+    let ver: number = 0
+    try {
+      ver = await this.dataPrefs.get(KEY_DEFAULT_VER, 0) as number
+    } catch (err) {
+      console.error('[EntryConfigVM] Failed to read default ver:', JSON.stringify(err))
+    }
+    if (ver >= CURRENT_DEFAULT_VER) {
+      return
+    }
+    const onIds: string[] = this.items
+      .filter((it: EntryItem): boolean => it.enabled)
+      .map((it: EntryItem): string => it.id)
+      .sort()
+    // 历史默认组合：v1=[木鱼,求签] v2=[还愿,求签] v3=[还愿,求签,木鱼]
+    const legacyDefault: boolean =
+      (onIds.length === 2 && onIds[0] === 'muyu' && onIds[1] === 'qiuqian') ||
+      (onIds.length === 2 && onIds[0] === 'qiuqian' && onIds[1] === 'wishwall') ||
+      (onIds.length === 3 && onIds[0] === 'muyu' && onIds[1] === 'qiuqian' && onIds[2] === 'wishwall')
+    if (legacyDefault) {
+      // 未手动定制过的设备：直接套用 v4 默认（财神殿 + 还愿 + 求签 开启）
+      this.items = this.items.map((it: EntryItem): EntryItem => {
+        const def = DEFAULT_ITEMS.find((d: EntryItem): boolean => d.id === it.id)
+        return def
+          ? { id: def.id, enabled: def.enabled, order: def.order }
+          : { id: it.id, enabled: false, order: it.order }
+      })
+      await this.persist()
+    }
+    // v4 起财神殿为常驻入口，强制开启（所有设备，含手动定制过的老用户）
+    const cs = this.items.find((it: EntryItem): boolean => it.id === 'caishenhall')
+    if (cs !== undefined && !cs.enabled) {
+      cs.enabled = true
+      // 若因此超出中间 Tab 上限（祈福 + 3 + 我的），关闭非财神入口中 order 最大者，保证底部 ≤5 项
+      while (this.tabEnabledCount() > MAX_TABS) {
+        const sorted = [...this.items]
+          .filter((it: EntryItem): boolean => it.enabled && it.id !== 'caishenhall')
+          .sort((a: EntryItem, b: EntryItem): number => b.order - a.order)
+        if (sorted.length === 0) {
+          break
+        }
+        sorted[0].enabled = false
+      }
+      await this.persist()
+    }
+    try {
+      await this.dataPrefs.put(KEY_DEFAULT_VER, CURRENT_DEFAULT_VER)
+      await this.dataPrefs.flush()
+    } catch (err) {
+      console.error('[EntryConfigVM] Failed to write default ver:', JSON.stringify(err))
+    }
+  }
+
+  /** 条目变更信号：写 AppStorage rev，消费页 @Watch 后重建派生 UI（见 KEY_CONFIG_REV 注释） */
+  private notifyChanged(): void {
+    try {
+      const cur: number = AppStorage.get<number>(KEY_CONFIG_REV) ?? 0
+      AppStorage.setOrCreate(KEY_CONFIG_REV, cur + 1)
+    } catch (err) {
+      console.error('[EntryConfigVM] notifyChanged failed:', JSON.stringify(err))
+    }
+  }
+
+  /** 开关入口的 Tab 显示；开启第 MAX_TABS+1 个时拒绝并返回 false */
+  setEnabled(id: string, on: boolean): boolean {
+    if (on && this.tabEnabledCount() >= MAX_TABS) {
+      return false
+    }
+    this.items = this.items.map((it: EntryItem): EntryItem => {
+      if (it.id === id) {
+        return { id: it.id, enabled: on, order: it.order }
+      }
+      return it
+    })
+    this.persist()
+    this.notifyChanged()
+    return true
+  }
+
+  /** 长按拖拽排序：把 order 升序列表中的 fromIdx 移到 toIdx（其余依次顺延/前移） */
+  move(fromIdx: number, toIdx: number): void {
+    if (fromIdx === toIdx) {
+      return
+    }
+    const sorted = this.getSortedItems()
+    if (fromIdx < 0 || fromIdx >= sorted.length || toIdx < 0 || toIdx >= sorted.length) {
+      return
+    }
+    const arr = sorted.map((it: EntryItem): EntryItem => {
+      return { id: it.id, enabled: it.enabled, order: it.order }
+    })
+    const moved: EntryItem = arr.splice(fromIdx, 1)[0]
+    arr.splice(toIdx, 0, moved)
+    this.items = arr.map((it: EntryItem, i: number): EntryItem => {
+      return { id: it.id, enabled: it.enabled, order: i + 1 }
+    })
+    this.persist()
+    this.notifyChanged()
+  }
+
+  /** 与全量排序列表中的相邻项交换 order；dir=-1 上移，1 下移 */
+  swap(id: string, dir: number): void {
+    const sorted = this.getSortedItems()
+    const idx = sorted.findIndex((it: EntryItem): boolean => it.id === id)
+    const j = idx + dir
+    if (idx < 0 || j < 0 || j >= sorted.length) {
+      return
+    }
+    const a = sorted[idx]
+    const b = sorted[j]
+    this.items = this.items.map((it: EntryItem): EntryItem => {
+      if (it.id === a.id) {
+        return { id: it.id, enabled: it.enabled, order: b.order }
+      }
+      if (it.id === b.id) {
+        return { id: it.id, enabled: it.enabled, order: a.order }
+      }
+      return it
+    })
+    this.persist()
+  }
+
+  isFirst(id: string): boolean {
+    const sorted = this.getSortedItems()
+    return sorted.length > 0 && sorted[0].id === id
+  }
+
+  isLast(id: string): boolean {
+    const sorted = this.getSortedItems()
+    return sorted.length > 0 && sorted[sorted.length - 1].id === id
+  }
+
+  isTabOn(id: string): boolean {
+    const it = this.items.find((item: EntryItem): boolean => item.id === id)
+    return it ? it.enabled : false
+  }
+
+
+
+  tabEnabledCount(): number {
+    return this.items.filter((it: EntryItem): boolean => it.enabled).length
+  }
+
+  /** 作为 Tab 显示的入口（按 order 升序），供 MainTabs 渲染 */
+  getTabEntries(): EntryDef[] {
+    const defs: EntryDef[] = []
+    const enabled = [...this.items]
+      .sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
+      .filter((it: EntryItem): boolean => it.enabled)
+    for (const it of enabled) {
+      const def = ENTRY_POOL.find((d: EntryDef): boolean => d.id === it.id)
+      if (def) {
+        defs.push(def)
+      }
+    }
+    return defs
+  }
+
+  /** 全量配置项（按 order 升序），供「界面定制」与「我的入口」渲染 */
+  getSortedItems(): EntryItem[] {
+    return [...this.items].sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
+  }
+
+  getIcon(id: string): string {
+    const def = ENTRY_POOL.find((d: EntryDef): boolean => d.id === id)
+    return def ? def.icon : ''
+  }
+
+  getTitle(id: string): string {
+    const def = ENTRY_POOL.find((d: EntryDef): boolean => d.id === id)
+    return def ? def.title : ''
+  }
+
+  private async persist(): Promise<void> {
+    if (!this.dataPrefs) {
+      return
+    }
+    try {
+      await this.dataPrefs.put(KEY_ENTRY_CONFIG, JSON.stringify(this.items))
+      await this.dataPrefs.flush()
+    } catch (err) {
+      console.error('[EntryConfigVM] Failed to persist:', JSON.stringify(err))
+    }
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "forms": [
+    {
+      "name": "deity_2x2",
+      "description": "$string:deity_card_desc",
+      "src": "./ets/widget/pages/DeityCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": true,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "deity_east_2x2",
+      "description": "$string:deity_east_card_desc",
+      "src": "./ets/widget/pages/DeityCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "deity_west_2x2",
+      "description": "$string:deity_west_card_desc",
+      "src": "./ets/widget/pages/DeityCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "deity_south_2x2",
+      "description": "$string:deity_south_card_desc",
+      "src": "./ets/widget/pages/DeityCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "deity_north_2x2",
+      "description": "$string:deity_north_card_desc",
+      "src": "./ets/widget/pages/DeityCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "sign_2x2",
+      "description": "$string:sign_card_desc",
+      "src": "./ets/widget/pages/SignCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "sign_2x4",
+      "description": "$string:sign_card_2x4_desc",
+      "src": "./ets/widget/pages/SignCard2x4.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*4",
+      "supportDimensions": ["2*4"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "muyu_2x2",
+      "description": "$string:muyu_card_desc",
+      "src": "./ets/widget/pages/MuyuCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    },
+    {
+      "name": "kowtow_2x2",
+      "description": "$string:kowtow_card_desc",
+      "src": "./ets/widget/pages/KowtowCard2x2.ets",
+      "uiSyntax": "arkts",
+      "window": {
+        "designWidth": 720,
+        "autoDesignWidth": true
+      },
+      "colorMode": "auto",
+      "isDefault": false,
+      "isDynamic": true,
+      "updateEnabled": true,
+      "scheduledUpdateTime": "00:05",
+      "updateDuration": 1,
+      "defaultDimension": "2*2",
+      "supportDimensions": ["2*2"],
+      "formConfigAbility": "ability://WidgetFormAbility"
+    }
+  ]
+}
