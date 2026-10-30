@@ -16,26 +16,26 @@ agc-credential.json、cloud-server SDK、正斜杠路径、hostOS=Unix、无嵌�
 | get-leaderboard | cloud/get-leaderboard/ | HTTP POST + AGC Auth | 祈福榜（脱敏，不返 uid） |
 | wish-wall | cloud/wish-wall/ | HTTP POST + AGC Auth | 心愿墙 |
 | game-record-backup | cloud/game-record-backup/ | HTTP POST + AGC Auth | 牌运记录备份 |
-| donation-record | cloud/donation-record/ | HTTP POST + AGC Auth | 打赏记账 + 公益榜 |
+| donation-record | cloud/donation-record/ | HTTP POST + AGC Auth | 支持作者记账 + 公益榜 |
 | jieqian-unlock | cloud/jieqian-unlock/ | HTTP POST + AGC Auth | 解签解锁补单（qiu_extra 已下架，函数保留） |
 
 运行时 Node.js 18、内存 256MB、超时 30s。上传后建议各跑一次 smoke（若保留本地验证）。
 
-## 二、IAP 消耗型商品核对（10 个，2026-10-20 拆分）
+## 二、IAP 消耗型商品核对（支持作者 5 个在线；decor_* 5 个界面已隐藏）
 
-客户端 `IPaymentService` 两组商品 = 本表；服务端 donation-record 白名单**只含打赏 tip_***（装扮不进公益榜）：
+客户端 `IPaymentService` 两组商品 = 本表；服务端 donation-record 白名单**只含支持作者 tip_***（装扮不进公益榜）：
 
-**打赏（tip_*，5 个 · 纯赠与 · 进公益榜）：**
+**支持作者（tip_*，5 个 · 纯赠与 · 进公益榜）：**
 
 | 商品 ID | 金额 | 用途 |
 |---|---|---|
-| tip_8 | ¥8 | 打赏 |
-| tip_18_2 | ¥18 | 打赏 |
-| tip_88_2 | ¥88 | 打赏 |
-| tip_188 | ¥188 | 打赏 |
-| tip_888 | ¥888 | 打赏 |
+| tip_8 | ¥8 | 支持作者 |
+| tip_18_2 | ¥18 | 支持作者 |
+| tip_88_2 | ¥88 | 支持作者 |
+| tip_188 | ¥188 | 支持作者 |
+| tip_888 | ¥888 | 支持作者 |
 
-**装扮/陈设（decor_*，5 个 · 只解锁视觉 · 不进公益榜）：**
+**装扮/陈设（decor_*，5 个 · 本版本界面已隐藏，不提供购买入口）：**
 
 | 商品 ID | 金额 | 解锁摆件 |
 |---|---|---|
@@ -45,8 +45,8 @@ agc-credential.json、cloud-server SDK、正斜杠路径、hostOS=Unix、无嵌�
 | decor_188 | ¥188 | 陈设聚宝盆 |
 | decor_888 | ¥888 | 殿宇主题 · 水晶殿（尊享） |
 
-⚠️ decor_888 / decor_188 为本次拆出新生效的装扮商品，确认控制台已创建，
-   否则财神殿水晶殿/聚宝盆解锁 `openPay` 会报 1001860007。
+⚠️ 2026-10-27 审核整改：财神殿付费陈设/装扮入口已全部隐藏，本版本**无需在控制台新上架 decor_* 商品**；
+   已存在的商品保留即可，不影响提审。
 ⚠️ qiu_extra（¥1 加求签次数）：按 2026-10-05 设计文档「暂时下架」决策 **保留商品不删除**——
     App 内已无购买入口，保留只为已购用户补单保护；勿删，删了也不影响当前版本。
 
@@ -60,7 +60,7 @@ Donation 表的 uid/purchaseToken/createdAt 索引已在（agc-clouddb-object-ty
 ## 四、清理测试数据
 
 提审前清掉开发期造的数据，避免审核员看到脏数据：
-- Donation / UserMerit（测试打赏记录与功德）
+- Donation / UserMerit（测试支持作者记录与功德）
 - Leaderboard（测试还愿榜）
 - Wish（测试心愿）
 - 各表 `uid` 形如 test123 / u1 / u4 等测试账号记录
@@ -76,7 +76,8 @@ Donation 表的 uid/purchaseToken/createdAt 索引已在（agc-clouddb-object-ty
 ## 六、隐私与合规（提审自检）
 
 - [ ] 「我的」→「联系客服」入口存在，展示客服邮箱（提审要求 11.2）
-- [ ] 应用内购买不绑定祈福效果：打赏 UI 明写「自愿赠与 · 不承诺任何效果」
-- [ ] 打赏、装扮均不承诺任何祈福效力（迷信类红线）
+- [ ] 应用内购买不绑定祈福效果：支持作者 UI 明写「自愿赠与 · 不承诺任何效果」
+- [ ] 支持作者、装扮均不承诺任何祈福效力（迷信类红线）
+- [ ] 财神殿无付费陈设入口；点香免费；「写祈福话 → 生成祈福图 → 保存到手机」免费可用
 - [ ] 排行榜不返回原始设备 ID（服务端脱敏 isMe）
 - [ ] 云函数可被客户端用 `data` 字段调用（FunctionParams，非 params）
