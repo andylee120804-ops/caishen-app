@@ -16,11 +16,11 @@ interface DeityLayout {
  * 布局对象预建为常量表，避免动画期间每次 build 重复分配（16ms/帧 × 5 神 × 3 处调用）。
  */
 const DEITY_LAYOUTS: Record<number, DeityLayout> = {
-  1: { x: '50%', y: '52%', size: 100, delay: 0.00 }, // 中路·王亥（主位·弧底，放大）
-  2: { x: '22%', y: '38%', size: 60, delay: 0.12 }, // 东路·比干（内收避免名称被屏幕边缘裁切）
-  3: { x: '78%', y: '38%', size: 60, delay: 0.18 }, // 西路·关羽
-  4: { x: '39%', y: '12%', size: 52, delay: 0.24 }, // 南路·柴荣（略内收避开主位头顶）
-  5: { x: '61%', y: '12%', size: 52, delay: 0.30 }, // 北路·赵公明
+  1: { x: '50%', y: '62%', size: 80, delay: 0.00 }, // 中路·王亥（主位·弧底，下移避开上方两尊财神的小字）
+  2: { x: '18%', y: '38%', size: 54, delay: 0.12 }, // 东路·比干
+  3: { x: '82%', y: '38%', size: 54, delay: 0.18 }, // 西路·关羽
+  4: { x: '38%', y: '12%', size: 48, delay: 0.24 }, // 南路·柴荣
+  5: { x: '62%', y: '12%', size: 48, delay: 0.30 }, // 北路·赵公明
 }
 const DEFAULT_DEITY_LAYOUT: DeityLayout = { x: '50%', y: '40%', size: 70, delay: 0 }
 
@@ -41,12 +41,21 @@ export struct DeityArrayView {
   @Prop highlightId: number = 1
   @Prop appearProgress: number = 0
   @Prop blessingProgress: number = 0
+  /** 主位（今日主神）锚点 y 覆盖；空则用默认布局表。初始祈福首页传更大的值，
+   *  把主位下移，避开上方两尊财神下方的小字。 */
+  @Prop mainY: string = ''
 
   private layoutOf(id: number): DeityLayout {
     // 先做「神 → 锚点」对调映射，再查固定锚点表；
     // 锚点表的坐标/尺寸/现身 delay 不变 → 主位（锚点1）恒先现身、最大；
     // 光晕由 highlightId 单独驱动（调用方需保证 highlightId 与 todayId 指向同一神）
-    return getDeityLayout(DeityRotator.anchorOf(id, this.todayId))
+    const anchor = DeityRotator.anchorOf(id, this.todayId)
+    const layout = getDeityLayout(anchor)
+    if (anchor === 1 && this.mainY !== '') {
+      // 拷贝一份再改 y，避免污染常量布局表
+      return { x: layout.x, y: this.mainY, size: layout.size, delay: layout.delay }
+    }
+    return layout
   }
 
   // 经 delay 偏移后的现身进度（EaseOut），0->1

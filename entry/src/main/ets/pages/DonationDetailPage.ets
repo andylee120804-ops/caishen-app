@@ -15,7 +15,7 @@ struct DonationDetailPage {  @Builder
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -89,7 +89,7 @@ struct DonationDetailPage {  @Builder
             this.getUIContext().getRouter().pushUrl({ url: 'pages/DonationBoardPage' })
           })
 
-          Text('打赏去了哪里')
+          Text('支持款项去了哪里')
             .fontSize(15)
             .fontWeight(FontWeight.Bold)
             .fontColor('#FFD700')
@@ -97,13 +97,13 @@ struct DonationDetailPage {  @Builder
             .margin({ bottom: 10 })
 
           // ① 渠道费
-          this.SectionCard('应用商店渠道费', '华为应用市场会按规则收取一定比例的服务费，并代扣相关税费。这也是打赏到账的第一道扣除。', '渠')
+          this.SectionCard('应用商店渠道费', '华为应用市场会按规则收取一定比例的服务费，并代扣相关税费。这也是支持款项到账的第一道扣除。', '渠')
 
           // ② 开发与维护
           this.SectionCard('后续开发和维护', '余下部分用于本应用的服务器、接口与内容更新、机型适配与日常维护，让「财神保佑」能持续更新下去。', '维')
 
           // ③ 公益捐赠
-          this.SectionCard('公益捐赠', '打赏所得的一部分，将以本应用名义通过联合国儿童基金会（UNICEF）官方渠道捐赠，用于儿童保护、营养、教育与紧急救助相关项目。', '益')
+          this.SectionCard('公益捐赠', '支持款项的一部分，将以本应用名义通过联合国儿童基金会（UNICEF）官方渠道捐赠，用于儿童保护、营养、教育与紧急救助相关项目。', '益')
 
           // 公示方式
           Column() {
@@ -132,7 +132,7 @@ struct DonationDetailPage {  @Builder
               .fontColor('#FFD700')
               .width('100%')
               .margin({ bottom: 6 })
-            Text('1. 打赏是你对开发者的自愿赠与，不承诺任何祈福效果、也不改变签文的随机结果；打赏不解锁任何次数或权益（求签每日固定免费 3 次，解签全文免费）。退款请联系华为应用市场的支付客服渠道。')
+            Text('1. 支持作者是你对开发者的自愿赠与，不承诺任何祈福效果、也不改变签文的随机结果；支持作者不解锁任何次数或权益（求签每日固定免费 3 次，解签全文免费）。退款请联系华为应用市场的支付客服渠道。')
               .fontSize(12)
               .fontColor('rgba(253, 246, 227, 0.6)')
               .width('100%')
@@ -163,7 +163,7 @@ struct DonationDetailPage {  @Builder
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+    .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
     .overlay(this.GlowOverlay)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }

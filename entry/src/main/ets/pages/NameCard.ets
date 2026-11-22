@@ -28,7 +28,7 @@ struct NameCard {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -195,8 +195,9 @@ struct NameCard {
               }
             }
             this.viewModel.confirmName(this.inputName.trim())
-            // 如果填写了心愿，异步创建（不阻塞导航，磕头时心愿已入云）
+            // 心愿同步进 ViewModel（BlessingCard 金榜展示）；云端愿望墙照旧异步创建
             const wish: string = this.wishContent.trim()
+            this.viewModel.confirmWish(wish)
             if (wish.length > 0) {
               const deityId: number = this.viewModel.activeDeity().id
               CloudService.createWish(wish, deityId).catch((e: Object) => {
@@ -216,7 +217,7 @@ struct NameCard {
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+    .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
     .overlay(this.GlowOverlay)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }

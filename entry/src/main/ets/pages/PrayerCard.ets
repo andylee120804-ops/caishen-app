@@ -290,7 +290,7 @@ struct PrayerCard {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -299,7 +299,7 @@ struct PrayerCard {
       Column()
         .width('100%')
         .height('100%')
-        .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+        .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
         .overlay(this.GlowOverlay)
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
 
@@ -314,6 +314,8 @@ struct PrayerCard {
       })
 
       // 五神弧形阵（上方·远景）
+      // 显式顶锚：Stack 默认会把 50% 高的列垂直居中（25%~75%），导致阵型下沉、
+      // 主位财神下方文字一路探到 70% 处的香炉。钉到 14% 让阵型落在上方、与香炉留出清晰间距。
       Column() {
         DeityArrayView({
           deities: FIVE_DEITIES,
@@ -327,28 +329,23 @@ struct PrayerCard {
       .height('50%')
       .justifyContent(FlexAlign.Start)
       .alignItems(HorizontalAlign.Center)
+      .position({ x: 0, y: '14%' })
 
       // 顶部祈福祝语（神明最上方，页面加载即显示，为祈福者加持好运）
-      // 拆成两短行：每行宽度都够窄，不会遮住右上角"跳过"按钮
-      Column() {
-        Text(this.fulfillWishId ? '✦ 诚心还愿 ✦' : '✦ 心诚则灵 ✦')
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#FFD700')
-        Text(this.fulfillWishId ? '磕头还愿 · 谢谢神恩' : '诚心叩拜 · 财运亨通')
-          .fontSize(12)
-          .fontColor('#ffffff')
-          .margin({ top: 4 })
-      }
-      .position({ x: '50%', y: 64 })
-      .translate({ x: '-50%', y: '0' })
+      // 并成单行并上移：给下方五神阵腾出顶部空间，避免顶部两尊财神的光晕压到祝语。
+      Text(this.fulfillWishId ? '✦ 诚心还愿 · 谢谢神恩 ✦' : '✦ 心诚则灵 · 财运亨通 ✦')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#FFD700')
+        .position({ x: '50%', y: 38 })
+        .translate({ x: '-50%', y: '0' })
 
       // 香炉（进香/磕头阶段·近景）
       if (this.animStage === AnimStage.INCENSE || this.animStage === AnimStage.KOWTOW) {
         IncenseAltarView({
           lightProgress: this.incenseProgress
         })
-          .position({ x: '50%', y: '70%' })
+          .position({ x: '50%', y: '66%' })
           .translate({ x: '-50%', y: '-50%' })
       }
 

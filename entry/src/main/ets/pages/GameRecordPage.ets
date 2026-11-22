@@ -202,7 +202,7 @@ export struct GameRecordPage {
       }
       .width('100%')
       .padding(20)
-      .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+      .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
       .overlay(this.GlowOverlay)
       .border({ width: { top: 1.5 }, color: 'rgba(255, 209, 0, 0.3)', radius: { topLeft: 16, topRight: 16 } })
       .onClick(() => {}) // 阻止穿透
@@ -316,7 +316,7 @@ export struct GameRecordPage {
       }
       .width('80%')
       .padding(24)
-      .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+      .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
       .overlay(this.GlowOverlay)
       .borderRadius(16)
       .border({ width: 1.5, color: 'rgba(255, 209, 0, 0.3)' })
@@ -335,7 +335,7 @@ export struct GameRecordPage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -408,7 +408,7 @@ export struct GameRecordPage {
       }
       .width('100%')
       .height('100%')
-      .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+      .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
       .overlay(this.GlowOverlay)
       .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
 

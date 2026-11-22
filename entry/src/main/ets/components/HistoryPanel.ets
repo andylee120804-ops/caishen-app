@@ -62,7 +62,7 @@ export struct HistoryPanel {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 

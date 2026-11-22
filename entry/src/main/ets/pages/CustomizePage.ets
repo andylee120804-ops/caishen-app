@@ -1,6 +1,6 @@
 // entry/src/main/ets/pages/CustomizePage.ets
 // 界面定制子页（从「我的」进入）：长按拖拽调整入口顺序 + 开关控制是否显示为底部 Tab。
-// 祈福（固定首位）与我的（固定末位）不可开关。列表顺序同时决定底部 Tab 顺序
+// 财神殿（固定首位）与我的（固定末位）不可开关。列表顺序同时决定底部 Tab 顺序
 // 与「我的」页入口顺序（同一 order 字段）。
 // 说明：List 绑定 onItemDragStart 后，长按（约 170ms）列表项即可拖拽，onItemDrop 落点回调。
 import { EntryConfigVM, EntryItem } from '../viewmodels/EntryConfigVM'
@@ -66,7 +66,7 @@ struct CustomizePage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -98,11 +98,8 @@ struct CustomizePage {
       Column() {
         Row() {
           Row() {
-            Image($rawfile('props/yuanbao.png'))
-              .width(14)
-              .height(14)
-              .objectFit(ImageFit.Contain)
-            Text(' 祈福（固定首位）')
+            CaiShenHallIcon({ iconSize: 14 })
+            Text(' 财神殿（固定首位）')
               .fontSize(11)
               .fontColor('rgba(253, 246, 227, 0.6)')
           }
@@ -173,7 +170,7 @@ struct CustomizePage {
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+    .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
     .overlay(this.GlowOverlay)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }
@@ -195,7 +192,7 @@ struct CustomizePage {
           .objectFit(ImageFit.Contain)
           .margin({ left: 4 })
       } else if (item.id === 'caishenhall') {
-        // 财神殿入口：金线自绘中国古建筑殿堂，替代 emoji 🏯（日式城堡）
+        // 财神殿入口：方孔铜钱·財自绘图标（金圆方孔+財字），替代 emoji 🏯（日式城堡）
         CaiShenHallIcon({ iconSize:26 })
           .margin({ left: 4 })
       } else {
@@ -257,7 +254,7 @@ struct CustomizePage {
         .margin({ left: 8 })
     }
     .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-    .backgroundColor('#6F120E')
+    .backgroundColor('#86121C')
     .border({ width: 1, color: 'rgba(255, 209, 0, 0.5)', radius: 10 })
   }
 }

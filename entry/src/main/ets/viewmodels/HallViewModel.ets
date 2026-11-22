@@ -84,6 +84,7 @@ interface HallPersist {
   activeTheme: string
   wareOwned: Record<string, boolean>
   wareLit: Record<string, boolean>
+  blessingTemplate: number
 }
 
 /** 本地日期 YYYY-MM-DD（跨天比对基准） */
@@ -111,6 +112,8 @@ export class HallViewModel {
   /** 殿内四件陈设：是否已购买（owned）/ 是否点亮常驻（lit） */
   wareOwned: Record<string, boolean> = {}
   wareLit: Record<string, boolean> = {}
+  /** 电子祈福卡模板（1-6，用户上次选择；随本地偏好持久化） */
+  blessingTemplate: number = 1
   /** 四件陈设 key 顺序：宫灯→金瓶→鲜花→聚宝盆（按价格升序，殿内由左至右） */
   wareOrder: string[] = ['lamp', 'vase', 'fresh', 'basin']
   /** 今日主财神（每日轮换，跨天自动换） */
@@ -299,6 +302,16 @@ export class HallViewModel {
     this.notify()
   }
 
+  /** 记录用户选中的祈福卡模板（1-6） */
+  setBlessingTemplate(template: number): void {
+    if (template < 1 || template > 6 || this.blessingTemplate === template) {
+      return
+    }
+    this.blessingTemplate = template
+    this.persist()
+    this.notify()
+  }
+
   /** 切换点亮常驻辉光（仅已拥有者可点亮） */
   toggleWareLit(item: string): void {
     if (!this.isWareOwned(item)) {
@@ -359,6 +372,8 @@ export class HallViewModel {
       }
       this.wareOwned = nextOwned
       this.wareLit = nextLit
+      const tpl: number = s.blessingTemplate ?? 1
+      this.blessingTemplate = (tpl >= 1 && tpl <= 6) ? tpl : 1
     } catch (err) {
       console.error('[HallVM] load failed:', JSON.stringify(err))
     }
@@ -385,7 +400,8 @@ export class HallViewModel {
       activeBurner: this.activeBurner,
       activeTheme: this.activeTheme,
       wareOwned: this.wareOwned,
-      wareLit: this.wareLit
+      wareLit: this.wareLit,
+      blessingTemplate: this.blessingTemplate
     }
     try {
       await this.dataPrefs.put(KEY_STATE, JSON.stringify(s))

@@ -5,7 +5,7 @@
 // 同一张卡可被添加多个实例（formId 各不相同），故用 map 而非单值。
 import { preferences } from '@kit.ArkData'
 
-const PREF_NAME = 'mashen_form_prefs'
+const PREF_NAME = 'caishen_form_prefs'
 const KEY_MAP = 'formIdMap'
 
 function parseMap(raw: string): Record<string, string> {

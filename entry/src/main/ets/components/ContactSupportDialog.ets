@@ -85,7 +85,7 @@ export struct ContactSupportDialog {
       Row()
         .width('100%')
         .height(4)
-        .backgroundColor('#D23B2E')
+        .backgroundColor('#A01124')
 
       // ── 标题区 ──
       Text('客服中心')

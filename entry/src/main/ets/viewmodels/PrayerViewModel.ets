@@ -7,11 +7,10 @@ import { util } from '@kit.ArkTS'
 import { EnrichViewModel } from './EnrichViewModel'
 import { CloudService } from '../service/CloudService'
 
-const PREF_NAME = 'mashen_user_prefs'
+const PREF_NAME = 'caishen_user_prefs'
 const HISTORY_KEY = 'prayer_history'
 const RECENT_NAMES_KEY = 'recentNames'
 const TOTAL_PRAYERS_KEY = 'totalPrayers'
-const PRIVACY_KEY = 'privacy_accepted'
 const MAX_HISTORY = 100
 const MAX_RECENT_NAMES = 5
 
@@ -30,6 +29,8 @@ export class PrayerViewModel {
   /** 本次祈福用户手动选择的财神（NameCard 选神；null = 未选，回退日期轮转主神） */
   selectedDeity: DeityInfo | null = null
   blessing: string = ''
+  /** 本次祈福许下的心愿（NameCard 许愿框，可为空串）； BlessingCard 金榜同步展示 */
+  wish: string = ''
   kowtowCount: number = 0
   recentNames: string[] = []
   totalPrayers: number = 0
@@ -64,6 +65,7 @@ export class PrayerViewModel {
     this.refreshTodayDeity()
   }
 
+  // 注：隐私同意状态不在这里，见 util/PrivacyConsent.ets（独立文件，不依赖本类初始化）
   async initialize(context: Context): Promise<void> {
     this.blessingEngine = new BlessingEngine()
     await this.blessingEngine.loadBlessings(context)
@@ -85,6 +87,11 @@ export class PrayerViewModel {
     this.currentPhase = PrayerPhase.ANIMATING
   }
 
+  /** NameCard 提交时写入本次心愿；空串也写入（覆盖上次残留） */
+  confirmWish(wish: string): void {
+    this.wish = wish
+  }
+
   onAnimationComplete(kowtowCount: number = 0): void {
     if (!this.blessingEngine) return
     this.blessing = this.blessingEngine.getBlessing(this.activeDeity().id, this.userName)
@@ -98,27 +105,8 @@ export class PrayerViewModel {
     this.currentPhase = PrayerPhase.IDLE
     this.userName = ''
     this.blessing = ''
+    this.wish = ''
     this.kowtowCount = 0
-  }
-
-  async isPrivacyAccepted(): Promise<boolean> {
-    if (!this.dataPrefs) return false
-    try {
-      return await this.dataPrefs.get(PRIVACY_KEY, false) as boolean
-    } catch (err) {
-      console.error('[PrayerViewModel] Failed to read privacy:', JSON.stringify(err))
-      return false
-    }
-  }
-
-  async acceptPrivacy(): Promise<void> {
-    if (!this.dataPrefs) return
-    try {
-      await this.dataPrefs.put(PRIVACY_KEY, true)
-      await this.dataPrefs.flush()
-    } catch (err) {
-      console.error('[PrayerViewModel] Failed to save privacy:', JSON.stringify(err))
-    }
   }
 
   async clearHistory(): Promise<void> {

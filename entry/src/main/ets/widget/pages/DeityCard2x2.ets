@@ -1,5 +1,6 @@
 // entry/src/main/ets/widget/pages/DeityCard2x2.ets
-// 今日主财神小卡（2×2）：主神图片 + 姓名/方位/财神寓意小字；整卡点击跳祈福页拜主神。
+// 今日主财神小卡（2×2）：主神图片 + 姓名/方位/财神寓意小字；整卡点击跳财神殿
+// （审核整改 2026-11-04：祈福 Tab 已下线，深链目标由祈福页改落固定首位「财神殿」）。
 // 图片走 media 资源 $r('app.media.deity_N')：随卡片包加载，由扩展下发的 deityId 选定。
 
 let deityCard2x2Storage: LocalStorage = new LocalStorage()
@@ -81,7 +82,8 @@ struct DeityCard2x2 {
       postCardAction(this, {
         action: 'router',
         abilityName: 'EntryAbility',
-        params: { route: 'blessing' }
+        // 审核整改（2026-11-04）：祈福 Tab 已下线，主财神卡片改落固定首位「财神殿」
+        params: { route: 'caishenhall' }
       })
     })
   }

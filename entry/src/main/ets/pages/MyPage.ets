@@ -140,7 +140,7 @@ export struct MyPage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -218,7 +218,7 @@ export struct MyPage {
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+    .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
     .overlay(this.GlowOverlay)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }
@@ -245,14 +245,14 @@ export struct MyPage {
   @Builder
   DonateSection() {
     Row() {
-      this.GlyphIcon('赏')
+      this.GlyphIcon('持')
       Column() {
-        Text('支持作者 · 打赏')
+        Text('支持作者')
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor('#FFD700')
           .width('100%')
-        Text('打赏作者的一份心意 · 部分所得用于公益')
+        Text('支持作者的一份心意 · 部分所得用于公益')
           .fontSize(11)
           .fontColor('#ffffff')
           .margin({ top: 4 })
@@ -318,7 +318,7 @@ export struct MyPage {
           .objectFit(ImageFit.Contain)
           .margin({ right: 10 })
       } else if (isCaishenHall) {
-        // 财神殿入口：金线自绘中国古建筑殿堂，替代 emoji 🏯（日式城堡）
+        // 财神殿入口：方孔铜钱·財自绘图标（金圆方孔+財字），替代 emoji 🏯（日式城堡）
         CaiShenHallIcon({ iconSize:26 })
           .margin({ right: 10 })
       } else {

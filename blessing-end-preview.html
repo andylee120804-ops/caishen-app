@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>祈福结束 · 祝福画面重设计 · 5 选 1</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(circle at 50% 0%, #241318, #0d0709 70%);
+    color: #fdf6e3;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    min-height: 100vh;
+  }
+  .page { padding: 30px 20px 56px; }
+  .page-head { text-align: center; margin-bottom: 24px; }
+  .page-head h1 {
+    margin: 0; font-family: "STXingkai", "STKaiti", "KaiTi", serif;
+    font-size: 30px; font-weight: 400; letter-spacing: 7px; color: #e8c25a;
+  }
+  .page-head p { margin: 8px 0 0; font-size: 12px; letter-spacing: 2px; color: rgba(253,246,227,.75); line-height: 1.8; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, 420px); gap: 40px 28px; justify-content: center; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .cap { font-size: 15px; letter-spacing: 2px; color: #e8c25a; }
+  .cap small { display: block; font-size: 11px; color: rgba(253,246,227,.75); letter-spacing: 1px; margin-top: 3px; font-weight: normal; }
+  .notes { font-size: 11px; line-height: 1.75; color: rgba(253,246,227,.75); max-width: 390px; text-align: center; }
+  .notes b { color: #e8c25a; font-weight: normal; }
+
+  /* ============ 手机壳 ============ */
+  .phone {
+    position: relative; width: 390px; height: 844px; border-radius: 44px;
+    overflow: hidden; color: #fdf6e3; flex: 0 0 auto;
+    box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 0 0 10px #1c1014;
+  }
+  .bg { position: absolute; inset: 0; }
+  .pwrap { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+
+  /* 金粉粒子（共享） */
+  .p { position: absolute; top: -24px; width: 5px; height: 5px; border-radius: 50%;
+    background: #FFD700; box-shadow: 0 0 6px rgba(255,215,0,.7);
+    animation: k-fall linear infinite; }
+  @keyframes k-fall {
+    0% { transform: translateY(-24px) scale(var(--s,1)); opacity: 0; }
+    8% { opacity: .95; }
+    88% { opacity: .8; }
+    100% { transform: translateY(880px) scale(var(--s,1)); opacity: 0; }
+  }
+  /* 烟花闪（共享） */
+  .fw { position: absolute; width: 92px; height: 92px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,180,.95), rgba(255,209,0,.3) 42%, transparent 70%);
+    animation: k-flash 3.2s ease-out infinite; opacity: 0; }
+  @keyframes k-flash {
+    0% { transform: scale(.1); opacity: 0; }
+    6% { transform: scale(1); opacity: 1; }
+    30% { opacity: .55; }
+    100% { transform: scale(1.45); opacity: 0; }
+  }
+  /* 顶部金色光晕（共享，现行版已有） */
+  .glowtop { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at 50% 12%, rgba(255,209,0,.28), rgba(255,209,0,0) 58%); }
+
+  /* ============ 入场编排系统：7s 主循环，负延迟相位偏移 ============ */
+  .phone { --cyc: 7s; }
+  .st { opacity: 0; }
+  .st-up   { animation: k-up   var(--cyc) ease-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-in   { animation: k-in   var(--cyc) ease-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-drop { animation: k-drop var(--cyc) ease-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-beam { animation: k-beam var(--cyc) ease-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-unfurl { animation: k-unfurl var(--cyc) ease-in-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-roll { animation: k-roll var(--cyc) ease-in-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-stamp { animation: k-stamp var(--cyc) ease-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-bounce { animation: k-bounce var(--cyc) cubic-bezier(.34,1.4,.64,1) infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .st-char { animation: k-char var(--cyc) cubic-bezier(.34,1.5,.64,1) infinite; animation-delay: calc(var(--o) - var(--cyc)); display: inline-block; }
+  @keyframes k-up   { 0% { opacity: 0; transform: translateY(26px); } 6% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  @keyframes k-in   { 0% { opacity: 0; transform: scale(.9); } 6% { opacity: 1; transform: scale(1); } 100% { opacity: 1; transform: scale(1); } }
+  @keyframes k-drop { 0% { opacity: 0; transform: translateY(-56px); } 9% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  @keyframes k-beam { 0% { opacity: 0; transform: translateY(-46px) scaleY(.6); } 11% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  @keyframes k-unfurl { 0% { opacity: .2; clip-path: inset(0 47% 0 47%); } 11% { opacity: 1; clip-path: inset(0 0 0 0); } 100% { opacity: 1; clip-path: inset(0 0 0 0); } }
+  @keyframes k-roll  { 0% { opacity: .3; transform: scaleY(.08); } 10% { opacity: 1; transform: scaleY(1); } 100% { opacity: 1; transform: scaleY(1); } }
+  @keyframes k-stamp { 0% { opacity: 0; transform: scale(1.7) rotate(0deg); } 3.5% { opacity: 1; transform: scale(.9) rotate(-12deg); } 5.5% { transform: scale(1) rotate(-12deg); } 100% { opacity: .95; transform: scale(1) rotate(-12deg); } }
+  @keyframes k-bounce { 0% { opacity: 0; transform: translateY(-130px) scale(1.15); } 5% { opacity: 1; transform: translateY(0) scale(1); } 6.5% { transform: translateY(-15px) scale(1.03); } 8.5% { transform: translateY(0) scale(1); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes k-char { 0% { opacity: 0; transform: translateY(15px) scale(.4); } 5% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+
+  /* 氛围动效（共享） */
+  @keyframes k-spin { to { transform: rotate(360deg); } }
+  @keyframes k-breathe { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.07); opacity: .85; } }
+  @keyframes k-sway { 0%,100% { transform: rotate(-3.5deg); } 50% { transform: rotate(3.5deg); } }
+  @keyframes k-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes k-swing { 0%,100% { transform: rotate(-2.4deg); } 50% { transform: rotate(2.4deg); } }
+  @keyframes k-flicker { 0%,100% { opacity: .82; } 42% { opacity: 1; } 58% { opacity: .9; } 74% { opacity: 1; } }
+
+  /* 金字流光（突出祝福文字） */
+  .shine {
+    background: linear-gradient(100deg, #FFD700 40%, #fff8dc 50%, #FFD700 60%);
+    background-size: 220% 100%; -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+    animation: k-shine 3.4s linear infinite;
+  }
+  @keyframes k-shine { 0% { background-position: 115% 0; } 100% { background-position: -115% 0; } }
+
+  /* 共享组件 */
+  .topline { position: absolute; top: 34px; left: 0; right: 0; text-align: center;
+    font-size: 13px; letter-spacing: 3px; color: #FFD700; }
+  /* 居中一律用 left:0;right:0 + flex 或负 margin —— 不用 translateX，
+     否则入场动画的 transform 会覆盖居中 transform 导致整体右移越界 */
+  .deity { position: absolute; top: 62px; left: 0; right: 0; display: flex;
+    align-items: center; justify-content: center; gap: 9px; white-space: nowrap; }
+  .deity img { width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid #FFD700; object-fit: contain; }
+  .deity .dn { font-size: 15px; font-weight: bold; color: #fdf6e3; letter-spacing: 1px; }
+  .kowtow { position: absolute; left: 0; right: 0; text-align: center; font-size: 12px;
+    letter-spacing: 1px; color: rgba(253,246,227,.85); }
+  .btns { position: absolute; left: 0; right: 0; display: flex; flex-direction: column;
+    align-items: center; gap: 8px; }
+  .btn-a { font-size: 15px; font-weight: bold; color: #FFD700; background: rgba(255,209,0,.12);
+    border: 1px solid rgba(255,209,0,.6); border-radius: 24px; padding: 11px 34px; cursor: pointer; }
+  .btn-a:active { transform: scale(.96); }
+  .btn-b { font-size: 12px; color: rgba(253,246,227,.85); background: transparent;
+    border: none; padding: 0; cursor: pointer; letter-spacing: 2px; }
+  .btn-b:active { opacity: .6; }
+  .divline { width: 62%; height: 1px; background: rgba(255,209,0,.6); margin: 0 auto; }
+  .seal { position: absolute; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    background: #A01124; border: 2px solid #fdf6e3; border-radius: 5px; color: #fdf6e3;
+    font-family: "STKaiti", "KaiTi", serif; font-size: 24px; font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+
+  /* ================================================================
+     v0 · 现行线上版（对照）
+     ================================================================ */
+  .v0 .bg { background: linear-gradient(180deg, #A01124 0%, #931120 55%, #86121C 100%); }
+  .v0 .col { position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding-bottom: 30px; }
+  .v0 .tl2 { font-size: 12px; letter-spacing: 2px; color: rgba(255,209,0,.6); margin-bottom: 14px; }
+  .v0 .tablet { display: flex; align-items: center; padding: 10px 20px; background: #A01124;
+    border-radius: 6px; box-shadow: 0 4px 18px rgba(192,57,43,.6); margin-bottom: 22px; white-space: nowrap; }
+  .v0 .tablet .t { font-size: 18px; font-weight: bold; color: #fdf6e3; margin: 0 12px; letter-spacing: 1px; }
+  .v0 .goldbill { position: relative; width: 322px; background: rgba(26,26,10,.55);
+    border: 2px solid #FFD700; border-radius: 12px; padding: 3px; }
+  .v0 .gb-in { border: 1px solid rgba(231,76,60,.75); border-radius: 10px; padding: 22px 22px 18px;
+    display: flex; flex-direction: column; align-items: center; }
+  .v0 .status { font-size: 13px; font-weight: bold; color: #FFD700; letter-spacing: 1px; margin-bottom: 12px; }
+  .v0 .hero { font-size: 38px; font-weight: bold; color: #FFD700; letter-spacing: 14px; text-indent: 14px;
+    text-shadow: 0 0 22px rgba(231,76,60,.95); margin: 18px 0 12px; }
+  .v0 .dia { font-size: 11px; letter-spacing: 6px; color: rgba(255,209,0,.6); margin-bottom: 14px; }
+  .v0 .blesstxt { font-size: 22px; font-weight: 500; color: #FFD700; text-align: center; line-height: 38px;
+    letter-spacing: 1px; text-shadow: 0 0 10px rgba(231,76,60,.5); margin-bottom: 14px; }
+  .v0 .tail { font-size: 15px; font-weight: bold; color: #FFD700; letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(231,76,60,.55); }
+  .v0 .yrow { display: flex; gap: 6px; margin-top: 16px; }
+  .v0 .yrow img { width: 24px; height: 24px; object-fit: contain; }
+  .v0 .seal { right: 14px; bottom: 14px; transform: rotate(-12deg); opacity: .95; }
+  .v0 .note { position: absolute; bottom: 132px; left: 0; right: 0; text-align: center;
+    font-size: 11px; color: rgba(253,246,227,.85); }
+
+  /* ================================================================
+     v1 · 方案一「敕令金榜 · 光影开卷」（推荐）
+     ================================================================ */
+  .v1 .bg { background:
+    radial-gradient(120% 80% at 50% 0%, #c22a3a 0%, #A01124 40%, #7d0e1c 75%, #580e15 100%); }
+  .v1 .rays { position: absolute; left: 50%; top: 14%; width: 900px; height: 900px;
+    margin-left: -450px; margin-top: -450px; pointer-events: none; opacity: .5;
+    background: repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(255,209,0,.13) 0deg 8deg, rgba(255,209,0,0) 8deg 20deg);
+    -webkit-mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,.6) 34%, transparent 64%);
+    mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,.6) 34%, transparent 64%);
+    animation: k-spin 46s linear infinite; }
+  .v1 .nameplate { position: absolute; top: 138px; left: 50%; margin-left: -118px;
+    width: 236px; text-align: center; padding: 12px 0 15px;
+    background: linear-gradient(180deg, #8e1727, #7d0e1c); border: 1.5px solid #FFD700; border-radius: 12px;
+    box-shadow: 0 6px 26px rgba(192,57,43,.55), inset 0 0 18px rgba(255,209,0,.12); }
+  .v1 .nameplate .lab { font-size: 12px; letter-spacing: 6px; color: rgba(255,209,0,.85); margin-bottom: 4px; }
+  .v1 .nameplate .nm { font-family: "STXingkai", "STKaiti", serif; font-size: 40px; line-height: 1.1;
+    color: #FFD700; text-shadow: 0 0 18px rgba(255,209,0,.75); }
+  .v1 .scroll { position: absolute; top: 252px; left: 50%; margin-left: -161px; width: 322px;
+    background: rgba(26,26,10,.55); border: 2px solid #FFD700; border-radius: 12px; padding: 3px; }
+  .v1 .sc-in { border: 1px solid rgba(231,76,60,.75); border-radius: 10px; padding: 20px 20px 16px;
+    display: flex; flex-direction: column; align-items: center; position: relative; }
+  .v1 .status { font-size: 13px; font-weight: bold; color: #FFD700; letter-spacing: 1px; margin-bottom: 12px; }
+  .v1 .blesstxt { font-family: "STKaiti", serif; font-size: 21px; font-weight: 600; line-height: 39px;
+    letter-spacing: 1px; text-align: center; margin-bottom: 10px; }
+  .v1 .tail { font-size: 14px; font-weight: bold; color: #FFD700; letter-spacing: 4px; margin-bottom: 2px; }
+  .v1 .seal { right: 12px; bottom: 10px; }
+  .v1 .topline { top: 36px; }
+  .v1 .deity { top: 64px; }
+  .v1 .kowtow { top: 660px; }
+  .v1 .btns { top: 690px; }
+
+  /* ================================================================
+     v2 · 方案二「万灯结彩 · 喜庆民俗」
+     ================================================================ */
+  .v2 .bg { background: linear-gradient(180deg, #b82333 0%, #931120 52%, #580e15 100%); }
+  .v2 .lan { position: absolute; bottom: -170px; will-change: transform; }
+  .v2 .l-in { display: flex; flex-direction: column; align-items: center; animation: k-sway 3.6s ease-in-out infinite; transform-origin: top center; }
+  .v2 .l-cap { width: 26px; height: 7px; background: #FFD700; border-radius: 2px; }
+  .v2 .l-cap.b { width: 20px; margin-top: -1px; }
+  .v2 .l-body { position: relative; width: 62px; height: 66px; margin-top: -1px;
+    border-radius: 46%/38%; background: radial-gradient(ellipse at 50% 40%, #e0514a, #c0392b 72%);
+    border: 1.5px solid rgba(255,209,0,.6); box-shadow: 0 0 18px rgba(255,120,80,.4), inset 0 -12px 16px rgba(120,10,10,.5);
+    display: flex; align-items: center; justify-content: center; }
+  .v2 .l-body .f { font-family: "STKaiti", serif; font-size: 26px; font-weight: bold; color: #fdf6e3; }
+  .v2 .l-tas { width: 2px; height: 22px; background: #FFD700; }
+  .v2 .l-tas::after { content: ""; display: block; width: 7px; height: 11px; margin: 0 auto;
+    background: #FFD700; border-radius: 2px; }
+  .v2 .rise { animation: k-rise linear infinite; }
+  @keyframes k-rise { 0% { transform: translateY(0); opacity: 0; } 8% { opacity: 1; } 88% { opacity: 1; } 100% { transform: translateY(-1080px); opacity: 0; } }
+  /* 中央大灯笼 + 悬挂名牌 */
+  .v2 .biglan { position: absolute; top: 78px; left: 0; right: 0;
+    display: flex; justify-content: center; }
+  .v2 .biglan .l-body { width: 96px; height: 104px; }
+  .v2 .biglan .l-body .f { font-size: 42px; }
+  .v2 .cord { position: absolute; top: 196px; left: 50%; margin-left: -110px;
+    width: 220px; display: flex; justify-content: space-between; }
+  .v2 .cord i { width: 2px; height: 26px; background: rgba(255,209,0,.8); }
+  .v2 .hang { position: absolute; top: 222px; left: 50%; margin-left: -110px;
+    width: 220px; text-align: center; background: linear-gradient(180deg, #8e1727, #7d0e1c);
+    border: 1.5px solid #FFD700; border-radius: 12px; padding: 9px 0 12px;
+    box-shadow: 0 6px 22px rgba(0,0,0,.4); }
+  .v2 .hang .lab { font-size: 12px; letter-spacing: 6px; color: rgba(255,209,0,.85); margin-bottom: 3px; }
+  .v2 .hang .nm { font-family: "STXingkai", serif; font-size: 34px; line-height: 1.15; color: #fdf6e3;
+    text-shadow: 0 0 14px rgba(255,209,0,.55); }
+  /* 古书卷轴金榜：外层书壳装左右轴杆，面板双线金框 */
+  .v2 .bookwrap { position: absolute; top: 348px; left: 50%; margin-left: -161px; width: 322px; }
+  .v2 .panel { position: relative; width: 322px;
+    background: rgba(56,4,12,.68); border: 2px solid #FFD700; border-radius: 11px; padding: 20px 18px 16px; }
+  .v2 .panel::before { content: ""; position: absolute; inset: 3px; border: 1px solid rgba(255,209,0,.45);
+    border-radius: 8px; pointer-events: none; }
+  .v2 .rod { position: absolute; top: -7px; bottom: -7px; width: 9px; border-radius: 5px; z-index: 3;
+    background: linear-gradient(90deg, #8a6d3b, #e0c06a 50%, #8a6d3b);
+    box-shadow: 0 0 6px rgba(0,0,0,.5); }
+  .v2 .rod::before, .v2 .rod::after { content: ""; position: absolute; left: -2px; width: 13px; height: 7px;
+    background: #FFD700; border-radius: 4px; }
+  .v2 .rod::before { top: -7px; }
+  .v2 .rod::after { bottom: -7px; }
+  .v2 .rod-l { left: -10px; animation: k-rod-l var(--cyc) ease-in-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  .v2 .rod-r { right: -10px; animation: k-rod-r var(--cyc) ease-in-out infinite; animation-delay: calc(var(--o) - var(--cyc)); }
+  @keyframes k-rod-l { 0% { opacity: .35; transform: translateX(161px); } 11% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  @keyframes k-rod-r { 0% { opacity: .35; transform: translateX(-161px); } 11% { opacity: 1; transform: none; } 100% { opacity: 1; transform: none; } }
+  /* 心愿区：用户在祈福输入框写的愿，同步进金榜（浅金区分模板祝福语） */
+  .v2 .wish-zone { width: 100%; text-align: center; }
+  .v2 .wish-label { font-size: 11px; letter-spacing: 4px; color: rgba(255,209,0,.85); margin: 10px 0 4px; }
+  .v2 .wish-txt { font-size: 18px; font-weight: 500; line-height: 30px; color: #ffe9a0; letter-spacing: 1px; }
+  .v2 .blesstxt { font-family: "STKaiti", serif; font-size: 21px; font-weight: 600; line-height: 40px;
+    letter-spacing: 1px; text-align: center; color: #fdf6e3; }
+  .v2 .blesstxt .hl { color: #FFD700; }
+  .v2 .tail { margin-top: 12px; font-size: 14px; font-weight: bold; color: #FFD700; letter-spacing: 4px; text-align: center; }
+  .v2 .cf { position: absolute; top: -20px; width: 4px; height: 13px; border-radius: 1px; opacity: .9;
+    animation: k-cfall linear infinite; }
+  .v2 .cf.g { background: #FFD700; } .v2 .cf.r { background: #e0514a; width: 5px; }
+  @keyframes k-cfall {
+    0% { transform: translateY(-20px) rotate(0); opacity: 0; }
+    10% { opacity: .95; }
+    90% { opacity: .85; }
+    100% { transform: translateY(880px) rotate(680deg); opacity: 0; }
+  }
+  .v2 .topline { top: 30px; }
+  .v2 .kowtow { top: 662px; }
+  .v2 .btns { top: 692px; }
+
+  /* ================================================================
+     v3 · 方案三「天光赐福 · 聚光祝名」
+     ================================================================ */
+  .v3 .bg { background: radial-gradient(130% 100% at 50% 0%, #6a0b18 0%, #3c030b 55%, #180107 100%); }
+  .v3 .beam { position: absolute; top: -16px; left: 50%; margin-left: -170px;
+    width: 340px; height: 400px; pointer-events: none; }
+  .v3 .beam-in { width: 100%; height: 100%;
+    clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+    background: linear-gradient(180deg, rgba(255,232,150,.4) 0%, rgba(255,209,0,.14) 55%, rgba(255,209,0,.03) 100%);
+    filter: blur(7px); animation: k-flicker 5.5s ease-in-out infinite; }
+  .v3 .beamring { position: absolute; top: 292px; left: 50%; margin-left: -125px;
+    width: 250px; height: 54px; pointer-events: none; }
+  .v3 .beamring-in { width: 100%; height: 100%; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,209,0,.32), rgba(255,209,0,0) 70%);
+    animation: k-breathe 4.5s ease-in-out infinite; }
+  .v3 .dust { position: absolute; bottom: -14px; width: 4px; height: 4px; border-radius: 50%;
+    background: #ffe9a0; box-shadow: 0 0 5px rgba(255,225,150,.8); animation: k-drise ease-in infinite; opacity: 0; }
+  @keyframes k-drise {
+    0% { transform: translateY(0); opacity: 0; }
+    15% { opacity: .95; }
+    85% { opacity: .75; }
+    100% { transform: translateY(-380px); opacity: 0; }
+  }
+  .v3 .namezone { position: absolute; top: 168px; left: 0; right: 0; text-align: center; }
+  .v3 .nz-in { animation: k-float 4.2s ease-in-out infinite; }
+  .v3 .lab { font-size: 13px; letter-spacing: 8px; color: rgba(255,209,0,.9); margin-bottom: 8px; }
+  .v3 .nm { font-family: "STXingkai", serif; font-size: 52px; line-height: 1.1; color: #FFD700;
+    text-shadow: 0 0 26px rgba(255,209,0,.85), 0 0 60px rgba(255,209,0,.4); }
+  .v3 .nm-sub { margin-top: 10px; font-size: 12px; letter-spacing: 3px; color: rgba(253,246,227,.85); }
+  .v3 .bzone { position: absolute; top: 392px; left: 50%; margin-left: -161px; width: 322px; text-align: center; }
+  .v3 .blesstxt { font-family: "STKaiti", serif; font-size: 21px; font-weight: 600; line-height: 40px;
+    letter-spacing: 1px; }
+  .v3 .tail { margin-top: 16px; font-size: 14px; font-weight: bold; color: #FFD700; letter-spacing: 5px; }
+  .v3 .topline { top: 30px; }
+  .v3 .deity { top: 58px; }
+  .v3 .deity img { border-color: rgba(255,209,0,.8); }
+  .v3 .kowtow { top: 664px; }
+  .v3 .btns { top: 694px; }
+
+  /* ================================================================
+     v4 · 方案四「红包喜雨 · 财神撒福」
+     ================================================================ */
+  .v4 .bg { background: radial-gradient(120% 90% at 50% 0%, #e0514a 0%, #a91a26 52%, #7d0e1c 100%); }
+  .v4 .rain { position: absolute; top: -50px; animation: k-fall linear infinite; }
+  .v4 .rain img { display: block; }
+  @keyframes k-fallrot {
+    0% { transform: translateY(-50px) rotate(0); opacity: 0; }
+    8% { opacity: 1; }
+    90% { opacity: .9; }
+    100% { transform: translateY(920px) rotate(300deg); opacity: 0; }
+  }
+  .v4 .rain { animation-name: k-fallrot; }
+  .v4 .pk { position: absolute; top: 176px; left: 50%; margin-left: -105px; width: 210px; height: 148px; }
+  .v4 .pk-in { animation: k-swing 3.4s ease-in-out infinite; transform-origin: top center; height: 100%; }
+  .v4 .pk-body { position: absolute; inset: 0; background: #c0392b; border: 2px solid #FFD700; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 -14px 22px rgba(120,10,10,.45); }
+  .v4 .pk-flap { position: absolute; top: -2px; left: -2px; right: -2px; height: 66px;
+    background: #a01124; border: 2px solid #FFD700; border-radius: 12px 12px 4px 4px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .v4 .pk-seal { position: absolute; top: 44px; left: 50%; transform: translateX(-50%);
+    width: 58px; height: 58px; border-radius: 50%; background: #FFD700;
+    border: 2px solid #fdf6e3; display: flex; align-items: center; justify-content: center;
+    font-family: "STKaiti", serif; font-size: 30px; font-weight: bold; color: #a01124;
+    box-shadow: 0 3px 10px rgba(0,0,0,.4); z-index: 2; }
+  .v4 .ribbon { position: absolute; top: 350px; left: 50%; margin-left: -132px; width: 264px;
+    background: linear-gradient(180deg, #ffe14d, #FFD700); border-radius: 8px; text-align: center;
+    padding: 10px 0 12px; box-shadow: 0 5px 18px rgba(0,0,0,.35); z-index: 3; }
+  .v4 .ribbon .lab { font-size: 11px; letter-spacing: 5px; color: #4a3520; margin-bottom: 2px; }
+  .v4 .ribbon .nm { font-family: "STXingkai", serif; font-size: 32px; line-height: 1.1; color: #1a1a0a; }
+  .v4 .paper { position: absolute; top: 452px; left: 50%; margin-left: -151px; width: 302px; transform-origin: top center; }
+  .v4 .rod { height: 13px; background: linear-gradient(90deg, #8a6d3b, #d9b65a 30%, #8a6d3b 70%, #6b4e22);
+    border-radius: 7px; box-shadow: 0 2px 5px rgba(0,0,0,.35); }
+  .v4 .sheet { background: #f5e6c8; margin: 0 10px; padding: 16px 14px 12px;
+    box-shadow: inset 0 0 14px rgba(110,80,35,.25); text-align: center; }
+  .v4 .blesstxt { font-family: "STKaiti", serif; font-size: 19px; font-weight: 600; line-height: 36px;
+    letter-spacing: 1px; color: #4a3520; }
+  .v4 .tail { margin-top: 14px; font-size: 14px; font-weight: bold; color: #FFD700; letter-spacing: 4px; text-align: center; }
+  .v4 .topline { top: 30px; }
+  .v4 .deity { top: 58px; }
+  .v4 .kowtow { top: 690px; }
+  .v4 .btns { top: 718px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1>祈福结束 · 祝福画面重设计</h1>
+    <p>样例：受福人「张三」 · 北路财神赵公明 · 每版入场动效每 7 秒自动循环重播，可直接对比</p>
+    <p>网址后加 <b style="color:#e8c25a">?v=1</b>（现行版对照）或 <b style="color:#e8c25a">?v=2</b> ~ <b style="color:#e8c25a">?v=5</b>（方案一~四）可单独全屏看某一版</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ═══════════ v0 现行版（对照）═══════════ -->
+    <div class="item">
+      <div class="cap">现行线上版（对照）<small>名字埋在祝福语正文里 · 入场约 1.1s 后基本静止</small></div>
+      <div class="phone v0">
+        <div class="bg"></div>
+        <div class="glowtop"></div>
+        <div class="pwrap">
+          <span class="p" style="left:6%;  animation-duration:7.5s; animation-delay:-1s; --s:1"></span>
+          <span class="p" style="left:18%; animation-duration:9s;  animation-delay:-5s; --s:.8"></span>
+          <span class="p" style="left:33%; animation-duration:6.5s; animation-delay:-3s; --s:1.2"></span>
+          <span class="p" style="left:52%; animation-duration:8s;  animation-delay:-6s; --s:.9"></span>
+          <span class="p" style="left:68%; animation-duration:7s;  animation-delay:-2s; --s:1"></span>
+          <span class="p" style="left:82%; animation-duration:9.5s; animation-delay:-4s; --s:.7"></span>
+          <span class="p" style="left:91%; animation-duration:6.8s; animation-delay:-.5s; --s:1.1"></span>
+          <span class="fw" style="left:14%; top:120px; animation-delay:-.8s"></span>
+          <span class="fw" style="left:66%; top:190px; animation-delay:-2.2s; transform:scale(.7)"></span>
+        </div>
+        <div class="col">
+          <div class="tl2">✦  敕赐 · 五路财神 · 金牌赐福  ✦</div>
+          <div class="tablet">
+            <span style="font-size:24px">🧧</span>
+            <span class="t">赵公明 · 北路主位</span>
+            <span style="font-size:24px">🧧</span>
+          </div>
+          <div class="goldbill">
+            <div class="gb-in">
+              <div class="status">🎊  祈福已成 · 心意已奉  🎊</div>
+              <div class="divline"></div>
+              <div class="hero">心诚则灵</div>
+              <div class="dia">◆  ◆  ◆</div>
+              <div class="blesstxt">张三在上，财神保佑，<br>财运旺旺旺，八方来财！</div>
+              <div class="dia">◆  ◆  ◆</div>
+              <div class="tail">金玉满堂  ·  福禄双至</div>
+              <div class="divline" style="margin-top:14px"></div>
+              <div class="yrow">
+                <img src="entry/src/main/resources/rawfile/props/yuanbao.png"><img src="entry/src/main/resources/rawfile/props/yuanbao.png"><img src="entry/src/main/resources/rawfile/props/yuanbao.png"><img src="entry/src/main/resources/rawfile/props/yuanbao.png"><img src="entry/src/main/resources/rawfile/props/yuanbao.png">
+              </div>
+            </div>
+            <div class="seal">賜</div>
+          </div>
+        </div>
+        <div class="note">🙏  诚心叩拜 3 次 · 心意已至</div>
+        <div class="btns" style="bottom:44px">
+          <button class="btn-a">🙇  再拜一次</button>
+          <button class="btn-b">返回首页</button>
+        </div>
+      </div>
+      <div class="notes"><b>现状问题</b>：名字只在正文开头出现一次，没有任何视觉地位；画面入场后几乎不再动，缺乏祝福气息。</div>
+    </div>
+
+    <!-- ═══════════ v1 敕令金榜 · 光影开卷 ═══════════ -->
+    <div class="item">
+      <div class="cap">方案一 · 敕令金榜「光影开卷」<small>现行版进化 · 红金神光 · 稳妥推荐</small></div>
+      <div class="phone v1">
+        <div class="bg"></div>
+        <div class="rays"></div>
+        <div class="glowtop"></div>
+        <div class="pwrap">
+          <span class="p" style="left:5%;  animation-duration:6.8s; animation-delay:-.6s; --s:1"></span>
+          <span class="p" style="left:14%; animation-duration:8.4s; animation-delay:-4.4s; --s:.8"></span>
+          <span class="p" style="left:26%; animation-duration:7.2s; animation-delay:-2.8s; --s:1.25"></span>
+          <span class="p" style="left:39%; animation-duration:6s;  animation-delay:-5.2s; --s:.9"></span>
+          <span class="p" style="left:55%; animation-duration:8.8s; animation-delay:-1.6s; --s:1.05"></span>
+          <span class="p" style="left:67%; animation-duration:6.4s; animation-delay:-3.6s; --s:1.2"></span>
+          <span class="p" style="left:79%; animation-duration:9.2s; animation-delay:-7s; --s:.75"></span>
+          <span class="p" style="left:90%; animation-duration:7.6s; animation-delay:-.2s; --s:1"></span>
+          <span class="fw" style="left:8%;  top:96px;  animation-delay:-.6s"></span>
+          <span class="fw" style="left:64%; top:150px; animation-delay:-2.4s; transform:scale(.75)"></span>
+          <span class="fw" style="left:40%; top:210px; animation-delay:-1.5s; transform:scale(.55)"></span>
+        </div>
+        <div class="topline st st-up" style="--o:.05s">✦  敕赐 · 五路财神 · 金牌赐福  ✦</div>
+        <div class="deity st st-up" style="--o:.25s">
+          <img src="entry/src/main/resources/rawfile/deities/5.png">
+          <span class="dn">赵公明 · 北路主位</span>
+        </div>
+        <div class="nameplate st st-in" style="--o:.5s">
+          <div class="lab">今 日 受 福</div>
+          <div class="nm">张三</div>
+        </div>
+        <div class="scroll st st-unfurl" style="--o:.8s">
+          <div class="sc-in">
+            <div class="status">🎊  祈福已成 · 心意已奉  🎊</div>
+            <div class="divline" style="margin-bottom:16px"></div>
+            <div class="blesstxt shine">北路正财神赵公明驾到，<br>黑虎护佑张三，<br>财运长虹，八方来财！</div>
+            <div class="divline" style="margin:14px 0 12px"></div>
+            <div class="tail">金玉满堂  ·  福禄双至</div>
+          </div>
+          <div class="seal st st-stamp" style="--o:1.15s">賜</div>
+        </div>
+        <div class="kowtow st st-up" style="--o:1.3s">🙏  诚心叩拜 3 次 · 心意已至</div>
+        <div class="btns st st-up" style="--o:1.5s">
+          <button class="btn-a">🙇  再拜一次</button>
+          <button class="btn-b">返回首页</button>
+        </div>
+      </div>
+      <div class="notes">
+        <b>动效</b>：神光旋转（45s 慢转）→ 金字名牌弹出 → 金榜横向开卷 → 祝福文字流光扫过 → 朱印落章 → 金粉飘落不停<br>
+        <b>ArkTS 成本：低</b>。神光=旋转渐变层，开卷=clip-path/scale，流光=textGradient，粒子复用现有 ParticleCanvas(GOLD/FIREWORK)
+      </div>
+    </div>
+
+    <!-- ═══════════ v2 万灯结彩 ═══════════ -->
+    <div class="item">
+      <div class="cap">方案二 · 万灯结彩「喜庆民俗」<small>宫灯升起 · 年味最浓 · 最热闹</small></div>
+      <div class="phone v2">
+        <div class="bg"></div>
+        <div class="glowtop"></div>
+        <!-- 上升的小灯笼 ×6 -->
+        <div class="lan rise" style="left:8%;  animation-duration:12s;  animation-delay:-2s">
+          <div style="transform:scale(.7)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">福</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <div class="lan rise" style="left:24%; animation-duration:15s;  animation-delay:-8s">
+          <div style="transform:scale(.55)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">财</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <div class="lan rise" style="left:40%; animation-duration:13s;  animation-delay:-5s">
+          <div style="transform:scale(.8)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">吉</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <div class="lan rise" style="left:58%; animation-duration:11s;  animation-delay:-9s">
+          <div style="transform:scale(.65)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">祥</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <div class="lan rise" style="left:76%; animation-duration:14s;  animation-delay:-1s">
+          <div style="transform:scale(.75)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">运</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <div class="lan rise" style="left:88%; animation-duration:16s;  animation-delay:-6s">
+          <div style="transform:scale(.5)"><div class="l-in"><div class="l-cap"></div><div class="l-body"><span class="f">旺</span></div><div class="l-cap b"></div><div class="l-tas"></div></div></div>
+        </div>
+        <!-- 彩纸 -->
+        <div class="pwrap">
+          <span class="cf g" style="left:10%; animation-duration:5.5s; animation-delay:-1s"></span>
+          <span class="cf r" style="left:22%; animation-duration:6.8s; animation-delay:-4s"></span>
+          <span class="cf g" style="left:35%; animation-duration:4.9s; animation-delay:-2.5s"></span>
+          <span class="cf r" style="left:48%; animation-duration:7.4s; animation-delay:-6s"></span>
+          <span class="cf g" style="left:60%; animation-duration:5.2s; animation-delay:-.4s"></span>
+          <span class="cf r" style="left:72%; animation-duration:6.2s; animation-delay:-3.2s"></span>
+          <span class="cf g" style="left:84%; animation-duration:5.8s; animation-delay:-5.4s"></span>
+          <span class="cf r" style="left:93%; animation-duration:6.5s; animation-delay:-2s"></span>
+          <span class="fw" style="left:12%; top:110px; animation-delay:-1.1s"></span>
+          <span class="fw" style="left:70%; top:170px; animation-delay:-2.8s; transform:scale(.7)"></span>
+        </div>
+        <div class="topline st st-up" style="--o:.05s">✦  万灯结彩 · 福星高照  ✦</div>
+        <!-- 中央大灯笼 -->
+        <div class="biglan st st-drop" style="--o:.2s">
+          <div class="l-in"><div class="l-cap" style="width:40px"></div><div class="l-body"><span class="f">福</span></div><div class="l-cap b" style="width:32px"></div></div>
+        </div>
+        <div class="cord st st-up" style="--o:.55s"><i></i><i></i></div>
+        <div class="hang st st-in" style="--o:.65s">
+          <div class="lab">受 福 之 人</div>
+          <div class="nm">张三</div>
+        </div>
+        <div class="bookwrap">
+          <div class="panel st st-unfurl" style="--o:.9s">
+            <div class="blesstxt">
+              <span class="st-char" style="--o:.95s">北</span><span class="st-char" style="--o:1s">路</span><span class="st-char" style="--o:1.05s">正</span><span class="st-char" style="--o:1.1s">财</span><span class="st-char" style="--o:1.15s">神</span><span class="st-char" style="--o:1.2s">赵</span><span class="st-char" style="--o:1.25s">公</span><span class="st-char" style="--o:1.3s">明</span><span class="st-char" style="--o:1.35s">驾</span><span class="st-char" style="--o:1.4s">到</span><span class="st-char" style="--o:1.45s">，</span><span class="st-char" style="--o:1.5s">黑</span><span class="st-char" style="--o:1.55s">虎</span><span class="st-char" style="--o:1.6s">护</span><span class="st-char" style="--o:1.65s">佑</span><span class="st-char hl st-char" style="--o:1.7s">张</span><span class="st-char hl st-char" style="--o:1.75s">三</span><span class="st-char" style="--o:1.8s">，</span><br>
+              <span class="st-char" style="--o:1.85s">财</span><span class="st-char" style="--o:1.9s">运</span><span class="st-char" style="--o:1.95s">长</span><span class="st-char" style="--o:2s">虹</span><span class="st-char" style="--o:2.05s">，</span><span class="st-char" style="--o:2.1s">八</span><span class="st-char" style="--o:2.15s">方</span><span class="st-char" style="--o:2.2s">来</span><span class="st-char" style="--o:2.25s">财</span><span class="st-char" style="--o:2.3s">！</span>
+            </div>
+            <div class="wish-zone">
+              <div class="wish-label st st-in" style="--o:2.4s">心 之 所 愿</div>
+              <div class="wish-txt">
+                <span class="st-char" style="--o:2.45s">愿</span><span class="st-char" style="--o:2.5s">家</span><span class="st-char" style="--o:2.55s">人</span><span class="st-char" style="--o:2.6s">平</span><span class="st-char" style="--o:2.65s">安</span><span class="st-char" style="--o:2.7s">顺</span><span class="st-char" style="--o:2.75s">遂</span><span class="st-char" style="--o:2.8s">，</span><span class="st-char" style="--o:2.85s">生</span><span class="st-char" style="--o:2.9s">意</span><span class="st-char" style="--o:2.95s">兴</span><span class="st-char" style="--o:3s">隆</span><span class="st-char" style="--o:3.05s">，</span><span class="st-char" style="--o:3.1s">想</span><span class="st-char" style="--o:3.15s">啥</span><span class="st-char" style="--o:3.2s">来</span><span class="st-char" style="--o:3.25s">啥</span><span class="st-char" style="--o:3.3s">！</span>
+              </div>
+            </div>
+            <div class="tail">红灯高照  ·  福运绵长</div>
+          </div>
+          <div class="rod rod-l" style="--o:.9s"></div>
+          <div class="rod rod-r" style="--o:.9s"></div>
+        </div>
+        <div class="kowtow st st-up" style="--o:2.4s">🙏  诚心叩拜 3 次 · 心意已至</div>
+        <div class="btns st st-up" style="--o:2.6s">
+          <button class="btn-a">🙇  再拜一次</button>
+          <button class="btn-b">返回首页</button>
+        </div>
+      </div>
+      <div class="notes">
+        <b>动效</b>：宫灯自底部持续升起（错峰）→ 大灯笼落下悬摆 → 名牌挂穗弹出 → <b>古书卷轴开卷</b>（左右铜金轴杆从中间滚向两侧，金榜双线框）→ 祝福语逐字蹦出（名字两个字转金色）→ 彩纸飘落+烟花<br>
+        <b>ArkTS 成本：中</b>。开卷=裁剪容器宽度动画+轴杆 translate 同步，灯笼/彩纸=子组件 setInterval 循环，逐字=ForEach+animateTo 错峰
+      </div>
+    </div>
+
+    <!-- ═══════════ v3 天光赐福 ═══════════ -->
+    <div class="item">
+      <div class="cap">方案三 · 天光赐福「聚光祝名」<small>神圣仪式感 · 名字是绝对主角</small></div>
+      <div class="phone v3">
+        <div class="bg"></div>
+        <!-- 光柱（先降下再常驻微闪） -->
+        <div class="beam st st-beam" style="--o:.3s"><div class="beam-in"></div></div>
+        <!-- 金尘上浮 -->
+        <div class="pwrap">
+          <span class="dust" style="left:31%; bottom:290px; height:300px; animation-duration:6.5s; animation-delay:-1s"></span>
+          <span class="dust" style="left:36%; bottom:280px; height:320px; animation-duration:5.2s; animation-delay:-3s"></span>
+          <span class="dust" style="left:44%; bottom:300px; height:330px; animation-duration:7s;  animation-delay:-5s"></span>
+          <span class="dust" style="left:52%; bottom:285px; height:310px; animation-duration:4.6s; animation-delay:-.6s"></span>
+          <span class="dust" style="left:60%; bottom:295px; height:325px; animation-duration:6s;  animation-delay:-2.4s"></span>
+          <span class="dust" style="left:66%; bottom:282px; height:300px; animation-duration:5.6s; animation-delay:-4.2s"></span>
+          <span class="p" style="left:8%;  animation-duration:9s;   animation-delay:-3s; --s:.8"></span>
+          <span class="p" style="left:20%; animation-duration:7.6s; animation-delay:-6s; --s:.7"></span>
+          <span class="p" style="left:74%; animation-duration:8.4s; animation-delay:-1.4s; --s:.9"></span>
+          <span class="p" style="left:88%; animation-duration:6.9s; animation-delay:-4.8s; --s:.75"></span>
+        </div>
+        <div class="topline st st-up" style="--o:.05s">✦  神恩浩荡 · 天光赐福  ✦</div>
+        <div class="deity st st-up" style="--o:.2s">
+          <img src="entry/src/main/resources/rawfile/deities/5.png">
+          <span class="dn" style="font-size:14px; color:rgba(253,246,227,.9)">赵公明 · 北路主位</span>
+        </div>
+        <div class="beamring st st-in" style="--o:.55s"><div class="beamring-in"></div></div>
+        <div class="namezone st st-drop" style="--o:.6s">
+          <div class="nz-in">
+            <div class="lab">今 日 受 福</div>
+            <div class="nm">张三</div>
+            <div class="nm-sub">财神点名 · 一心护佑</div>
+          </div>
+        </div>
+        <div class="bzone st st-up" style="--o:1s">
+          <div class="blesstxt shine">北路正财神赵公明驾到，<br>黑虎护佑张三，<br>财运长虹，八方来财！</div>
+          <div class="tail">心诚则灵  ·  有求必应</div>
+        </div>
+        <div class="kowtow st st-up" style="--o:1.3s">🙏  诚心叩拜 3 次 · 心意已至</div>
+        <div class="btns st st-up" style="--o:1.5s">
+          <button class="btn-a">🙇  再拜一次</button>
+          <button class="btn-b">返回首页</button>
+        </div>
+      </div>
+      <div class="notes">
+        <b>动效</b>：天光自云端降下罩住名字（光晕呼吸+微闪）→ 名字悬漂浮起 52px 金字 → 光柱内金尘缓缓上浮 → 祝福文字流光扫过<br>
+        <b>ArkTS 成本：中</b>。光柱=渐变梯形+blur，金尘=粒子反向上升，其余=animateTo+textGradient
+      </div>
+    </div>
+
+    <!-- ═══════════ v4 红包喜雨 ═══════════ -->
+    <div class="item">
+      <div class="cap">方案四 · 红包喜雨「财神撒福」<small>活泼游戏感 · 最"爽"</small></div>
+      <div class="phone v4">
+        <div class="bg"></div>
+        <div class="glowtop" style="background:radial-gradient(circle at 50% 8%, rgba(255,209,0,.34), rgba(255,209,0,0) 55%)"></div>
+        <!-- 元宝雨 -->
+        <div class="pwrap">
+          <div class="rain" style="left:7%;  animation-duration:5.6s; animation-delay:-.8s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:26px"></div>
+          <div class="rain" style="left:19%; animation-duration:7.2s; animation-delay:-3.6s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:34px"></div>
+          <div class="rain" style="left:31%; animation-duration:4.8s; animation-delay:-2.2s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:22px"></div>
+          <div class="rain" style="left:43%; animation-duration:6.4s; animation-delay:-5s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:30px"></div>
+          <div class="rain" style="left:55%; animation-duration:5.2s; animation-delay:-1.4s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:24px"></div>
+          <div class="rain" style="left:67%; animation-duration:6.8s; animation-delay:-4.2s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:32px"></div>
+          <div class="rain" style="left:79%; animation-duration:5.9s; animation-delay:-.3s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:25px"></div>
+          <div class="rain" style="left:90%; animation-duration:7.6s; animation-delay:-6.4s"><img src="entry/src/main/resources/rawfile/props/yuanbao.png" style="width:28px"></div>
+          <span class="fw" style="left:16%; top:120px; animation-delay:-.9s"></span>
+          <span class="fw" style="left:62%; top:180px; animation-delay:-2.6s; transform:scale(.8)"></span>
+        </div>
+        <div class="topline st st-up" style="--o:.05s">✦  财神到 · 福运到  ✦</div>
+        <div class="deity st st-up" style="--o:.2s">
+          <img src="entry/src/main/resources/rawfile/deities/5.png">
+          <span class="dn">赵公明 · 北路主位</span>
+        </div>
+        <!-- 红包砸落 + 摇摆 -->
+        <div class="pk st st-bounce" style="--o:.35s">
+          <div class="pk-in">
+            <div class="pk-body"></div>
+            <div class="pk-flap"></div>
+            <div class="pk-seal">福</div>
+          </div>
+        </div>
+        <!-- 金缎带名牌 -->
+        <div class="ribbon st st-in" style="--o:.75s">
+          <div class="lab">受 福 人</div>
+          <div class="nm">张三</div>
+        </div>
+        <!-- 红纸展开 -->
+        <div class="paper st st-roll" style="--o:.95s">
+          <div class="rod"></div>
+          <div class="sheet">
+            <div class="blesstxt">北路正财神赵公明驾到，<br>黑虎护佑张三，<br>财运长虹，八方来财！</div>
+          </div>
+          <div class="rod"></div>
+        </div>
+        <div class="tail st st-up" style="top:648px; position:absolute; left:0; right:0">红包开  ·  好运来</div>
+        <div class="kowtow st st-up" style="--o:1.2s">🙏  诚心叩拜 3 次 · 心意已至</div>
+        <div class="btns st st-up" style="--o:1.4s">
+          <button class="btn-a">🙇  再拜一次</button>
+          <button class="btn-b">返回首页</button>
+        </div>
+      </div>
+      <div class="notes">
+        <b>动效</b>：元宝雨持续落下 → 红包弹跳砸落后来回摇摆 → 金缎带甩出名字（深字压金底）→ 红纸卷轴纵向展开祝福语（深墨印浅纸）<br>
+        <b>ArkTS 成本：中</b>。元宝雨=ParticleCanvas 新类型，红包=bounce+rotate 帧动，红纸=scaleY 展开
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+  // ?v=1..4：单独看某一版（1=现行对照, 2..5=方案一..四）
+  const v = new URLSearchParams(location.search).get('v');
+  if (v) {
+    const idx = Math.max(0, Math.min(4, Number(v) - 1));
+    const items = [...document.querySelectorAll('.item')];
+    items.forEach((it, i) => { if (i !== idx) it.remove(); });
+    document.querySelector('.page-head').remove();
+    const page = document.querySelector('.page');
+    page.style.padding = '0';
+    page.style.minHeight = '100vh';
+    page.style.display = 'flex';
+    page.style.alignItems = 'center';
+    page.style.justifyContent = 'center';
+    document.documentElement.style.background = '#0d0709';
+  }
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@
 // 4) 队列中的单个任务若 I/O 悬挂会把后续所有点击堵死 → 每任务加超时保护；
 // 5) console.* 在该进程打不进 hilog，必须用 hilog API 才能抓到日志。
 import { FormExtensionAbility, formBindingData, formInfo } from '@kit.FormKit'
-import { Want } from '@kit.AbilityKit'
+import { Want, Context } from '@kit.AbilityKit'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { QiuQianViewModel } from '../viewmodels/QiuQianViewModel'
 import { MuyuViewModel } from '../viewmodels/MuyuViewModel'
@@ -23,6 +23,7 @@ import { DeityRotator } from '../engine/DeityRotator'
 import { FIVE_DEITIES, DeityInfo } from '../model/PrayerTypes'
 import { FormIdStore } from './FormIdStore'
 import { WidgetData } from './WidgetData'
+import { PrefsRename } from '../util/PrefsRename'
 
 /** 卡片 message 事件支持的动作 */
 const ACTION_DRAW: string = 'draw'
@@ -48,7 +49,7 @@ export default class WidgetFormAbility extends FormExtensionAbility {
     const formName: string = WidgetFormAbility.paramOf(want, formInfo.FormParam.NAME_KEY)
     hilog.info(LOG_DOMAIN, LOG_TAG, `onAddForm formId=${formId} formName=${formName}`)
     // onAddForm 必须同步返回：先给占位快照，随后在同一个串行队列里登记 formId 并拉真实数据
-    WidgetFormAbility.enqueue(async (): Promise<void> => {
+    WidgetFormAbility.enqueue(this.context, async (): Promise<void> => {
       await FormIdStore.add(this.context, formId, formName)
       await WidgetData.refresh(this.context, formId, formName)
     })
@@ -74,7 +75,7 @@ export default class WidgetFormAbility extends FormExtensionAbility {
   }
 
   onUpdateForm(formId: string): void {
-    WidgetFormAbility.enqueue(async (): Promise<void> => {
+    WidgetFormAbility.enqueue(this.context, async (): Promise<void> => {
       const map: Record<string, string> = await FormIdStore.all(this.context)
       const formName: string = map[formId] === undefined ? '' : map[formId]
       hilog.info(LOG_DOMAIN, LOG_TAG, `onUpdateForm formId=${formId} formName=${formName}`)
@@ -85,7 +86,7 @@ export default class WidgetFormAbility extends FormExtensionAbility {
   onFormEvent(formId: string, message: string): void {
     const msg: CardMessage = WidgetFormAbility.parseMessage(message)
     hilog.info(LOG_DOMAIN, LOG_TAG, `onFormEvent formId=${formId} action=${msg.action} form=${msg.form}`)
-    WidgetFormAbility.enqueue(async (): Promise<void> => {
+    WidgetFormAbility.enqueue(this.context, async (): Promise<void> => {
       // 优先用卡片自带的 form（不依赖登记表），登记表仅作兜底：
       // 一旦 FormIdStore 读不到（跨进程缓存 / 数据丢失），点击也不会变成"没反应"
       let formName: string = msg.form
@@ -95,7 +96,7 @@ export default class WidgetFormAbility extends FormExtensionAbility {
       }
 
       if (msg.action === ACTION_DRAW && (formName === 'sign_2x2' || formName === 'sign_2x4')) {
-        // 真抽签：与 App 同一份 preferences（mashen_qiuqian_prefs）。
+        // 真抽签：与 App 同一份 preferences（caishen_qiuqian_prefs）。
         // 抽不动说明卡片那边的 used/quota 快照已经滞后，这里刷新后卡片会自行切成付款入口。
         const qiuVM = new QiuQianViewModel()
         await qiuVM.initialize(this.context)
@@ -124,15 +125,23 @@ export default class WidgetFormAbility extends FormExtensionAbility {
   }
 
   onRemoveForm(formId: string): void {
-    FormIdStore.remove(this.context, formId).catch((err: Object) => {
+    // 先做 prefs 迁移再动登记表，避免老用户升级后第一次移除卡片读到空 map
+    PrefsRename.migrateOnce(this.context).then((): void => {
+      // remove 内部已吞掉异常，无需 return 链到 .catch（void 箭头不能 return Promise）
+      FormIdStore.remove(this.context, formId)
+    }).catch((err: Object) => {
       hilog.error(LOG_DOMAIN, LOG_TAG, 'FormIdStore.remove failed: ' + JSON.stringify(err))
     })
   }
 
   /** 串行执行：上一次任务完成（成功/失败/超时）后才跑下一个，杜绝并发读改写 */
-  private static enqueue(task: () => Promise<void>): void {
+  private static enqueue(context: Context, task: () => Promise<void>): void {
     WidgetFormAbility.queue = WidgetFormAbility.queue.then((): Promise<void> => {
-      return WidgetFormAbility.withTimeout(task)
+      return WidgetFormAbility.withTimeout(async (): Promise<void> => {
+        // 卡片进程也可能早于主进程启动：每个任务先确认 prefs 迁移完成（进程内单例，仅首次真跑）
+        await PrefsRename.migrateOnce(context)
+        await task()
+      })
     }).catch((err: Object): void => {
       hilog.error(LOG_DOMAIN, LOG_TAG, 'task failed: ' + JSON.stringify(err))
     })

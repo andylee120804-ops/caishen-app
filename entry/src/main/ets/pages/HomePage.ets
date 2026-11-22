@@ -2,7 +2,9 @@ import { PrayerViewModel } from '../viewmodels/PrayerViewModel'
 import { DeityArrayView } from '../components/DeityArrayView'
 import { HistoryPanel } from '../components/HistoryPanel'
 import { PrivacyDialog } from '../components/PrivacyDialog'
+import { PrivacyConsent } from '../util/PrivacyConsent'
 import { PrayerPhase, FIVE_DEITIES } from '../model/PrayerTypes'
+import { PRAYER_FLOW_VISIBLE } from '../util/AuditFlags'
 import { router } from '@kit.ArkUI'
 
 @Entry
@@ -10,7 +12,6 @@ import { router } from '@kit.ArkUI'
 struct HomePage {
   @StorageLink('viewModel') viewModel: PrayerViewModel = new PrayerViewModel()
   @State showHistory: boolean = false
-  @State showPrivacyDialog: boolean = false
   private privacyDialogController: CustomDialogController | null = null
 
   aboutToAppear(): void {
@@ -18,16 +19,16 @@ struct HomePage {
   }
 
   private async checkPrivacyAccepted(): Promise<void> {
+    let should: boolean = true
     try {
-      const accepted = await this.viewModel.isPrivacyAccepted()
-      if (!accepted) {
-        this.showPrivacyDialog = true
-        this.openPrivacyDialog()
-      }
+      // 读独立隐私文件（不依赖 PrayerViewModel 初始化，见 util/PrivacyConsent.ets）
+      should = await PrivacyConsent.shouldPrompt()
     } catch (err) {
       console.error('[HomePage] Failed to check privacy:', JSON.stringify(err))
       // 读取失败时也展示弹窗，确保合规
-      this.showPrivacyDialog = true
+      should = true
+    }
+    if (should) {
       this.openPrivacyDialog()
     }
   }
@@ -36,8 +37,11 @@ struct HomePage {
     this.privacyDialogController = new CustomDialogController({
       builder: PrivacyDialog({
         onAgree: () => {
-          this.showPrivacyDialog = false
-          this.viewModel.acceptPrivacy()
+          PrivacyConsent.accept().then((saved: boolean) => {
+            if (!saved) {
+              console.error('[HomePage] 隐私同意状态写盘失败')
+            }
+          })
         },
         onClose: (): void => {
           // 关闭兜底：用本页持有的控制器引用关弹窗（Pura X 注入的 controller 可能为 undefined）
@@ -63,7 +67,7 @@ struct HomePage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -73,7 +77,7 @@ struct HomePage {
       Column()
         .width('100%')
         .height('100%')
-        .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+        .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
         .overlay(this.GlowOverlay)
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
 
@@ -109,36 +113,39 @@ struct HomePage {
         .position({ x: '50%', y: '73%' })
         .translate({ x: '-50%', y: '-50%' })
 
-      // 主按钮
-      Row() {
-        Image($rawfile('props/yuanbao.png'))
-          .width(26)
-          .height(26)
-          .objectFit(ImageFit.Contain)
-        Text('开始祈福')
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a0a')
-          .margin({ left: 10 })
+      // 主按钮（审核整改 2026-11-15：祈福流程下线，按钮隐藏；本页现无路由可达，
+      // 此处为防御性隐藏——若未来恢复注册本页，也不会出现祈福入口）
+      if (PRAYER_FLOW_VISIBLE) {
+        Row() {
+          Image($rawfile('props/yuanbao.png'))
+            .width(26)
+            .height(26)
+            .objectFit(ImageFit.Contain)
+          Text('开始祈福')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#1a1a0a')
+            .margin({ left: 10 })
+        }
+        .justifyContent(FlexAlign.Center)
+        .padding({ left: 20, right: 36, top: 10, bottom: 10 })
+        .backgroundColor('#FFD700')
+        .borderRadius(25)
+        .shadow({
+          radius: 20,
+          color: 'rgba(255, 209, 0, 0.4)',
+          offsetY: 4
+        })
+        .onClick(() => {
+          this.viewModel.startPrayer()
+          // 延迟导航到下一帧，让按钮点击反馈先渲染
+          setTimeout(() => {
+            this.getUIContext().getRouter().pushUrl({ url: 'pages/NameCard' }, router.RouterMode.Standard)
+          }, 0)
+        })
+        .position({ x: '50%', y: '82%' })
+        .translate({ x: '-50%', y: '-50%' })
       }
-      .justifyContent(FlexAlign.Center)
-      .padding({ left: 20, right: 36, top: 10, bottom: 10 })
-      .backgroundColor('#FFD700')
-      .borderRadius(25)
-      .shadow({
-        radius: 20,
-        color: 'rgba(255, 209, 0, 0.4)',
-        offsetY: 4
-      })
-      .onClick(() => {
-        this.viewModel.startPrayer()
-        // 延迟导航到下一帧，让按钮点击反馈先渲染
-        setTimeout(() => {
-          this.getUIContext().getRouter().pushUrl({ url: 'pages/NameCard' }, router.RouterMode.Standard)
-        }, 0)
-      })
-      .position({ x: '50%', y: '82%' })
-      .translate({ x: '-50%', y: '-50%' })
 
       // 左滑提示
       Text('← 左滑查看祈福记录')

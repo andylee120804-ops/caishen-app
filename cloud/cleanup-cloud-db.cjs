@@ -7,14 +7,19 @@
 //   node cloud/cleanup-cloud-db.cjs           # 先只统计，不删除
 //   node cloud/cleanup-cloud-db.cjs --yes     # 统计后删除（需二次回车确认）
 //   node cloud/cleanup-cloud-db.cjs --yes --force  # 跳过交互确认（CI / 已人工确认场景）
+//   node cloud/cleanup-cloud-db.cjs --yes --force --include-donation
+//                                                 # 同时清空公益榜（Donation 流水 + UserMerit 累计）
+//                                                 # 默认不删：Donation 是真实交易流水，不可恢复
 //
 // 前提：cloud/agc-credential.json 为有效 API Client 凭证（关联 Cloud DB），
-//      且 Cloud DB 存储区 'Mashen' 已在 AGC 控制台创建。
-// 安全：只删 Wish / Leaderboard / GameBackup 三个表，全量删除不可恢复，请谨慎执行。
+//      且 Cloud DB 存储区 'Caishen' 已在 AGC 控制台创建。
+// 安全：默认只删 Wish / Leaderboard / GameBackup；加 --include-donation 才删
+//      Donation / UserMerit。全量删除不可恢复，请谨慎执行。
 const { getDB, toPlainObject, withTimeout, DB_TIMEOUT_MS } = require('./shared/db');
 const readline = require('readline');
 
-const TYPES = ['Wish', 'Leaderboard', 'GameBackup'];
+const PUBLIC_TYPES = ['Wish', 'Leaderboard', 'GameBackup'];
+const DONATION_TYPES = ['Donation', 'UserMerit'];
 const BATCH = 50;
 
 function countAll(db, type) {
@@ -47,18 +52,22 @@ function confirm(question) {
 
 async function main() {
   const doDelete = process.argv.includes('--yes');
+  const includeDonation = process.argv.includes('--include-donation');
+  const types = includeDonation ? PUBLIC_TYPES.concat(DONATION_TYPES) : PUBLIC_TYPES;
   const db = getDB();
 
   // 阶段1：统计
   let total = 0;
   const counts = {};
-  for (const type of TYPES) {
+  for (const type of types) {
     const items = await countAll(db, type);
     counts[type] = items ? items.length : 0;
     total += counts[type];
     console.log(`[cleanup] ${type}: ${counts[type]} 条`);
   }
-  console.log(`[cleanup] 合计 ${total} 条（Wish=心愿, Leaderboard=祈福排行榜记录, GameBackup=牌局记录备份）`);
+  const names = 'Wish=心愿, Leaderboard=祈福排行榜记录, GameBackup=牌局记录备份'
+    + (includeDonation ? ', Donation=打赏流水, UserMerit=公益榜累计' : '');
+  console.log(`[cleanup] 合计 ${total} 条（${names}）`);
 
   if (total === 0) {
     console.log('[cleanup] 云端无测试数据，无需清理 ✅');
@@ -75,7 +84,7 @@ async function main() {
   }
 
   // 阶段2：分批删除（query 一次最多返回 BATCH 条，循环直到删完）
-  for (const type of TYPES) {
+  for (const type of types) {
     let removed = 0;
     for (;;) {
       const items = await withTimeout(
@@ -93,10 +102,15 @@ async function main() {
   console.log('[cleanup] 完成：请到 AGC 控制台 Cloud DB 复查两表已清空');
 }
 
-main().catch((err) => {
-  console.error('[cleanup] 失败:', err && err.message);
-  if (err && err.response && err.response.data) {
-    console.error('[cleanup] 服务端响应:', JSON.stringify(err.response.data));
-  }
-  process.exit(1);
-});
+main()
+  .then(() => {
+    // SDK 会保持连接/定时器打开，脚本跑完不会自动退出，必须显式结束进程
+    process.exit(0);
+  })
+  .catch((err) => {
+    console.error('[cleanup] 失败:', err && err.message);
+    if (err && err.response && err.response.data) {
+      console.error('[cleanup] 服务端响应:', JSON.stringify(err.response.data));
+    }
+    process.exit(1);
+  });

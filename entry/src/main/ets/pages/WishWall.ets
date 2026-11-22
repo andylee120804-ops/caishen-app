@@ -3,6 +3,7 @@
 import { Wish } from '../model/EnrichTypes'
 import { CloudService } from '../service/CloudService'
 import { WishItem } from '../components/WishItem'
+import { WishWallBackground } from '../components/WishWallBackground'
 import { PageBack } from '../components/PageBack'
 import { router } from '@kit.ArkUI'
 
@@ -59,18 +60,14 @@ export struct WishWallPage {
       this.getUIContext().getPromptAction().showToast({ message: errMsg })
     }
   }
-  @Builder
-  GlowOverlay() {
-    Column()
-      .width('100%')
-      .height('100%')
-      .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
-  }
-
-
   build() {
-    Column() {
+    Stack({ alignContent: Alignment.Top }) {
+      // 背景：许愿墙底图（Q版卡通红墙 + 檐口双灯笼）+ 愿火光点
+      WishWallBackground()
+        .width('100%')
+        .height('100%')
+
+      Column() {
       // 标题 + 刷新按钮（独立模式返回键并入同行且标题居中；Tab 模式标题左对齐）
       Row() {
         if (this.standalone) {
@@ -168,15 +165,20 @@ export struct WishWallPage {
           .fontColor('rgba(253, 246, 227, 0.75)')
           .width('100%')
           .textAlign(TextAlign.Center)
-          .padding({ top: 4, bottom: 16 })
+          .padding({ top: 4 })
+          // 根容器已 expandSafeArea 到底，检测取的是控件外框：必须用 margin
+          // 把外框抬离屏底 ≥28vp（padding 只会内缩文字，外框仍贴底）
+          .margin({ bottom: 32 })
       }
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
-    .overlay(this.GlowOverlay)
-    .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }
+  .width('100%')
+  .height('100%')
+  .backgroundColor('#120800')
+  .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
+}
 
   /** 未还愿排前，已还愿排后 */
   private getSortedWishes(): Wish[] {

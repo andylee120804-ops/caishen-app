@@ -213,9 +213,9 @@ export class IapPaymentService implements IExtraDrawService, ITipService, IDecor
       if (e.code === ERR_REGION_UNSUPPORTED) {
         throw new PaymentError(PaymentErrorKind.REGION, '当前地区暂不支持', e.code)
       }
-      // 未知环境错误：显式记录错误码（BusinessError.message 可能不带码，丢了无法定位）
+      // 未知环境错误：显式记录错误码并透出（BusinessError.message 可能不带码，丢了无法定位）
       console.error('[IapPay] queryEnvironmentStatus failed: code=' + e.code + ' msg=' + e.message)
-      throw new Error('支付环境检查失败：' + e.message)
+      throw new PaymentError(PaymentErrorKind.UNKNOWN, '支付环境检查失败：' + e.message, e.code)
     }
 
     // ② 拉起收银台（消耗型：购买成功后必须 finishPurchase 消耗，否则不能再买同档）
@@ -245,9 +245,9 @@ export class IapPaymentService implements IExtraDrawService, ITipService, IDecor
         // 消耗型同商品有未完成订单（上次购买成功未消耗）→ 调用方先走补单再决定是否提示
         throw new PaymentError(PaymentErrorKind.ALREADY_OWNED, '检测到未完成的支付订单', e.code)
       }
-      // 未知购买错误：错误码必须落日志（grep IapPay 定位），UI 只显示笼统提示
+      // 未知购买错误：错误码必须落日志并透出（grep IapPay 定位），UI 显示带码提示
       console.error('[IapPay] createPurchase failed: code=' + e.code + ' msg=' + e.message)
-      throw new Error('购买失败：' + e.message)
+      throw new PaymentError(PaymentErrorKind.UNKNOWN, '购买失败：' + e.message, e.code)
     }
 
     // productId 兜底：JWS 载荷解析不出（异常版本）时，入参即权威值

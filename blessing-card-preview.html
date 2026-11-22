@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祈福卡视觉方案 · 6 选 1</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #0d0d0d;
+    color: #eee;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    min-height: 100vh;
+  }
+  .page { padding: 42px 40px 60px; }
+  .page-head { text-align: center; margin-bottom: 34px; }
+  .page-head h1 {
+    margin: 0;
+    font-family: "STXingkai", "STKaiti", "KaiTi", serif;
+    font-size: 34px;
+    font-weight: 400;
+    letter-spacing: 8px;
+    color: #e8c25a;
+  }
+  .page-head p {
+    margin: 10px 0 0;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: #8f8a7d;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 360px);
+    gap: 42px 34px;
+    justify-content: center;
+  }
+  .item { display: flex; flex-direction: column; gap: 10px; }
+  .label {
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #d8c38a;
+    padding-left: 2px;
+  }
+  .label small { color: #7e7b70; font-size: 11px; letter-spacing: 1px; margin-left: 8px; }
+
+  /* ============ 通用卡片 ============ */
+  .card {
+    position: relative;
+    width: 360px;
+    height: 480px;
+    overflow: hidden;
+    border-radius: 10px;
+    isolation: isolate;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.55), 0 2px 0 rgba(255, 255, 255, 0.04) inset;
+    color: #fdf6e3;
+  }
+  .frame {
+    position: absolute;
+    inset: 13px;
+    border: 1.5px solid var(--gold, #d4af37);
+    opacity: 0.78;
+    pointer-events: none;
+  }
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border: 1px solid var(--gold, #d4af37);
+    opacity: 0.42;
+  }
+  .corner {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-color: var(--gold, #d4af37);
+    border-style: solid;
+    opacity: 0.9;
+    pointer-events: none;
+  }
+  .corner::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--gold, #d4af37);
+    transform: rotate(45deg);
+  }
+  .tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+  .tl::after { top: 5px; left: 5px; }
+  .tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+  .tr::after { top: 5px; right: 5px; }
+  .bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+  .bl::after { bottom: 5px; left: 5px; }
+  .br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+  .br::after { bottom: 5px; right: 5px; }
+
+  .content {
+    position: absolute;
+    inset: 0;
+    padding: 38px 34px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+  }
+  .mark {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold, #d4af37);
+    opacity: 0.86;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .deity-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 12px 5px 6px;
+    border: 1px solid rgba(232, 194, 90, 0.38);
+    border-radius: 40px;
+    background: rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+    white-space: nowrap;
+  }
+  .deity-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 1.5px solid var(--gold, #d4af37);
+    background: radial-gradient(circle at 50% 38%, rgba(255, 220, 120, 0.26), rgba(0, 0, 0, 0.18));
+    box-shadow: 0 0 16px rgba(232, 194, 90, 0.18);
+    overflow: hidden;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .deity-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transform: scale(1.08);
+  }
+  .deity-info { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+  .deity-label {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--gold, #d4af37);
+    opacity: 0.86;
+  }
+  .deity-name {
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #fff8e7;
+    line-height: 1.15;
+  }
+  .c2 .deity-badge {
+    align-self: flex-end;
+    background: rgba(255, 255, 255, 0.32);
+    border-color: rgba(154, 107, 31, 0.42);
+    box-shadow: none;
+  }
+  .c2 .deity-avatar {
+    border-color: #9a6b1f;
+    background: radial-gradient(circle at 50% 38%, rgba(255, 255, 255, 0.62), rgba(154, 107, 31, 0.16));
+    box-shadow: none;
+  }
+  .c2 .deity-label { color: #6b4e22; }
+  .c2 .deity-name { color: #241a10; }
+  .c2-deity-wrap {
+    align-self: flex-end;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 7px;
+  }
+  .c2-date {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #6b4e22;
+    opacity: 0.86;
+  }
+  .title {
+    font-family: "STXingkai", "STKaiti", "KaiTi", serif;
+    font-weight: 400;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .gold-text {
+    background: linear-gradient(180deg, #fff7c9 0%, #f0d27a 35%, #c89b3c 62%, #f7e6a4 82%, #b8860b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 0 rgba(74, 35, 0, 0.28));
+  }
+  .meta {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    opacity: 0.72;
+    margin-top: 8px;
+  }
+  .divider {
+    width: 72%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0 14px;
+    color: var(--gold, #d4af37);
+    opacity: 0.75;
+  }
+  .divider span { height: 1px; flex: 1; background: currentColor; opacity: 0.55; }
+  .divider b { font-size: 9px; font-weight: 400; }
+  .panel {
+    width: 100%;
+    padding: 20px 10px 18px;
+    background: rgba(30, 0, 3, 0.28);
+    border: 1px solid rgba(232, 194, 90, 0.42);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    position: relative;
+  }
+  .panel::before, .panel::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--gold, #d4af37);
+    opacity: 0.7;
+  }
+  .panel::before { top: 4px; left: 4px; border-width: 1px 0 0 1px; }
+  .panel::after { bottom: 4px; right: 4px; border-width: 0 1px 1px 0; }
+  .blessing {
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 25px;
+    line-height: 1.72;
+    letter-spacing: 2px;
+    text-align: center;
+    color: #fff8e7;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  }
+  .footer {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 12px;
+    letter-spacing: 5px;
+    color: var(--gold, #d4af37);
+    margin-top: 16px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .brand {
+    font-family: "STSong", "SimSun", serif;
+    font-size: 8px;
+    letter-spacing: 3px;
+    opacity: 0.5;
+    margin-top: 7px;
+    text-align: center;
+  }
+  .seal {
+    position: absolute;
+    right: 30px;
+    bottom: 32px;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #b3261e;
+    border: 2px solid #fdf6e3;
+    border-radius: 3px;
+    color: #fdf6e3;
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 24px;
+    line-height: 1;
+    transform: rotate(-8deg);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25), inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+    z-index: 3;
+  }
+  .shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 34%, rgba(255, 255, 255, 0.12) 47%, transparent 61%);
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 300px;
+    line-height: 1;
+    color: rgba(232, 194, 90, 0.055);
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+  }
+  .cloud { position: absolute; color: var(--gold, #d4af37); opacity: 0.26; pointer-events: none; z-index: 1; }
+  .coin-ico { width: 30px; height: 30px; color: var(--gold, #d4af37); opacity: 0.88; }
+  .ingot-ico { width: 52px; height: 32px; color: var(--gold, #d4af37); opacity: 0.92; }
+  .icons { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 13px; height: 34px; }
+
+  /* ============ 方案一 · 朱砂金榜 ============ */
+  .c1 {
+    --gold: #e8c25a;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #b82333 0%, #941526 38%, #6a0b18 70%, #3c030b 100%);
+  }
+  .c1 .title { font-size: 44px; letter-spacing: 9px; margin-top: 10px; }
+  .c1 .mark { margin-top: 2px; }
+  .c1 .tl-cloud { width: 132px; height: 58px; top: 28px; left: -14px; transform: rotate(-8deg); }
+  .c1 .br-cloud { width: 150px; height: 66px; bottom: 44px; right: -24px; transform: rotate(172deg); }
+  .c1 .panel { margin-top: 2px; }
+  .c1 .footer { margin-top: 14px; }
+
+  /* ============ 方案二 · 宣纸墨金 ============ */
+  .c2 {
+    --gold: #a87922;
+    color: #2b2118;
+    background:
+      radial-gradient(ellipse at 18% 8%, rgba(255, 255, 255, 0.85), transparent 52%),
+      radial-gradient(ellipse at 84% 92%, rgba(122, 86, 34, 0.14), transparent 58%),
+      repeating-linear-gradient(0deg, rgba(110, 80, 35, 0.038) 0 1px, transparent 1px 4px),
+      repeating-linear-gradient(90deg, rgba(110, 80, 35, 0.022) 0 1px, transparent 1px 7px),
+      #efe4ca;
+  }
+  .c2 .frame { border-color: #9a6b1f; opacity: 0.7; }
+  .c2 .frame::before { border-color: #9a6b1f; opacity: 0.35; }
+  .c2 .corner { border-color: #9a6b1f; }
+  .c2 .corner::after { background: #9a6b1f; }
+  .c2 .vertical-title {
+    position: absolute;
+    top: 66px;
+    left: 38px;
+    writing-mode: vertical-rl;
+    font-family: "STXingkai", "STKaiti", "KaiTi", serif;
+    font-size: 56px;
+    letter-spacing: 12px;
+    color: #241a10;
+    z-index: 3;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  .c2 .vertical-sub {
+    position: absolute;
+    top: 68px;
+    left: 100px;
+    writing-mode: vertical-rl;
+    font-family: "STSong", "SimSun", serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #6b4e22;
+    opacity: 0.78;
+    z-index: 3;
+  }
+  .c2 .content {
+    padding: 40px 32px 30px 124px;
+    align-items: flex-start;
+  }
+  .c2 .mark {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #6b4e22;
+    opacity: 0.9;
+    align-self: flex-end;
+    margin-top: 2px;
+  }
+  .c2 .c2-poem { margin-top: 70px; width: 100%; }
+  .c2 .blessing {
+    font-size: 24px;
+    line-height: 1.85;
+    letter-spacing: 2px;
+    text-align: left;
+    color: #241a10;
+    text-shadow: none;
+    padding-left: 10px;
+    border-left: 2px solid rgba(154, 107, 31, 0.45);
+  }
+  .c2 .c2-footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "STSong", "SimSun", serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #6b4e22;
+    white-space: nowrap;
+  }
+  .c2 .c2-footer .line { height: 1px; flex: 1; background: #9a6b1f; opacity: 0.45; }
+  .c2 .brand { color: #6b4e22; opacity: 0.65; margin-top: 9px; }
+  .c2 .ink-circle {
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    border: 1px solid rgba(43, 33, 24, 0.12);
+    top: 150px;
+    right: -34px;
+    z-index: 1;
+    box-shadow: inset 0 0 0 10px rgba(43, 33, 24, 0.018);
+  }
+  .c2 .ink-cloud { position: absolute; width: 150px; height: 64px; left: -28px; bottom: 66px; color: #6b4e22; opacity: 0.18; z-index: 1; }
+  .c2 .seal { right: 26px; bottom: 72px; background: #a8322a; border-color: #f7ecd4; }
+  .c2 .shimmer { opacity: 0.22; }
+
+  /* ============ 方案三 · 黛蓝鎏金 ============ */
+  .c3 {
+    --gold: #e6c66a;
+    background:
+      radial-gradient(120% 100% at 50% 0%, #2b3f73 0%, #172246 42%, #0b1229 72%, #050814 100%);
+  }
+  .c3 .mark { margin-top: 4px; }
+  .c3 .title { font-size: 40px; letter-spacing: 8px; margin-top: 12px; }
+  .c3 .meta { color: #cfc6ad; }
+  .c3 .panel { background: rgba(5, 9, 22, 0.55); border-color: rgba(230, 198, 106, 0.42); }
+  .c3 .blessing { color: #f8f1dd; }
+  .c3 .stars { position: absolute; inset: 0; width: 100%; height: 100%; color: #f0d98d; opacity: 0.72; z-index: 1; }
+  .c3 .moon {
+    position: absolute;
+    top: 42px;
+    right: 44px;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 34%, #fff8d8 0%, #f2de9f 42%, #c7a75a 100%);
+    box-shadow: 0 0 26px rgba(242, 222, 159, 0.45), 0 0 70px rgba(242, 222, 159, 0.18);
+    z-index: 1;
+    opacity: 0.92;
+  }
+  .c3 .bottom-cloud { width: 210px; height: 90px; left: -30px; bottom: -6px; opacity: 0.18; }
+  .c3 .footer { letter-spacing: 4px; }
+
+  /* ============ 方案四 · 青绿山水 ============ */
+  .c4 {
+    --gold: #e0c06a;
+    background:
+      radial-gradient(110% 90% at 50% 0%, #195741 0%, #0f3d2e 38%, #09291e 68%, #04150f 100%);
+  }
+  .c4 .title { font-size: 40px; letter-spacing: 8px; margin-top: 12px; }
+  .c4 .panel { background: rgba(3, 22, 16, 0.48); border-color: rgba(224, 192, 106, 0.4); }
+  .c4 .mountains { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 190px; color: #d9ba66; z-index: 1; }
+  .c4 .sun {
+    position: absolute;
+    top: 44px;
+    left: 48px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 36%, #fff7d2 0%, #efd795 45%, #c7a54e 100%);
+    box-shadow: 0 0 30px rgba(239, 215, 149, 0.34);
+    opacity: 0.9;
+    z-index: 1;
+  }
+  .c4 .top-cloud { width: 150px; height: 64px; top: 34px; right: -26px; opacity: 0.2; transform: rotate(6deg); }
+  .c4 .footer { letter-spacing: 4px; }
+  .c3 .footer, .c4 .footer, .c5 .footer { margin-top: auto; }
+
+  /* ============ 方案五 · 绛紫祥云 ============ */
+  .c5 {
+    --gold: #e7c873;
+    background:
+      radial-gradient(120% 100% at 50% 0%, #5a2775 0%, #3b144e 40%, #220a31 72%, #100317 100%);
+  }
+  .c5 .title { font-size: 40px; letter-spacing: 8px; margin-top: 12px; }
+  .c5 .panel { background: rgba(24, 4, 34, 0.5); border-color: rgba(231, 200, 115, 0.42); }
+  .c5 .cloud-medallion {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -46%);
+    color: #e7c873;
+    opacity: 0.15;
+    z-index: 0;
+  }
+  .c5 .side-cloud { width: 140px; height: 60px; top: 48px; right: -30px; opacity: 0.2; transform: rotate(8deg); }
+  .c5 .footer { letter-spacing: 4px; }
+  .c5 .seal { background: #9e2b2b; }
+
+  /* ============ 方案六 · 玄黑鎏金 ============ */
+  .c6 {
+    --gold: #d9b65a;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #2e2719 0%, #17130c 42%, #0a0805 74%, #030302 100%);
+  }
+  .c6 .frame { border-color: #d9b65a; opacity: 0.62; }
+  .c6 .frame::before { border-color: #d9b65a; opacity: 0.28; }
+  .c6 .corner { border-color: #d9b65a; }
+  .c6 .corner::after { background: #d9b65a; }
+  .c6 .huge-fu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -52%);
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 270px;
+    line-height: 1;
+    opacity: 0.055;
+    z-index: 0;
+  }
+  .c6 .hui-band { position: absolute; left: 13px; right: 13px; height: 30px; color: #d9b65a; opacity: 0.34; z-index: 1; }
+  .c6 .hui-top { top: 13px; }
+  .c6 .hui-bottom { bottom: 13px; transform: rotate(180deg); }
+  .c6 .content { padding: 46px 34px 34px; }
+  .c6 .mark { margin-top: 2px; }
+  .c6 .c6-title {
+    font-family: "STXingkai", "STKaiti", "KaiTi", serif;
+    font-size: 64px;
+    line-height: 1;
+    letter-spacing: 4px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+  }
+  .c6 .c6-blessing {
+    font-family: "STKaiti", "KaiTi", serif;
+    font-size: 23px;
+    line-height: 1.75;
+    letter-spacing: 3px;
+    text-align: center;
+    color: #f6eedb;
+    padding: 14px 8px 12px;
+    border-top: 1px solid rgba(217, 182, 90, 0.42);
+    border-bottom: 1px solid rgba(217, 182, 90, 0.42);
+    width: 100%;
+  }
+  .c6 .footer { margin-top: 16px; }
+  .c6 .seal { background: #a52b24; }
+</style>
+</head>
+<body>
+<!-- SVG 图形库 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="cloud" viewBox="0 0 160 70">
+      <path d="M18 51c0-11 8-19 19-19 3-14 15-23 30-21 11 1 20 9 23 19 10 1 18 9 18 20 0 11-9 20-20 20H38c-11 0-20-9-20-20z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M38 51c-6 0-10-4-10-10s4-10 10-10 10 4 10 10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M96 51c-6 0-10-4-10-10s4-10 10-10 10 4 10 10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M58 31c2-7 8-12 15-13" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".7"/>
+    </symbol>
+    <symbol id="coin" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="21" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="24" cy="24" r="17" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+      <rect x="17" y="17" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"/>
+    </symbol>
+    <symbol id="ingot" viewBox="0 0 100 60">
+      <path d="M10 43c7-20 22-31 40-31s33 11 40 31c-10 9-24 14-40 14S20 52 10 43z" fill="currentColor" opacity=".9"/>
+      <path d="M28 27c5-10 13-15 22-15s17 5 22 15" fill="none" stroke="#fff5c8" stroke-width="2" opacity=".55"/>
+      <ellipse cx="50" cy="43" rx="38" ry="6" fill="none" stroke="#fff5c8" stroke-width="1.4" opacity=".35"/>
+    </symbol>
+    <symbol id="mountain" viewBox="0 0 360 190">
+      <path d="M0 178 L48 104 L88 132 L146 54 L205 120 L258 68 L312 132 L360 88 L360 190 L0 190 Z" fill="none" stroke="currentColor" stroke-width="1.6" opacity=".62"/>
+      <path d="M0 190 L64 128 L116 156 L180 96 L244 150 L304 112 L360 154 L360 190 Z" fill="currentColor" opacity=".1"/>
+      <path d="M0 190 L82 150 L138 172 L206 128 L272 170 L326 146 L360 170 L360 190 Z" fill="currentColor" opacity=".08"/>
+    </symbol>
+    <symbol id="cloud-medallion" viewBox="0 0 300 300">
+      <circle cx="150" cy="150" r="142" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/>
+      <circle cx="150" cy="150" r="120" fill="none" stroke="currentColor" stroke-width=".8" opacity=".35"/>
+      <path d="M55 160c0-20 15-36 35-36 5-26 28-44 56-40 21 2 38 17 43 36 19 2 34 17 34 37 0 20-17 37-38 37H93c-21 0-38-14-38-34z" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M93 160c-11 0-19-8-19-19s8-19 19-19 19 8 19 19" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M203 160c-11 0-19-8-19-19s8-19 19-19 19 8 19 19" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M55 220c24-14 52-20 95-20s71 6 95 20" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+      <path d="M70 245c22-10 47-15 80-15s58 5 80 15" fill="none" stroke="currentColor" stroke-width=".8" opacity=".4"/>
+    </symbol>
+    <symbol id="stars" viewBox="0 0 360 220">
+      <path d="M28 180 L78 118 L128 150 L190 62 L252 122 L322 48" fill="none" stroke="currentColor" stroke-width=".8" opacity=".38"/>
+      <path d="M78 118 L118 72 L190 62" fill="none" stroke="currentColor" stroke-width=".6" opacity=".25"/>
+      <circle cx="28" cy="180" r="2.2" fill="currentColor"/>
+      <circle cx="78" cy="118" r="1.6" fill="currentColor"/>
+      <circle cx="128" cy="150" r="1.4" fill="currentColor"/>
+      <circle cx="190" cy="62" r="2.4" fill="currentColor"/>
+      <circle cx="252" cy="122" r="1.5" fill="currentColor"/>
+      <circle cx="322" cy="48" r="2" fill="currentColor"/>
+      <circle cx="118" cy="72" r="1.2" fill="currentColor"/>
+      <circle cx="42" cy="72" r="1.2" fill="currentColor" opacity=".7"/>
+      <circle cx="302" cy="166" r="1.4" fill="currentColor" opacity=".6"/>
+      <circle cx="218" cy="190" r="1.2" fill="currentColor" opacity=".55"/>
+      <circle cx="146" cy="196" r="1" fill="currentColor" opacity=".5"/>
+    </symbol>
+    <pattern id="hui-pattern" width="26" height="26" patternUnits="userSpaceOnUse">
+      <path d="M2 24V6h18v12H9v-5h7" fill="none" stroke="currentColor" stroke-width="1.1"/>
+    </pattern>
+  </defs>
+</svg>
+
+<div class="page">
+  <div class="page-head">
+    <h1>祈福卡 · 视觉方案</h1>
+    <p>六种传统祈福风格 · 同文案同尺寸对比</p>
+  </div>
+
+  <div class="grid">
+    <!-- 方案一 -->
+    <div class="item">
+      <div class="label">方案一 · 朱砂金榜 <small>红金 · 经典财神</small></div>
+      <div class="card c1">
+        <div class="watermark">福</div>
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <svg class="cloud tl-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <svg class="cloud br-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="deity-badge">
+            <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+            <div class="deity-info">
+              <div class="deity-label">今日主財神 · 北路</div>
+              <div class="deity-name">赵公明</div>
+            </div>
+          </div>
+          <div class="title gold-text">財神賜福</div>
+          <div class="meta">丙午年 · 九月吉日</div>
+          <div class="divider"><span></span><b>◆</b><span></span></div>
+          <div class="panel">
+            <div class="blessing">愿家人平安顺遂<br>财源广进</div>
+          </div>
+          <div class="icons">
+            <svg class="coin-ico" viewBox="0 0 48 48"><use href="#coin"/></svg>
+            <svg class="ingot-ico" viewBox="0 0 100 60"><use href="#ingot"/></svg>
+            <svg class="coin-ico" viewBox="0 0 48 48"><use href="#coin"/></svg>
+          </div>
+          <div class="footer">心诚则灵 · 福禄双至</div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">賜</div>
+      </div>
+    </div>
+
+    <!-- 方案二 -->
+    <div class="item">
+      <div class="label">方案二 · 宣纸墨金 <small>宣纸 · 书法留白</small></div>
+      <div class="card c2">
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="vertical-title">祈福</div>
+        <div class="vertical-sub">五路財神</div>
+        <div class="ink-circle"></div>
+        <svg class="ink-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="c2-deity-wrap">
+            <div class="c2-date">丙午年 · 九月吉日</div>
+            <div class="deity-badge">
+              <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+              <div class="deity-info">
+                <div class="deity-label">今日主財神 · 北路</div>
+                <div class="deity-name">赵公明</div>
+              </div>
+            </div>
+          </div>
+          <div class="c2-poem">
+            <div class="blessing">愿家人平安顺遂<br>财源广进</div>
+          </div>
+          <div class="c2-footer">
+            <span class="line"></span>
+            <span>心诚则灵 · 福禄双至</span>
+            <span class="line"></span>
+          </div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">福</div>
+      </div>
+    </div>
+
+    <!-- 方案三 -->
+    <div class="item">
+      <div class="label">方案三 · 黛蓝鎏金 <small>星河 · 天官赐福</small></div>
+      <div class="card c3">
+        <div class="moon"></div>
+        <svg class="stars" viewBox="0 0 360 220" preserveAspectRatio="xMidYMin slice"><use href="#stars"/></svg>
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <svg class="cloud bottom-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="deity-badge">
+            <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+            <div class="deity-info">
+              <div class="deity-label">今日主財神 · 北路</div>
+              <div class="deity-name">赵公明</div>
+            </div>
+          </div>
+          <div class="title gold-text">天官賜福</div>
+          <div class="meta">五路財神 · 丙午年九月吉日</div>
+          <div class="divider"><span></span><b>◆</b><span></span></div>
+          <div class="panel">
+            <div class="blessing">愿家人平安顺遂<br>财源广进</div>
+          </div>
+          <div class="footer">星月同輝 · 財源廣進</div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">財</div>
+      </div>
+    </div>
+
+    <!-- 方案四 -->
+    <div class="item">
+      <div class="label">方案四 · 青绿山水 <small>青绿 · 山水纳福</small></div>
+      <div class="card c4">
+        <div class="sun"></div>
+        <svg class="cloud top-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <svg class="mountains" viewBox="0 0 360 190" preserveAspectRatio="xMidYMax slice"><use href="#mountain"/></svg>
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="deity-badge">
+            <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+            <div class="deity-info">
+              <div class="deity-label">今日主財神 · 北路</div>
+              <div class="deity-name">赵公明</div>
+            </div>
+          </div>
+          <div class="title gold-text">山水納福</div>
+          <div class="meta">五路財神 · 丙午年九月吉日</div>
+          <div class="divider"><span></span><b>◆</b><span></span></div>
+          <div class="panel">
+            <div class="blessing">愿家人平安顺遂<br>财源广进</div>
+          </div>
+          <div class="footer">山高水長 · 福澤綿長</div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">吉</div>
+      </div>
+    </div>
+
+    <!-- 方案五 -->
+    <div class="item">
+      <div class="label">方案五 · 绛紫祥云 <small>紫气 · 祥云瑞霭</small></div>
+      <div class="card c5">
+        <svg class="cloud-medallion" viewBox="0 0 300 300"><use href="#cloud-medallion"/></svg>
+        <svg class="cloud side-cloud" viewBox="0 0 160 70"><use href="#cloud"/></svg>
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="deity-badge">
+            <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+            <div class="deity-info">
+              <div class="deity-label">今日主財神 · 北路</div>
+              <div class="deity-name">赵公明</div>
+            </div>
+          </div>
+          <div class="title gold-text">紫氣東來</div>
+          <div class="meta">五路財神 · 丙午年九月吉日</div>
+          <div class="divider"><span></span><b>◆</b><span></span></div>
+          <div class="panel">
+            <div class="blessing">愿家人平安顺遂<br>财源广进</div>
+          </div>
+          <div class="footer">祥雲瑞氣 · 福澤綿長</div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">祥</div>
+      </div>
+    </div>
+
+    <!-- 方案六 -->
+    <div class="item">
+      <div class="label">方案六 · 玄黑鎏金 <small>黑金 · 极简大气</small></div>
+      <div class="card c6">
+        <div class="huge-fu gold-text">福</div>
+        <svg class="hui-band hui-top" preserveAspectRatio="none"><rect x="0" y="0" width="100%" height="30" fill="url(#hui-pattern)"/></svg>
+        <svg class="hui-band hui-bottom" preserveAspectRatio="none"><rect x="0" y="0" width="100%" height="30" fill="url(#hui-pattern)"/></svg>
+        <div class="frame"></div>
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <div class="shimmer"></div>
+        <div class="content">
+          <div class="deity-badge">
+            <div class="deity-avatar"><img src="entry/src/main/resources/rawfile/deities/5.png" alt="赵公明"></div>
+            <div class="deity-info">
+              <div class="deity-label">今日主財神 · 北路</div>
+              <div class="deity-name">赵公明</div>
+            </div>
+          </div>
+          <div class="c6-title gold-text">福</div>
+          <div class="meta">丙午年 · 九月吉日</div>
+          <div class="divider"><span></span><b>◆</b><span></span></div>
+          <div class="c6-blessing">愿家人平安顺遂<br>财源广进</div>
+          <div class="footer">心誠則靈 · 福祿雙至</div>
+          <div class="brand">财神保佑 · 电子祈福卡</div>
+        </div>
+        <div class="seal">財</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  // 截图模式：?only=1..6，页面只显示一张 360×480 卡片，body 放大 2 倍
+  const only = new URLSearchParams(location.search).get('only');
+  if (only) {
+    const idx = Math.max(1, Math.min(6, Number(only))) - 1;
+    const items = [...document.querySelectorAll('.item')];
+    items.forEach((it, i) => { if (i !== idx) it.style.display = 'none'; });
+    document.querySelector('.page-head').style.display = 'none';
+    const page = document.querySelector('.page');
+    page.style.padding = '0';
+    page.style.width = '360px';
+    page.style.height = '480px';
+    const grid = document.querySelector('.grid');
+    grid.style.display = 'block';
+    grid.style.width = '360px';
+    grid.style.height = '480px';
+    grid.style.gap = '0';
+    const item = items[idx];
+    item.style.display = 'block';
+    item.style.gap = '0';
+    item.querySelector('.label').style.display = 'none';
+    document.body.style.background = '#580E15';
+    document.body.style.margin = '0';
+    document.body.style.width = '360px';
+    document.body.style.height = '480px';
+    document.body.style.zoom = '2';
+    document.documentElement.style.overflow = 'hidden';
+  }
+</script>
+</body>
+</html>

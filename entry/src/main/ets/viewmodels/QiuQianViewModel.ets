@@ -7,14 +7,14 @@
 //   · 解签全文（解签 / 签运速览 / 今日建议）永久免费，页面无任何付费墙；
 //   · 不再有「付费加次数 / 每日上限 5 签」的概念——每天就是 3 签。
 //
-// 【存储位置 2026-10-04】额度与签录存在专属文件 mashen_qiuqian_prefs：
-// 旧位置 mashen_user_prefs 与常驻的 PrayerViewModel 共用，**不能** removePreferencesFromCache，
+// 【存储位置 2026-10-04】额度与签录存在专属文件 caishen_qiuqian_prefs：
+// 旧位置 caishen_user_prefs 与常驻的 PrayerViewModel 共用，**不能** removePreferencesFromCache，
 // 否则跨进程（桌面卡片跑在 caishen.blessing.huawei:form）永远读到本进程的陈旧快照。
 import { preferences } from '@kit.ArkData'
 import { hilog } from '@kit.PerformanceAnalysisKit'
 import { SignEntry, QiuRecord, LEVEL_RANK } from '../model/CultureContent'
 
-const PREF_NAME = 'mashen_qiuqian_prefs'
+const PREF_NAME = 'caishen_qiuqian_prefs'
 const KEY_RECORDS = 'qiuRecords'
 const KEY_DAILY = 'qiuDaily'
 export const FREE_DAILY_QIU = 3     // 每日求签次数（每天固定 3 签，用完明日再来）

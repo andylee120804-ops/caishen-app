@@ -63,28 +63,29 @@ export struct DeityView {
       .scale({ x: this.deityScale, y: this.deityScale })
       .opacity(this.deityOpacity)
 
-      // 财神名号（加柔影，确保在更亮的红底上清晰可读、与背景协调）
-      Text(this.deity.name)
-        .fontSize(this.isHighlight ? 18 : 14)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#FFD700')
-        .shadow({ radius: 4, color: 'rgba(0, 0, 0, 0.35)' })
-        .margin({ top: 8 })
-        .opacity(this.deityOpacity)
+      // 财神名号 + 方位（同处一行：名号加粗、方位小字随其后）
+      // 原「名号」「方位」各占一行，阵型垂直占用过大导致主位圈压上方财神小字；
+      // 合并成一行后省出一行高度，信息不丢。
+      Text() {
+        Span(this.deity.name)
+          .fontSize(this.isHighlight ? 18 : 14)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#FFD700')
+        Span(` · ${this.deity.direction}`)
+          .fontSize(8)
+          .fontColor('rgba(255, 209, 0, 0.65)')
+      }
+      .margin({ top: 8 })
+      .opacity(this.deityOpacity)
 
-      // 方位标签（装饰符包裹，与寓意分层避免长行随意断行）
-      Text(`· ${this.deity.direction} ·`)
-        .fontSize(10)
-        .fontColor('rgba(255, 209, 0, 0.6)')
-        .margin({ top: 4 })
-        .opacity(this.deityOpacity)
-
-      // 财神寓意：四字逗号处换行，两行齐整排列
+      // 财神寓意：逗号处换行成两行齐整排列。
+      // 主位财神字号 10；其余财神像更小（宽 76~86vp），字号降到 8 才能让第二行 9 字完整放下，
+      // 避免最后一个字被挤到第三行（maxLines 2 + 省略号兜底）。
       Text(this.deity.deityMeaning.replace('，', '\n'))
-        .fontSize(10)
+        .fontSize(this.isHighlight ? 10 : 8)
         .fontColor('rgba(253, 246, 227, 0.5)')
         .textAlign(TextAlign.Center)
-        .lineHeight(15)
+        .lineHeight(this.isHighlight ? 15 : 13)
         .margin({ top: 2 })
         .maxLines(2)
         .textOverflow({ overflow: TextOverflow.Ellipsis })

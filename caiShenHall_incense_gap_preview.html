@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>财神殿 · 香柱与神像间距对比预览</title>
+<style>
+  :root {
+    --bg: #1a1a0a;
+    --cream: #fdf6e3;
+    --gold: #ffd700;
+  }
+  body { margin:0; padding:24px; background:#241f12; color:var(--cream); font-family:"Microsoft YaHei",system-ui,sans-serif; }
+  h1 { font-size:18px; margin:0 0 4px; color:var(--gold); }
+  .sub { font-size:12px; opacity:.75; margin-bottom:16px; }
+  .wrap { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; }
+  .frame { border:2px solid rgba(255,209,0,.35); border-radius:14px; background:var(--bg);
+           width:180px; padding:0; overflow:hidden; box-shadow:0 4px 18px rgba(0,0,0,.5); position:relative; }
+  .frame h3 { text-align:center; margin:0; padding:6px 0; font-size:13px; letter-spacing:2px;
+              background:rgba(255,209,0,.12); color:var(--gold); }
+  .screen { position:relative; width:100%; }
+  .seg { width:100%; box-sizing:border-box; display:flex; align-items:center; justify-content:center;
+         font-size:10px; color:rgba(253,246,227,.85); border-top:1px solid rgba(253,246,227,.10); }
+  .seg.pad    { height:22px; background:rgba(60,10,16,.2); }
+  .seg.plaque { height:32px; background:#3c0a10; color:var(--gold); border:1px solid rgba(255,209,0,.55); margin:4px 10px; border-radius:8px; }
+  .seg.deity  { background:rgba(90,20,24,.5); position:relative; }
+  .seg.blank  { background:rgba(253,246,227,.03); border:none; }
+  .seg.censer { position:relative; background:rgba(46,40,16,.55); }
+  .seg.text   { height:8px; background:transparent; border:none; }
+  .seg.ware   { background:rgba(60,10,16,.55); border-radius:10px; margin:3px 12px; }
+  .seg.heart  { height:22px; background:rgba(20,4,6,.5); }
+
+  .deityGlyph { position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+                width:26%; border-radius:8px 8px 4px 4px; background:#c9a24a; box-shadow:0 0 8px rgba(255,209,0,.55); }
+  .censerGlyph { position:absolute; left:50%; top:0; transform:translateX(-50%);
+                 width:34%; height:60%; border-radius:6px 6px 10px 10px; background:#8a1a24; border:1px solid #c9a24a; }
+  .stick { position:absolute; left:50%; width:4px; background:#8a5a34; transform:translateX(-50%); border-radius:2px; }
+  .ember { position:absolute; left:50%; width:6px; height:6px; border-radius:50%; transform:translateX(-50%);
+           background:radial-gradient(circle, #fff3c4, #ff7a34); box-shadow:0 0 6px rgba(255,140,50,.8); }
+
+  .overlap { outline:2px dashed #e74c3c; outline-offset:-2px; position:relative; }
+  .clearTag { position:absolute; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.82);
+              border-radius:10px; padding:2px 8px; font-size:10px; z-index:5; white-space:nowrap; }
+  .clearTag.bad { color:#e74c3c; }
+  .clearTag.good { color:#2ecc71; }
+
+  .ctl { margin:20px 0 8px; }
+  .ctl label { font-size:12px; opacity:.85; margin-right:8px; }
+  .stats { font-size:12px; opacity:.85; margin-top:14px; line-height:1.7; }
+  .stats b { color:var(--gold); }
+  .stats .ok { color:#2ecc71; } .stats .no { color:#e74c3c; }
+</style>
+</head>
+<body>
+<h1>财神殿 · 上香后香柱与神像间距</h1>
+<div class="sub">拖动滑块换屏幕高度（vp），左右对比：香柱上端应明显低于神像下缘。</div>
+
+<div class="ctl">
+  <label>屏幕内容高度</label>
+  <input type="range" id="sh" min="500" max="800" step="10" value="620">
+  <span id="shv" style="font-size:12px;color:var(--gold)"></span>
+</div>
+
+<div class="wrap">
+  <div class="frame" id="frameBefore">
+    <h3>改前</h3>
+    <div class="screen" id="scBefore"></div>
+  </div>
+  <div class="frame" id="frameAfter">
+    <h3>改后</h3>
+    <div class="screen" id="scAfter"></div>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<script>
+  const PAD=44, PLAQUE=64, TEXT=26, HEART=44;
+  const OLD_WARE=124, NEW_WARE=104;
+
+  function seg(tag, cls, h, label){
+    const d=document.createElement('div');
+    d.className='seg '+cls;
+    d.style.height=h+'px';
+    d.textContent=label||'';
+    return d;
+  }
+
+  function build(container, opts){
+    const { screenH, deityPct, deityCap, censerPct, censerCap, stickH } = opts;
+    const stageH = screenH - PAD - PLAQUE - TEXT - HEART - opts.ware;
+    const deityH = Math.min(deityPct/100*stageH, deityCap);
+    const censerCol = Math.min(censerPct/100*stageH, censerCap);
+    const blank = stageH - deityH - censerCol;
+    const clearance = blank - stickH; // stickH = 香柱高出香炉的 28vp
+
+    container.innerHTML='';
+    const screen=container;
+    // 顶部安全距
+    screen.appendChild(seg('pad','pad',PAD,''));
+    screen.appendChild(seg('plaque','plaque',PLAQUE,'財神殿'));
+    // 舞台：神像 + 空隙 + 香炉
+    const deityDiv=seg('deity','deity',deityH,'');
+    const glyph=document.createElement('div'); glyph.className='deityGlyph'; glyph.style.height=(deityH*0.96)+'px';
+    deityDiv.appendChild(glyph);
+    const deityZone=document.createElement('div'); deityZone.appendChild(deityDiv);
+    screen.appendChild(deityDiv);
+
+    // 空隙
+    const blankDiv=seg('blank','blank',Math.max(blank,2),'');
+    screen.appendChild(blankDiv);
+
+    // 香炉列（含供桌+文案）
+    const censerDiv=seg('censer','censer',censerCol,'');
+    const burner=document.createElement('div'); burner.className='censerGlyph';
+    censerDiv.appendChild(burner);
+    // 香柱：从炉口上端往上 28vp（stickH）
+    const stick=document.createElement('div'); stick.className='stick';
+    stick.style.height=(stickH+18)+'px'; // 上端28露出 + 18在炉内
+    stick.style.bottom=(censerCol*0.30)+'px'; // 插在炉口
+    censerDiv.appendChild(stick);
+    const ember=document.createElement('div'); ember.className='ember';
+    ember.style.bottom=(censerCol*0.30+stickH+18-8)+'px';
+    censerDiv.appendChild(ember);
+    screen.appendChild(censerDiv);
+
+    screen.appendChild(seg('text','text',TEXT,''));
+    screen.appendChild(seg('ware','ware',opts.ware,'四件陈设'));
+    screen.appendChild(seg('heart','heart',HEART,'心意值 · 今日上香 · 连续点亮'));
+
+    // 净空标记：画在神像下缘处
+    const tag=document.createElement('div');
+    const bad = clearance < 0;
+    tag.className='clearTag '+(bad?'bad':'good');
+    tag.textContent = bad ? '重叠 ' + Math.abs(clearance).toFixed(0) + 'vp' : '净空 ' + clearance.toFixed(0) + 'vp';
+    tag.style.bottom = (PAD+PLAQUE+deityH+Math.max(blank,0)) + 'px';
+    screen.appendChild(tag);
+
+    if(bad){ deityDiv.classList.add('overlap'); }
+
+    return { stageH, deityH, censerCol, blank, clearance };
+  }
+
+  const sh=document.getElementById('sh');
+  const shv=document.getElementById('shv');
+  const stats=document.getElementById('stats');
+
+  function render(){
+    const screenH=+sh.value;
+    shv.textContent=screenH+'vp';
+
+    const b=build(document.getElementById('scBefore'),{
+      screenH, ware:OLD_WARE, deityPct:60, deityCap:236, censerPct:38, censerCap:140, stickH:28
+    });
+    const a=build(document.getElementById('scAfter'),{
+      screenH, ware:NEW_WARE, deityPct:58, deityCap:220, censerPct:30, censerCap:130, stickH:28
+    });
+
+    stats.innerHTML =
+      '改前：舞台 ' + b.stageH.toFixed(0) + 'vp，神像 ' + b.deityH.toFixed(0) + 'vp，香炉区 ' + b.censerCol.toFixed(0) + 'vp，空隙 ' + b.blank.toFixed(0) + 'vp → 香柱净空 <b class="'+(b.clearance<0?'no':'ok')+'">' + b.clearance.toFixed(0) + 'vp</b><br>' +
+      '改后：舞台 ' + a.stageH.toFixed(0) + 'vp，神像 ' + a.deityH.toFixed(0) + 'vp，香炉区 ' + a.censerCol.toFixed(0) + 'vp，空隙 ' + a.blank.toFixed(0) + 'vp → 香柱净空 <b class="'+(a.clearance<0?'no':'ok')+'">' + a.clearance.toFixed(0) + 'vp</b>';
+  }
+
+  sh.addEventListener('input', render);
+  render();
+</script>
+</body>
+</html>

@@ -1,7 +1,28 @@
 // entry/src/main/ets/viewmodels/EntryConfigVM.ets
 // 界面定制：可配置入口的 Tab 开关与排序（v1.3.0 个性化显示）。
-// 祈福（固定第一个 Tab）与我的（固定最后一个 Tab）不在此配置，不可隐藏。
+// 固定首位 Tab（当前为「财神殿」）与我的（固定最后一个 Tab）不在此配置，不可隐藏。
 import { preferences } from '@kit.ArkData'
+
+/**
+ * 审核整改（2026-11-04）：临时隐藏「祈福」「还愿」两个 Tab。
+ *  · 固定首位 Tab 由「祈福」改为「财神殿」，见 MainTabs.FIXED_FIRST_TAB_ID；
+ *    祈福页（BlessingSquare → NameCard 流程）保留在工程中，仅从底栏摘下。
+ *  · 下列 id 不再进入可配置入口池：还愿整体下线；财神殿已升为固定首位，
+ *    若仍留在池里会出现两个「财神殿」Tab。
+ *  · 默认可配置 Tab 改为「求签 + 木鱼」，见 DEFAULT_ITEMS / migrateDefaults(v5)。
+ *
+ * 审核整改（2026-11-15）：「leaderboard」（祈福排行榜）一并下线——
+ * 审核结论不允许出现祈福页面，而该页标题与空态文案（快去祈福…）均含「祈福」，
+ * 且排名数据来自磕头祈福计数。页面保留在工程中，仅从入口池摘下。
+ * 恢复上线：清空此数组 + 把 MainTabs.FIXED_FIRST_TAB_ID/TITLE 改回 blessing/祈福
+ * + 把 leaderboard 加回 DEFAULT_ITEMS + bump 一次 CURRENT_DEFAULT_VER。
+ */
+export const AUDIT_HIDDEN_ENTRY_IDS: string[] = ['wishwall', 'caishenhall', 'leaderboard']
+
+/** 入口当前是否可作为可配置 Tab / 「我的」功能入口出现 */
+export function isEntryAvailable(id: string): boolean {
+  return AUDIT_HIDDEN_ENTRY_IDS.indexOf(id) < 0
+}
 
 /** 可配置入口静态定义 */
 export interface EntryDef {
@@ -35,33 +56,38 @@ export const ENTRY_POOL: EntryDef[] = [
   // 🎲 骰子：与 🎋🙏🏆 等功能入口同风格。收支记录在「我的」页置顶固定展示、
   // 不随开关消失（MyPage 顶部卡即入口，不入「功能入口」行），开启后额外以底部 Tab 直达。
   { id: 'gamerecord', icon: '🎲', title: '收支记录' },
-  { id: 'caishenhall', icon: '🏯', title: '财神殿' }
+  // 🪙 铜钱兜底 emoji（原 🏯 为日式城堡，不符主题；列表实际显示走自绘 CaiShenHallIcon）
+  { id: 'caishenhall', icon: '🪙', title: '财神殿' }
 ]
 
-/** 中间可配置 Tab 上限（底部导航最多 5 项：祈福 + 3 + 我的） */
+/** 当前可用的可配置入口池（审核整改下线的入口不在此列） */
+export function getAvailableEntryPool(): EntryDef[] {
+  return ENTRY_POOL.filter((d: EntryDef): boolean => isEntryAvailable(d.id))
+}
+
+/** 中间可配置 Tab 上限（底部导航最多 5 项：固定首位 + 3 + 我的） */
 const MAX_TABS = 3
-const PREF_NAME = 'mashen_entry_prefs'
+const PREF_NAME = 'caishen_entry_prefs'
 const KEY_ENTRY_CONFIG = 'entryConfig'
 /** 默认 Tab 版本：老用户已持久化过配置，改 DEFAULT_ITEMS 不会生效，
  *  靠这个标记做一次性补齐（见 migrateDefaults） */
 const KEY_DEFAULT_VER = 'entryDefaultVer'
-const CURRENT_DEFAULT_VER = 4
+const CURRENT_DEFAULT_VER = 5
 /** AppStorage 版本信号：UI v1 下 @StorageLink 只观察顶层键，@Observed 嵌套属性
  *  变更不会自动通知读取方（MainTabs 的 Tab 列表等），每次持久化变更后 +1，
  *  各消费页以 @StorageLink('entryConfigRev') + @Watch 重取派生数据。 */
 const KEY_CONFIG_REV = 'entryConfigRev'
 
-/** 默认配置（v4 起）：祈福 | 财神殿 | 还愿 | 求签 | 我的（底部 5 项上限）；
- *  其余（运势、木鱼、排行榜、百科、收支）走「我的 → 界面定制」按需开启。 */
+/** 默认配置（v5 起，审核整改）：财神殿（固定首位）| 求签 | 木鱼 | 我的（固定末位）；
+ *  其余（运势、百科、收支）走「我的 → 界面定制」按需开启。
+ *  2026-11-15：leaderboard（祈福排行榜）随审核整改下线，从默认表移除
+ *  （见 AUDIT_HIDDEN_ENTRY_IDS 头注释，恢复时需加回本表）。 */
 const DEFAULT_ITEMS: EntryItem[] = [
-  { id: 'caishenhall', enabled: true, order: 1 },
-  { id: 'wishwall', enabled: true, order: 2 },
-  { id: 'qiuqian', enabled: true, order: 3 },
-  { id: 'fortune', enabled: false, order: 4 },
-  { id: 'muyu', enabled: false, order: 5 },
-  { id: 'leaderboard', enabled: false, order: 6 },
-  { id: 'encyclopedia', enabled: false, order: 7 },
-  { id: 'gamerecord', enabled: false, order: 8 }
+  { id: 'qiuqian', enabled: true, order: 1 },
+  { id: 'muyu', enabled: true, order: 2 },
+  { id: 'fortune', enabled: false, order: 3 },
+  { id: 'encyclopedia', enabled: false, order: 5 },
+  { id: 'gamerecord', enabled: false, order: 6 }
 ]
 
 @Observed
@@ -80,7 +106,7 @@ export class EntryConfigVM {
         // 以池为准合并：新增入口补默认值，已下线入口忽略
         // （无存档时保持 DEFAULT_ITEMS，migrateDefaults 仍需执行以写版本标记）
         if (Array.isArray(saved) && saved.length > 0) {
-          this.items = ENTRY_POOL.map((def: EntryDef): EntryItem => {
+          this.items = getAvailableEntryPool().map((def: EntryDef): EntryItem => {
             const found = saved.find((it: EntryItem): boolean => it.id === def.id)
             if (found) {
               return { id: found.id, enabled: found.enabled === true, order: found.order }
@@ -96,17 +122,21 @@ export class EntryConfigVM {
     } catch (err) {
       console.error('[EntryConfigVM] Failed to load prefs:', JSON.stringify(err))
     }
+    // 审核整改：无论有无存档、版本是否已升级，已下线入口都不进入运行时配置
+    this.items = this.items.filter((it: EntryItem): boolean => isEntryAvailable(it.id))
     await this.migrateDefaults()
     this.notifyChanged()
   }
 
   /**
-   * 默认 Tab 一次性升级：v4 起默认底栏 = 祈福 | 财神殿 | 还愿 | 求签 | 我的。
-   * 老设备已存过配置，只改 DEFAULT_ITEMS 不生效，这里按版本标记补齐：
-   *   ① 当前开关仍是历史默认（v1=木鱼+求签 / v2=还愿+求签 / v3=还愿+求签+木鱼，
-   *      说明用户没手动调过）→ 整组换成 v4 默认（财神殿 + 还愿 + 求签 三开）；
-   *   ② 用户手动调过的设备 → 财神殿为常驻强制开启；若因此超出上限，
-   *      关掉 order 最大（除财神殿外）的可配入口，保证底部 Tab 不超过 5 项。
+   * 默认 Tab 一次性升级：v5（审核整改）默认底栏 = 财神殿（固定）| 求签 | 木鱼 | 我的。
+   * 老设备已持久化过配置，只改 DEFAULT_ITEMS 不生效，这里按版本标记强制迁移：
+   *   ① 剔除已下线入口（还愿，以及升为固定首位、不能再留在池里的财神殿），
+   *      否则老存档会让「财神殿」渲染两次、并让「还愿」继续出现在底栏；
+   *   ② 补齐 DEFAULT_ITEMS 中新增的入口；
+   *   ③ 求签、木鱼强制开启并排在可配 Tab 最前（审核期默认组合）；
+   *   ④ 开启总数超过 MAX_TABS 时，按 order 从大到小关掉非默认项，保证底栏 ≤5 项。
+   * 迁移只跑一次（写 KEY_DEFAULT_VER），之后用户仍可在「界面定制」自由调整。
    */
   private async migrateDefaults(): Promise<void> {
     if (!this.dataPrefs) {
@@ -121,41 +151,44 @@ export class EntryConfigVM {
     if (ver >= CURRENT_DEFAULT_VER) {
       return
     }
-    const onIds: string[] = this.items
-      .filter((it: EntryItem): boolean => it.enabled)
-      .map((it: EntryItem): string => it.id)
-      .sort()
-    // 历史默认组合：v1=[木鱼,求签] v2=[还愿,求签] v3=[还愿,求签,木鱼]
-    const legacyDefault: boolean =
-      (onIds.length === 2 && onIds[0] === 'muyu' && onIds[1] === 'qiuqian') ||
-      (onIds.length === 2 && onIds[0] === 'qiuqian' && onIds[1] === 'wishwall') ||
-      (onIds.length === 3 && onIds[0] === 'muyu' && onIds[1] === 'qiuqian' && onIds[2] === 'wishwall')
-    if (legacyDefault) {
-      // 未手动定制过的设备：直接套用 v4 默认（财神殿 + 还愿 + 求签 开启）
-      this.items = this.items.map((it: EntryItem): EntryItem => {
-        const def = DEFAULT_ITEMS.find((d: EntryItem): boolean => d.id === it.id)
-        return def
-          ? { id: def.id, enabled: def.enabled, order: def.order }
-          : { id: it.id, enabled: false, order: it.order }
+    // ① + ②
+    const kept: EntryItem[] = this.items
+      .filter((it: EntryItem): boolean => isEntryAvailable(it.id))
+      .map((it: EntryItem): EntryItem => {
+        return { id: it.id, enabled: it.enabled === true, order: it.order }
       })
-      await this.persist()
-    }
-    // v4 起财神殿为常驻入口，强制开启（所有设备，含手动定制过的老用户）
-    const cs = this.items.find((it: EntryItem): boolean => it.id === 'caishenhall')
-    if (cs !== undefined && !cs.enabled) {
-      cs.enabled = true
-      // 若因此超出中间 Tab 上限（祈福 + 3 + 我的），关闭非财神入口中 order 最大者，保证底部 ≤5 项
-      while (this.tabEnabledCount() > MAX_TABS) {
-        const sorted = [...this.items]
-          .filter((it: EntryItem): boolean => it.enabled && it.id !== 'caishenhall')
-          .sort((a: EntryItem, b: EntryItem): number => b.order - a.order)
-        if (sorted.length === 0) {
-          break
-        }
-        sorted[0].enabled = false
+    for (const def of DEFAULT_ITEMS) {
+      if (!kept.some((it: EntryItem): boolean => it.id === def.id)) {
+        kept.push({ id: def.id, enabled: def.enabled, order: def.order })
       }
-      await this.persist()
     }
+    // ③ 求签、木鱼固定为默认前两位，其余保持用户原有相对顺序
+    const rest: EntryItem[] = kept
+      .filter((it: EntryItem): boolean => it.id !== 'qiuqian' && it.id !== 'muyu')
+      .sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
+    const merged: EntryItem[] = [
+      { id: 'qiuqian', enabled: true, order: 1 },
+      { id: 'muyu', enabled: true, order: 2 }
+    ]
+    rest.forEach((it: EntryItem, i: number): void => {
+      merged.push({ id: it.id, enabled: it.enabled, order: i + 3 })
+    })
+    this.items = merged
+    // ④
+    while (this.tabEnabledCount() > MAX_TABS) {
+      const candidates: EntryItem[] = [...this.items]
+        .filter((it: EntryItem): boolean =>
+          it.enabled && it.id !== 'qiuqian' && it.id !== 'muyu')
+        .sort((a: EntryItem, b: EntryItem): number => b.order - a.order)
+      if (candidates.length === 0) {
+        break
+      }
+      const victim = this.items.find((it: EntryItem): boolean => it.id === candidates[0].id)
+      if (victim !== undefined) {
+        victim.enabled = false
+      }
+    }
+    await this.persist()
     try {
       await this.dataPrefs.put(KEY_DEFAULT_VER, CURRENT_DEFAULT_VER)
       await this.dataPrefs.flush()
@@ -176,6 +209,9 @@ export class EntryConfigVM {
 
   /** 开关入口的 Tab 显示；开启第 MAX_TABS+1 个时拒绝并返回 false */
   setEnabled(id: string, on: boolean): boolean {
+    if (!isEntryAvailable(id)) {
+      return false
+    }
     if (on && this.tabEnabledCount() >= MAX_TABS) {
       return false
     }
@@ -251,17 +287,20 @@ export class EntryConfigVM {
 
 
   tabEnabledCount(): number {
-    return this.items.filter((it: EntryItem): boolean => it.enabled).length
+    return this.items
+      .filter((it: EntryItem): boolean => isEntryAvailable(it.id) && it.enabled)
+      .length
   }
 
   /** 作为 Tab 显示的入口（按 order 升序），供 MainTabs 渲染 */
   getTabEntries(): EntryDef[] {
     const defs: EntryDef[] = []
     const enabled = [...this.items]
+      .filter((it: EntryItem): boolean => isEntryAvailable(it.id))
       .sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
       .filter((it: EntryItem): boolean => it.enabled)
     for (const it of enabled) {
-      const def = ENTRY_POOL.find((d: EntryDef): boolean => d.id === it.id)
+      const def = getAvailableEntryPool().find((d: EntryDef): boolean => d.id === it.id)
       if (def) {
         defs.push(def)
       }
@@ -271,7 +310,9 @@ export class EntryConfigVM {
 
   /** 全量配置项（按 order 升序），供「界面定制」与「我的入口」渲染 */
   getSortedItems(): EntryItem[] {
-    return [...this.items].sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
+    return [...this.items]
+      .filter((it: EntryItem): boolean => isEntryAvailable(it.id))
+      .sort((a: EntryItem, b: EntryItem): number => a.order - b.order)
   }
 
   getIcon(id: string): string {

@@ -2,7 +2,7 @@
 // 磕头统一计数：今日磕头数（跨日清零）+ 累计磕头。
 // 两个写入方共用一份计数：桌面磕头卡直磕（卡片扩展进程）+ App 祈福完成（主进程按次并入）。
 //
-// 【存储位置】专属文件 mashen_kowtow_prefs：与 mashen_user_prefs / mashen_enrich_prefs
+// 【存储位置】专属文件 caishen_kowtow_prefs：与 caishen_user_prefs / caishen_enrich_prefs
 // 这类「常驻 VM 共用文件」不同（见 QiuQianViewModel 头注的进程纪律），本文件没有任何
 // 常驻实例持有——两端都走「掉缓存 → 重开 → 读改写」，永远操作最新盘，可安全双进程写。
 // 卡片扩展侧由 WidgetFormAbility 的静态任务队列串行；跨进程同时写（App 祈福与点卡同瞬）
@@ -17,10 +17,10 @@ import { hilog } from '@kit.PerformanceAnalysisKit'
 import { formatDate } from '../model/FortuneTypes'
 import { PrayerRecord } from '../model/PrayerTypes'
 
-const PREF_NAME = 'mashen_kowtow_prefs'
+const PREF_NAME = 'caishen_kowtow_prefs'
 const KEY_DAILY = 'kowtowDaily'
-const LEGACY_USER_PREFS = 'mashen_user_prefs'
-const LEGACY_ENRICH_PREFS = 'mashen_enrich_prefs'
+const LEGACY_USER_PREFS = 'caishen_user_prefs'
+const LEGACY_ENRICH_PREFS = 'caishen_enrich_prefs'
 const LOG_DOMAIN: number = 0xF811
 const LOG_TAG: string = 'KowtowVM'
 

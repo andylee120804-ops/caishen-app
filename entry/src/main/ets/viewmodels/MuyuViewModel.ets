@@ -3,7 +3,7 @@
 import { preferences } from '@kit.ArkData'
 import { formatDate } from '../model/FortuneTypes'
 
-const PREF_NAME = 'mashen_muyu_prefs'
+const PREF_NAME = 'caishen_muyu_prefs'
 const KEY_TODAY_DATE = 'todayDate'
 const KEY_TODAY_COUNT = 'todayCount'
 const KEY_TOTAL_COUNT = 'totalCount'

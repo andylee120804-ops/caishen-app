@@ -15,7 +15,7 @@ const OUT_DIR = resolve(__dirname, 'kowtow-frames');
 mkdirSync(OUT_DIR, { recursive: true });
 
 // 16 帧磕头序列：下拜(0-8) + 触地停留(8-9) + 起身(9-15)
-// 每帧只做小幅姿势递进，锁死"背对屏幕朝麻神"方向
+// 每帧只做小幅姿势递进，锁死"背对屏幕朝财神"方向
 const STEPS = [
   { out: 'c01_stand.png',       pose: 'The figure is kneeling upright, back completely vertical and straight, facing away from the viewer. No change from the original pose. Same back view.' },
   { out: 'c02_lean.png',        pose: 'The figure leans forward just slightly, about 10 degrees from vertical. Back still mostly upright, head tilts forward a tiny bit. Facing away from viewer.' },

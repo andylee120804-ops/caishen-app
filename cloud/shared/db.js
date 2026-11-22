@@ -12,14 +12,27 @@ const fs = require('fs');
 const path = require('path');
 
 // API Client 凭证（用户中心 > 凭证管理 > 创建 API Client，关联 Cloud DB 产品）。
-// 部署时随 zip 一起上传到函数根目录。
-const CRED_FILE = path.join(__dirname, '..', 'agc-credential.json');
+// 部署时随 zip 一起上传到函数根目录（与 handler.js 同级）。
+// ⚠️ 部署后 __dirname 即函数根目录，凭证与 handler.js 同级；本地 smoke 测试时凭证在
+//    cloud/ 根目录（即 handler.js 的上一级）。两者都试探，避免部署后凭证路径不对导致
+//   回退到「部署项目自身凭证」，进而读到错误项目的 Cloud DB（典型症状：2002037 区不存在）。
+function resolveCredFile() {
+  var candidates = [
+    path.join(__dirname, 'agc-credential.json'),
+    path.join(__dirname, '..', 'agc-credential.json')
+  ];
+  for (var i = 0; i < candidates.length; i++) {
+    if (fs.existsSync(candidates[i])) return candidates[i];
+  }
+  return candidates[0];
+}
+const CRED_FILE = resolveCredFile();
 
 // Cloud DB 存储区名称：必须与 AGC 控制台 Cloud DB 存储区逐字一致。
 // ⚠️ 存储区必须先在控制台手动创建，database({ zoneName }) 不会自动创建——
 //    不存在时直接报 2002037: CloudDBZone does not exist。
 // 命名规则：字母开头，仅含字母数字（不能下划线/中划线）。
-const CLOUD_DB_ZONE = 'Mashen';
+const CLOUD_DB_ZONE = 'Caishen';
 
 // Cloud DB 单次操作超时（ms）。必须 < AGC 网关超时（实测 ~20s 即 504）。
 // 为什么需要：SDK HttpsCommunicator.timeout=30s，比网关 ~20s 长。
@@ -36,7 +49,7 @@ function getCloud() {
   if (fs.existsSync(CRED_FILE)) {
     try {
       // 唯一 name，强制以文件凭证初始化新实例（默认 'default' 会被环境变量抢占）
-      cloudInstance = cloud.createInstance(CRED_FILE, 'mashen-cloud-db');
+      cloudInstance = cloud.createInstance(CRED_FILE, 'caishen-cloud-db');
       return cloudInstance;
     } catch (e) {
       console.warn('[db] createInstance failed:', e.message);

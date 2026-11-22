@@ -18,7 +18,7 @@ import type { HvigorNode, HvigorPlugin } from '@ohos/hvigor';
  *   3. 之后 debug/release 构建自动切换对应证书
  */
 const DEBUG_SIGNING = 'default';
-const RELEASE_SIGNING = 'releasekey';
+const RELEASE_SIGNING = 'release';
 
 const autoSwitchSigningPlugin: HvigorPlugin = {
   pluginId: 'auto-switch-signing',

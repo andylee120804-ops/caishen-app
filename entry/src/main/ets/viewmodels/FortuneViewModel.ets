@@ -3,7 +3,7 @@
 import { preferences } from '@kit.ArkData'
 import { ShengxiaoFortune, ZodiacFortune, generateShengxiaoFortune, generateZodiacFortune } from '../model/FortuneTypes'
 
-const PREF_NAME = 'mashen_fortune_prefs'
+const PREF_NAME = 'caishen_fortune_prefs'
 const KEY_ZODIAC = 'zodiacIdx'
 const KEY_SHENGXIAO = 'shengxiaoIdx'
 const KEY_SHENDAN_FAVORITES = 'shendanFavorites'

@@ -1,4 +1,4 @@
-# 麻神祈福 - AGC 云函数
+# 财神保佑 - AGC 云函数
 
 6 个云函数 + 共享库，为排行榜、心愿墙、牌局记录云备份与解签买断（IAP）提供后端。
 
@@ -49,7 +49,7 @@ cloud/
 
 ## Cloud DB schema（部署前在 AGC 控制台创建）
 
-存储区名称：`Mashen`（见 `shared/db.js` 的 `CLOUD_DB_ZONE`）。
+存储区名称：`Caishen`（见 `shared/db.js` 的 `CLOUD_DB_ZONE`）。
 
 ### Leaderboard 对象类型
 
@@ -121,9 +121,9 @@ cloud/
 
 > 两表均为**私有数据**：权限同 GameBackup（World/Authenticated 无权限，
 > Creator Read+Upsert，Administrator 全权限），客户端只经 `donation-record`
-> 云函数中转读写，不直连 Cloud DB。`cleanup-cloud-db.cjs` **不清这两张表**
-> ——Donation 是真实交易流水，删除不可恢复；测试期 `__uid: "test123"` 产生
-> 的测试数据需在 Cloud DB 控制台按 uid 定点删。
+> 云函数中转读写，不直连 Cloud DB。`cleanup-cloud-db.cjs` **默认不清这两张表**
+> ——Donation 是真实交易流水，删除不可恢复；确需清空公益榜时显式加
+> `--include-donation`（两表一起删，否则重算会把 UserMerit 写回）。
 > ✅ **2026-10-03 打赏回归（形态变更）**：打赏以「支持作者 + 部分捐赠公益」重新上线，
 > 客户端恢复调用 `donation-record`（打赏成功后 record，`pages/DonationBoardPage`
 > 公益排行榜走 board）。打赏**不解锁任何权益**，榜单仅用于公开致谢，
@@ -217,8 +217,8 @@ Creator Read+Upsert，Administrator 全权限），客户端只经 `jieqian-unlo
 
 4. **创建 Cloud DB 存储区**（必须在导入对象类型之前，云函数访问依赖此区）：
    AGC 控制台 → 构建 → Cloud DB → 存储区管理 → **新增存储区**
-   - 存储区名称：`Mashen`（与 `shared/db.js` 的 `CLOUD_DB_ZONE` **逐字一致**）
-   - 命名规则：字母开头，仅含字母数字（**不能下划线/中划线**），`Mashen` 合规
+   - 存储区名称：`Caishen`（与 `shared/db.js` 的 `CLOUD_DB_ZONE` **逐字一致**）
+   - 命名规则：字母开头，仅含字母数字（**不能下划线/中划线**），`Caishen` 合规
    - ⚠️ **存储区必须手动创建**：`database({ zoneName })` 不会自动建，不提前建好
      云函数查询会报 `2002037: CloudDBZone does not exist`。
    - 没建存储区只导入对象类型 = 对象类型存在但无处读写，仍报 2002037。
@@ -330,7 +330,7 @@ Creator Read+Upsert，Administrator 全权限），客户端只经 `jieqian-unlo
      ⚠️ 测完在 Cloud DB 控制台定点删 `uid=test123` 的 SignUnlock 记录。
    - 报 401 `client token auth failed` → 凭证问题（见下「凭证说明」）。
    - 报 `3037003 primary key missing` → 对象类型未导入或字段名不符。
-   - 报 `2002037 CloudDBZone does not exist` → 存储区 `Mashen` 没建（见步骤 4）。
+   - 报 `2002037 CloudDBZone does not exist` → 存储区 `Caishen` 没建（见步骤 4）。
 
 7. **客户端权限**：已在 `module.json5` 声明 `ohos.permission.INTERNET`。
 
@@ -343,13 +343,13 @@ Creator Read+Upsert，Administrator 全权限），客户端只经 `jieqian-unlo
   项目凭证会报 `203886599 the type of clientId not match`，这里没有，说明凭证类型对）。
 - `products: []` 为空**不代表缺权限**：当前 AGC 控制台创建 API Client 时已没有「关联
   Cloud DB 产品」勾选项（旧版有，现版移除了）。Cloud DB 访问权是**项目级授予**的——
-  项目里开通了 Cloud DB、建了 `Mashen` 存储区，项目内的 API Client 即自动有访问权，
+  项目里开通了 Cloud DB、建了 `Caishen` 存储区，项目内的 API Client 即自动有访问权，
   `products` 只是 token 响应里不再回填的遗留字段。
 - 所以**直接按上面步骤部署即可**，不用找产品勾选项。
 
 **若云函数测试真报 401 `client token auth failed`**（实测拿到 token 一般不会）：
 确认 `agc-credential.json` 已打进 zip（第 3 步打包后 `zip` 内应含该文件），且
-`shared/db.js` 的 `createInstance(path, 'mashen-cloud-db')` 用了唯一实例名。仍 401 再
+`shared/db.js` 的 `createInstance(path, 'caishen-cloud-db')` 用了唯一实例名。仍 401 再
 回用户中心重建 API Client 换新凭证，替换 `cloud/agc-credential.json` 后重新
 `node cloud/deploy.cjs` 打包并重新上传 zip。`agc-credential.json` 已 gitignore，不会提交。
 
@@ -365,11 +365,15 @@ cd cloud
 export NODE_PATH="$(pwd)/wish-wall/node_modules"
 node cleanup-cloud-db.cjs            # 先统计（只读）
 node cleanup-cloud-db.cjs --yes      # 确认后删除 Wish / Leaderboard / GameBackup 全部记录
+node cleanup-cloud-db.cjs --yes --force --include-donation
+                                     # 连公益榜一起清（Donation + UserMerit，不可恢复）
 ```
 
 - 脚本用 `agc-credential.json` 直连 Cloud DB，删除 `Wish` / `Leaderboard` / `GameBackup`
-  三个集合的全部记录（分批查询+删除，幂等可重复执行）。
-- 运行前提：凭证有效 + 存储区 `Mashen` 已创建（未部署云端时运行会报
+  三个集合的全部记录（分批查询+删除，幂等可重复执行）。加 `--include-donation`
+  额外删 `Donation` / `UserMerit`：公益榜读 UserMerit，而重算会用 Donation 写回，
+  两表必须一起删。
+- 运行前提：凭证有效 + 存储区 `Caishen` 已创建（未部署云端时运行会报
   `2002037 CloudDBZone does not exist`，属正常提示）。
 - 删除不可恢复。建议提审流程：**清库 → 构建 release 包 → 提审**，提审后不要再做
   真机祈福/心愿测试（会重新产生测试数据）。

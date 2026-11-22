@@ -2,7 +2,7 @@
 // 求签 tab：摇晃手机求签（每次独立随机抽签，36 签真随机）。
 // 动画模拟「抱机磕头 + 摇晃出签」：三拜 → 摇签筒 → 签支弹出 → 签文翻牌揭晓。
 // 仅靠摇晃手机触发（无按钮）。揭签自动记入签录；右上角「📜 签录」可回看历史签
-// （点行看完整签文）；另有解签 / 去祈福 / 再求一签。
+// （点行看完整签文）；另有解签 / 再求一签（去祈福按钮已随审核整改隐藏，见 PRAYER_FLOW_VISIBLE）。
 //
 // 额度（2026-10-05 起）：求签付费（打赏解锁更多次数，qiu_extra）审核不通过已下架，
 // 且「付费加次数 / 每日上限 5 签」概念一并取消——每天固定 3 签，用完提示「明日再来」。
@@ -14,6 +14,7 @@ import { PrayerViewModel } from '../viewmodels/PrayerViewModel'
 import { QiuQianViewModel, FREE_DAILY_QIU } from '../viewmodels/QiuQianViewModel'
 import { ParticleCanvas, ParticleType } from '../components/ParticleCanvas'
 import { PageBack } from '../components/PageBack'
+import { PRAYER_FLOW_VISIBLE } from '../util/AuditFlags'
 import { pasteboard } from '@kit.BasicServicesKit'
 import { router } from '@kit.ArkUI'
 import { sensor, vibrator } from '@kit.SensorServiceKit'
@@ -473,7 +474,7 @@ export struct QiuQianPage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -483,7 +484,7 @@ export struct QiuQianPage {
       Column()
         .width('100%')
         .height('100%')
-        .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+        .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
         .overlay(this.GlowOverlay)
         .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
 
@@ -538,7 +539,7 @@ export struct QiuQianPage {
             .fontColor(this.todayUsed >= this.todayQuota ? 'rgba(255, 209, 0, 0.8)' : 'rgba(253, 246, 227, 0.75)')
             .margin({ top: 6 })
         } else if (this.phase === QiuPhase.REVEAL) {
-          // 次要操作：解签详情 + 去祈福（小按钮一行）
+          // 次要操作：解签详情（去祈福按钮已随审核整改隐藏，PRAYER_FLOW_VISIBLE=false）
           Row() {
             Button('📜 解签详情')
               .fontSize(14)
@@ -550,17 +551,19 @@ export struct QiuQianPage {
               .layoutWeight(1)
               .padding({ top: 11, bottom: 11 })
               .onClick((): void => { this.openDetail(this.sign) })
-            Button('🙏 去祈福')
-              .fontSize(14)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFD700')
-              .backgroundColor('rgba(255, 209, 0, 0.12)')
-              .border({ width: 1, color: '#FFD700' })
-              .borderRadius(22)
-              .layoutWeight(1)
-              .margin({ left: 12 })
-              .padding({ top: 11, bottom: 11 })
-              .onClick((): void => { this.goPray() })
+            if (PRAYER_FLOW_VISIBLE) {
+              Button('🙏 去祈福')
+                .fontSize(14)
+                .fontWeight(FontWeight.Bold)
+                .fontColor('#FFD700')
+                .backgroundColor('rgba(255, 209, 0, 0.12)')
+                .border({ width: 1, color: '#FFD700' })
+                .borderRadius(22)
+                .layoutWeight(1)
+                .margin({ left: 12 })
+                .padding({ top: 11, bottom: 11 })
+                .onClick((): void => { this.goPray() })
+            }
           }
           .width('76%')
 
@@ -726,7 +729,7 @@ export struct QiuQianPage {
       // 朱印
       Stack() {
         Circle({ width: 46, height: 46 })
-          .fill('#D23B2E')
+          .fill('#A01124')
         Text(this.sign.level.replace('签', ''))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
@@ -816,23 +819,25 @@ export struct QiuQianPage {
             .layoutWeight(1)
             .padding({ top: 11, bottom: 11 })
             .onClick((): void => { this.copySignText(sign) })
-          Button('🙏 去祈福')
-            .fontSize(13)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#1a1a0a')
-            .backgroundColor('#FFD700')
-            .borderRadius(20)
-            .layoutWeight(1)
-            .margin({ left: 10 })
-            .padding({ top: 11, bottom: 11 })
-            .onClick((): void => { this.goPray() })
+          if (PRAYER_FLOW_VISIBLE) {
+            Button('🙏 去祈福')
+              .fontSize(13)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#1a1a0a')
+              .backgroundColor('#FFD700')
+              .borderRadius(20)
+              .layoutWeight(1)
+              .margin({ left: 10 })
+              .padding({ top: 11, bottom: 11 })
+              .onClick((): void => { this.goPray() })
+          }
         }
         .width('100%')
         .margin({ top: 22 })
       }
       .width('90%')
       .padding(26)
-      .backgroundColor('#6F120E')
+      .backgroundColor('#86121C')
       .border({ width: 1, color: 'rgba(255, 209, 0, 0.35)', radius: 18 })
       .shadow({ radius: 34, color: 'rgba(0, 0, 0, 0.6)', offsetY: 10 })
     }
@@ -1026,7 +1031,7 @@ export struct QiuQianPage {
       .width('88%')
       .height('76%')
       .padding({ left: 18, right: 18, top: 18, bottom: 14 })
-      .backgroundColor('#6F120E')
+      .backgroundColor('#86121C')
       .border({ width: 1, color: 'rgba(255, 209, 0, 0.35)', radius: 16 })
       .shadow({ radius: 30, color: 'rgba(0, 0, 0, 0.5)', offsetY: 8 })
     }

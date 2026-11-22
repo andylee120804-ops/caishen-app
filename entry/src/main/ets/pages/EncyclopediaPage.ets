@@ -20,7 +20,7 @@ export struct EncyclopediaPage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
 
@@ -95,7 +95,7 @@ export struct EncyclopediaPage {
       }
       .width('100%')
       .height('100%')
-      .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+      .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
       .overlay(this.GlowOverlay)
       .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
 
@@ -279,7 +279,7 @@ export struct EncyclopediaPage {
       }
       .width('84%')
       .padding(22)
-      .backgroundColor('#6F120E')
+      .backgroundColor('#86121C')
       .border({ width: 1, color: 'rgba(255, 209, 0, 0.35)', radius: 16 })
       .shadow({ radius: 30, color: 'rgba(0, 0, 0, 0.5)', offsetY: 8 })
     }
@@ -334,7 +334,7 @@ export struct EncyclopediaPage {
       }
       .width('84%')
       .padding(22)
-      .backgroundColor('#6F120E')
+      .backgroundColor('#86121C')
       .border({ width: 1, color: 'rgba(255, 209, 0, 0.35)', radius: 16 })
       .shadow({ radius: 30, color: 'rgba(0, 0, 0, 0.5)', offsetY: 8 })
     }

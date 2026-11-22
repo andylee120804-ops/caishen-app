@@ -118,7 +118,8 @@ export enum PaymentErrorKind {
   NEED_LOGIN = 'need_login',   // 1001860050 未登录华为帐号
   REGION = 'region',           // 1001860054 地区不支持
   PRODUCT = 'product',          // 1001860007 商品未发布
-  ALREADY_OWNED = 'already_owned'  // 1001860051 同商品有未完成订单（上次购买成功未消耗），应补单恢复
+  ALREADY_OWNED = 'already_owned',  // 1001860051 同商品有未完成订单（上次购买成功未消耗），应补单恢复
+  UNKNOWN = 'unknown'          // 其它 IAP 错误码（如 1001860001 System internal error：多为 AGC 应用内支付未开通/商品未上架/签名证书未配置），码透出到 toast 便于定位
 }
 
 export class PaymentError extends Error {
@@ -135,7 +136,7 @@ export class PaymentError extends Error {
 export const EXTRA_DRAW_PRODUCT: ExtraDrawProduct = {
   productId: 'qiu_extra',
   amount: 1,
-  label: '打赏作者 · 解锁更多乐趣'
+  label: '支持作者 · 解锁更多乐趣'
 }
 
 export interface IExtraDrawService {

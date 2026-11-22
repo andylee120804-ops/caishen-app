@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>财神殿 Tab 图标改版 · 候选预览</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0; min-height: 100vh; padding: 32px 16px 60px;
+    background: radial-gradient(circle at 50% 0%, #2a1418, #100a0c 70%);
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #fdf6e3;
+  }
+  h1 { text-align: center; font-size: 18px; margin: 0 0 6px; color: #FFD700; }
+  .sub { text-align: center; font-size: 12px; color: rgba(253,246,227,.6); margin-bottom: 28px; line-height: 1.7; }
+
+  .card {
+    background: #1c1014; border: 1px solid rgba(255,209,0,.18); border-radius: 16px;
+    max-width: 520px; margin: 0 auto 26px; padding: 18px 16px 22px;
+  }
+  .card h2 { margin: 0 0 4px; font-size: 15px; color: #FFD700; }
+  .card p { margin: 0 0 14px; font-size: 12px; color: rgba(253,246,227,.7); line-height: 1.6; }
+
+  /* 模拟底部 Tab 栏（真实配色 #D23B2E→#A51D16→#6F120E） */
+  .tabbar {
+    display: flex; height: 64px; border-radius: 14px; overflow: hidden;
+    background: linear-gradient(180deg, #D23B2E 0%, #A51D16 55%, #6F120E 100%);
+    box-shadow: 0 8px 20px rgba(0,0,0,.45);
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 3px; padding-bottom: 4px;
+  }
+  .tab.active { background: rgba(255,209,0,.10); border-radius: 14px; }
+  .tab .icon { width: 24px; height: 24px; }
+  .tab .label { font-size: 10px; color: rgba(253,246,227,.62); }
+  .tab.active .label { color: #FFD700; }
+  .tab .icon svg { display: block; }
+
+  .rows { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, 96px); gap: 12px; }
+  .detail {
+    background: linear-gradient(180deg, #D23B2E 0%, #A51D16 55%, #6F120E 100%);
+    border-radius: 12px; padding: 12px 0 8px; text-align: center;
+  }
+  .detail svg { width: 64px; height: 64px; display: block; margin: 0 auto; }
+  .detail .n { margin-top: 6px; font-size: 11px; color: #FFD700; }
+
+  .menu-row {
+    display: flex; align-items: center; gap: 12px;
+    background: #241f12; border: 1px solid rgba(255,209,0,.14);
+    border-radius: 10px; padding: 8px 12px; margin-bottom: 6px;
+  }
+  .menu-row .icon { width: 26px; height: 26px; flex: none; }
+  .menu-row svg { display: block; }
+  .menu-row .name { font-size: 13px; color: #fdf6e3; }
+  .tag {
+    display: inline-block; font-size: 10px; color: #1a1a0a; background: #FFD700;
+    border-radius: 5px; padding: 1px 6px; margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1>财神殿 Tab 图标改版 · 候选预览</h1>
+<div class="sub">
+  现底部 Tab 用「金线自绘单檐殿宇」，<b>不是 emoji</b>；ENTRY_POOL 里兜底 emoji 是 🏯（日式天守阁）。<br/>
+  以下为候选方案，按真实 Tab（24px）与「我的」菜单（26px）渲染 + 放大图。
+</div>
+
+<!-- ═══ 现版（基线） ═══ -->
+<div class="card">
+  <h2>现版 · 单檐殿宇（当前实现）</h2>
+  <p>金线自绘：单层飞檐屋顶 + 宝顶 + 殿身 + 门洞 + 两层须弥座。24px 下檐/身/座三段层次，供对比。</p>
+  <div class="detail-grid">
+    <div class="detail"><svg viewBox="0 0 100 100"><use href="#E"/></svg><div class="n">现版 64px</div></div>
+  </div>
+  <div class="rows">
+    <div class="tabbar">
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><use href="#YUANBAO"/></svg></div><div class="label">祈福</div></div>
+      <div class="tab active"><div class="icon"><svg viewBox="0 0 100 100"><use href="#E"/></svg></div><div class="label">财神殿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🎋</text></svg></div><div class="label">求签</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🙏</text></svg></div><div class="label">还愿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🧧</text></svg></div><div class="label">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 方案 A ═══ -->
+<div class="card">
+  <h2>A · 重檐金殿</h2>
+  <p>中式殿堂标志性的<b>重檐庑殿顶</b>（双层飞檐）+ 正脊宝顶 + 门洞 + 双层须弥座。一眼即「殿」，比单檐更区分于民居。</p>
+  <div class="detail-grid">
+    <div class="detail"><svg viewBox="0 0 100 100"><use href="#A"/></svg><div class="n">A 64px</div></div>
+  </div>
+  <div class="rows">
+    <div class="tabbar">
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><use href="#YUANBAO"/></svg></div><div class="label">祈福</div></div>
+      <div class="tab active"><div class="icon"><svg viewBox="0 0 100 100"><use href="#A"/></svg></div><div class="label">财神殿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🎋</text></svg></div><div class="label">求签</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🙏</text></svg></div><div class="label">还愿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🧧</text></svg></div><div class="label">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 方案 B ═══ -->
+<div class="card">
+  <h2>B · 方孔铜钱·財</h2>
+  <p><b>圆形方孔</b>古钱（中国钱币最经典形态）+ 米色「財」字印于方孔。金圆红孔，24px 下圆形剪影最清晰，与祈福元宝区分开。</p>
+  <div class="detail-grid">
+    <div class="detail"><svg viewBox="0 0 100 100"><use href="#B"/></svg><div class="n">B 64px</div></div>
+  </div>
+  <div class="rows">
+    <div class="tabbar">
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><use href="#YUANBAO"/></svg></div><div class="label">祈福</div></div>
+      <div class="tab active"><div class="icon"><svg viewBox="0 0 100 100"><use href="#B"/></svg></div><div class="label">财神殿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🎋</text></svg></div><div class="label">求签</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🙏</text></svg></div><div class="label">还愿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🧧</text></svg></div><div class="label">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 方案 C ═══ -->
+<div class="card">
+  <h2>C · 聚宝盆</h2>
+  <p>财神手边的<b>聚宝盆</b>（招财进宝）——金盆上堆三枚铜钱。中国民间最直接的「聚财」符号。</p>
+  <div class="detail-grid">
+    <div class="detail"><svg viewBox="0 0 100 100"><use href="#C"/></svg><div class="n">C 64px</div></div>
+  </div>
+  <div class="rows">
+    <div class="tabbar">
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><use href="#YUANBAO"/></svg></div><div class="label">祈福</div></div>
+      <div class="tab active"><div class="icon"><svg viewBox="0 0 100 100"><use href="#C"/></svg></div><div class="label">财神殿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🎋</text></svg></div><div class="label">求签</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🙏</text></svg></div><div class="label">还愿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🧧</text></svg></div><div class="label">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 方案 D ═══ -->
+<div class="card">
+  <h2>D · 殿中元宝</h2>
+  <p>重檐殿宇门洞内立一只<b>金元宝</b>——「殿」与「财」合体：这是财神的殿，殿里摆着元宝。</p>
+  <div class="detail-grid">
+    <div class="detail"><svg viewBox="0 0 100 100"><use href="#D"/></svg><div class="n">D 64px</div></div>
+  </div>
+  <div class="rows">
+    <div class="tabbar">
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><use href="#YUANBAO"/></svg></div><div class="label">祈福</div></div>
+      <div class="tab active"><div class="icon"><svg viewBox="0 0 100 100"><use href="#D"/></svg></div><div class="label">财神殿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🎋</text></svg></div><div class="label">求签</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🙏</text></svg></div><div class="label">还愿</div></div>
+      <div class="tab"><div class="icon"><svg viewBox="0 0 100 100"><text y="80" x="50" text-anchor="middle" font-size="72">🧧</text></svg></div><div class="label">我的</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 菜单 26px 对比 ═══ -->
+<div class="card">
+  <h2>「我的 → 界面定制 / 入口」菜单 26px 对比</h2>
+  <p>列表中与「木鱼」等并排时的观感（背景为弹窗色 #241f12）。</p>
+  <div class="menu-row">
+    <div class="icon"><svg viewBox="0 0 100 100"><use href="#A"/></svg></div>
+    <div class="name">A · 重檐金殿<span class="tag">推荐</span></div>
+  </div>
+  <div class="menu-row">
+    <div class="icon"><svg viewBox="0 0 100 100"><use href="#B"/></svg></div>
+    <div class="name">B · 方孔铜钱·財</div>
+  </div>
+  <div class="menu-row">
+    <div class="icon"><svg viewBox="0 0 100 100"><use href="#C"/></svg></div>
+    <div class="name">C · 聚宝盆</div>
+  </div>
+  <div class="menu-row">
+    <div class="icon"><svg viewBox="0 0 100 100"><use href="#D"/></svg></div>
+    <div class="name">D · 殿中元宝</div>
+  </div>
+  <div class="menu-row">
+    <div class="icon"><svg viewBox="0 0 100 100"><use href="#E"/></svg></div>
+    <div class="name">现版 · 单檐殿宇</div>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <!-- 祈福固定图标：金元宝（rawfile props/yuanbao.png 的简版） -->
+  <g id="YUANBAO" fill="#FFD700">
+    <path d="M50 18 Q62 18 66 34 Q50 30 34 34 Q38 18 50 18 Z"/>
+    <path d="M50 22 Q44 22 42 34 Q44 46 50 48 Q56 46 58 34 Q56 22 50 22 Z"/>
+    <path d="M28 32 Q50 40 72 32 Q68 50 50 52 Q32 50 28 32 Z"/>
+  </g>
+
+  <!-- A 重檐金殿 -->
+  <g id="A">
+    <rect x="26" y="74" width="48" height="6" rx="2" fill="#FFD700"/>
+    <rect x="18" y="80" width="64" height="7" rx="2" fill="#FFD700"/>
+    <rect x="34" y="50" width="32" height="24" fill="#FFD700"/>
+    <rect x="45" y="58" width="10" height="16" fill="#6E0F18"/>
+    <path d="M26 30 L58 30 L76 42 Q79 45 76 49 Q62 53 50 52 Q38 53 24 49 Q21 45 24 42 Z" fill="#FFD700"/>
+    <path d="M42 14 L58 14 L70 24 Q72 26 70 29 Q60 32 50 31 Q40 32 30 29 Q28 26 30 24 Z" fill="#FFD700"/>
+    <path d="M50 5 L57 11 L50 17 L43 11 Z" fill="#FFD700"/>
+  </g>
+
+  <!-- B 方孔铜钱·財 -->
+  <g id="B">
+    <circle cx="50" cy="50" r="47" fill="#FFD700"/>
+    <circle cx="50" cy="50" r="38" fill="none" stroke="#C8A53A" stroke-width="3"/>
+    <rect x="37" y="37" width="26" height="26" rx="3" fill="#6E0F18"/>
+    <text x="50" y="50" text-anchor="middle" dominant-baseline="central"
+          font-size="30" font-family="KaiTi,STKaiti,serif" font-weight="bold" fill="#FDF6E3">財</text>
+  </g>
+
+  <!-- C 聚宝盆 -->
+  <g id="C">
+    <path d="M30 50 L70 50 L64 72 Q50 78 36 72 Z" fill="#E9C34A"/>
+    <rect x="23" y="43" width="54" height="9" rx="4.5" fill="#FFD700"/>
+    <g stroke="#C8A53A" stroke-width="1.6">
+      <circle cx="32" cy="37" r="10" fill="#FFD700"/>
+      <circle cx="50" cy="29" r="11" fill="#FFD700"/>
+      <circle cx="68" cy="37" r="10" fill="#FFD700"/>
+    </g>
+    <rect x="28" y="33" width="7" height="7" rx="1.5" fill="#6E0F18"/>
+    <rect x="46" y="25" width="7" height="7" rx="1.5" fill="#6E0F18"/>
+    <rect x="64" y="33" width="7" height="7" rx="1.5" fill="#6E0F18"/>
+  </g>
+
+  <!-- D 殿中元宝 -->
+  <g id="D">
+    <rect x="26" y="74" width="48" height="6" rx="2" fill="#FFD700"/>
+    <rect x="18" y="80" width="64" height="7" rx="2" fill="#FFD700"/>
+    <rect x="34" y="50" width="32" height="24" fill="#FFD700"/>
+    <rect x="42" y="55" width="16" height="19" rx="2" fill="#6E0F18"/>
+    <path d="M43 73 Q45 61 49 60 Q50 62 50 62 Q50 62 51 60 Q55 61 57 73 Z" fill="#FFD700"/>
+    <path d="M26 30 L58 30 L76 42 Q79 45 76 49 Q62 53 50 52 Q38 53 24 49 Q21 45 24 42 Z" fill="#FFD700"/>
+    <path d="M42 14 L58 14 L70 24 Q72 26 70 29 Q60 32 50 31 Q40 32 30 29 Q28 26 30 24 Z" fill="#FFD700"/>
+    <path d="M50 5 L57 11 L50 17 L43 11 Z" fill="#FFD700"/>
+  </g>
+
+  <!-- E 现版：单檐殿宇（对应 CaiShenHallIcon 组件） -->
+  <g id="E">
+    <path d="M7 42 Q28 20 50 18 Q72 20 93 42 L86 50 Q72 34 50 32 Q28 34 14 50 Z" fill="#FFD700"/>
+    <rect x="44" y="10" width="12" height="7" rx="3" fill="#FFD700"/>
+    <rect x="26" y="50" width="48" height="27" fill="#FFD700"/>
+    <rect x="42" y="56" width="16" height="21" fill="#6E0F18"/>
+    <rect x="17" y="79" width="66" height="7" rx="1.5" fill="#FFD700"/>
+    <rect x="9" y="87" width="82" height="6" rx="1.5" fill="#FFD700"/>
+  </g>
+</svg>
+
+</body>
+</html>

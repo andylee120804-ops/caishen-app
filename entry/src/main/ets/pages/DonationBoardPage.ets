@@ -70,7 +70,7 @@ struct DonationBoardPage {
             .fontSize(20)
             .fontWeight(FontWeight.Bold)
             .fontColor('#FFD700')
-          Text('累计打赏支持')
+          Text('累计支持')
             .fontSize(10)
             .fontColor('rgba(253, 246, 227, 0.5)')
             .margin({ top: 2 })
@@ -112,7 +112,7 @@ struct DonationBoardPage {
             .fontSize(34)
             .fontColor('rgba(255, 209, 0, 0.6)')
             .margin({ bottom: 8 })
-          Text('还没有人打赏')
+          Text('还没有人支持作者')
             .fontSize(14)
             .fontColor('#fdf6e3')
           Text('成为第一位支持作者、也支持公益的好友')
@@ -158,7 +158,7 @@ struct DonationBoardPage {
     }
     .width('100%')
     .height('100%')
-    .linearGradient({ angle: 180, colors: [['#D23B2E', 0.0], ['#A51D16', 0.55], ['#6F120E', 1.0]] })
+    .linearGradient({ angle: 180, colors: [['#A01124', 0.0], ['#931120', 0.55], ['#86121C', 1.0]] })
     .overlay(this.OverlayBg)
     .expandSafeArea([SafeAreaType.SYSTEM], [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
   }
@@ -170,7 +170,7 @@ struct DonationBoardPage {
       .width('100%')
       .height('100%')
       .hitTestBehavior(HitTestMode.None)
-      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.40)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
+      .radialGradient({ center: ['50%', '12%'], radius: '58%', colors: [['rgba(255, 209, 0, 0.28)', 0.0], ['rgba(255, 209, 0, 0)', 1.0]] })
   }
 
   /** 榜单行：排名 / 昵称 / 金额 / 笔数 */

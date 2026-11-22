@@ -88,19 +88,25 @@
   }
   /* 上香动画元素 */
   .stick {
-    position: absolute; top: 8px; left: 50%; width: 4px; height: 42px; border-radius: 2px;
-    background: #e8d9b5; transform: translate(-50%, -40px); opacity: 0;
+    position: absolute; top: 8px; left: 50%; width: 4px; height: 64px; border-radius: 2px;
+    background: linear-gradient(#e8d9b5, #d8c59a); transform: translate(-50%, -40px); opacity: 0;
   }
   .ember {
     position: absolute; top: 6px; left: 50%; width: 6px; height: 6px; border-radius: 50%;
-    background: #ff7b39; transform: translate(-50%, -62px); opacity: 0;
+    background: #ff7b39; box-shadow: 0 0 6px 2px rgba(255,123,57,.6);
+    transform: translate(-50%, 2px); opacity: 0;
   }
-  .smoke { position: absolute; left: 50%; border-radius: 50%; background: #fff; opacity: 0; }
+  .smoke {
+    position: absolute; left: 50%; border-radius: 50%; background: #fff; opacity: 0;
+    filter: blur(1.4px);
+  }
   .censer .label { margin-top: 10px; font-size: 11px; color: rgba(253,246,227,.75); }
   @keyframes smokeUp {
-    0% { transform: translate(-50%, -70px) scale(.6); opacity: 0; }
-    30% { opacity: .5; }
-    100% { transform: translate(-50%, -160px) scale(1.6); opacity: 0; }
+    0%   { transform: translate(-50%, -64px) scale(.45); opacity: 0; }
+    20%  { opacity: .42; }
+    45%  { transform: translate(calc(-50% - 7px), -108px) scale(.85); }
+    70%  { opacity: .28; }
+    100% { transform: translate(calc(-50% + 5px), -178px) scale(1.5); opacity: 0; }
   }
   @keyframes stickDown {
     0% { transform: translate(-50%, -40px); opacity: 0; }
@@ -302,12 +308,12 @@
     }, 2500);
   }
   function startSmoke() {
-    [['smoke1',-10,-70],['smoke2',0,-86],['smoke3',10,-76]].forEach(([id,x,y],i)=>{
-      const s = $(id); s.style.width = '10px'; s.style.height='10px';
+    [['smoke1',-7,-64],['smoke2',0,-82],['smoke3',7,-72]].forEach(([id,x,y],i)=>{
+      const s = $(id); s.style.width = '6px'; s.style.height='6px';
       s.style.left = 'calc(50% + '+x+'px)'; s.style.top = '0'; s.style.opacity = 0;
       setTimeout(()=>{
-        s.style.animation = 'smokeUp 1.9s linear infinite';
-        s.style.animationDelay = (i*0.3)+'s';
+        s.style.animation = 'smokeUp 2.4s ease-in-out infinite';
+        s.style.animationDelay = (i*0.45)+'s';
       }, 200);
     });
   }

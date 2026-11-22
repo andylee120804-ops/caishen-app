@@ -45,3 +45,12 @@ hs_err_pid*.log
 .superpowers/
 
 tmp_device_screen*.jpeg
+
+# AGC 连接配置文件（含 client_secret，不可提交）
+entry/src/main/resources/rawfile/agconnect-services.json
+entry/src/main/resources/rawfile/agconnect-services.bak
+
+# 根目录调试截图 / 布局导出
+/_*.jpeg
+/_l2.json
+/_layout.json

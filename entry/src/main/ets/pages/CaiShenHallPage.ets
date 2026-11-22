@@ -1,36 +1,15 @@
 // entry/src/main/ets/pages/CaiShenHallPage.ets
 // 财神殿 Tab 主页（常驻，在「祈福」之后）。
 //
-// v8 布局（2026-10-19 重排）：
-//   · 顶部不再放签到/装扮入口，匾额直接落在安全区下方；
-//   · 竖向固定分区：匾额 → 弹性舞台（神像 ≤60%/236、空隙、香炉 ≤38%/140）→ 说明 → 四槽位 → 心意值条；
-//   · 区块各占各的位置，不再出现 height('100%') + layoutWeight 互相挤压，杜绝重叠；
-//   · 四件陈设等宽等高，素材已裁掉透明边 + Contain，永不越框；删除与槽位重复的底部 dock；
-//   · 香炉改用空炉素材 censer_empty.png，单支香从炉口插入（下半截被炉身遮住）；
-//   · 灵光「常驻/收起」按每件物品独立控制（含宫灯）。
+// v9 审核整改（2026-10-27）：
+//   · 财神殿付费陈设/装扮入口全部隐藏（实现保留在 DecorPayDialog / HallViewModel，日后方案明确再启用）；
+//   · 保留免费上香（心意值），新增「写下祈福话 → 生成电子祈福图 → 保存到手机」；
+//   · 页面只保留：匾额 → 神像 → 香炉 → 写祈福话入口 → 心意值/今日上香。
 //
-// 元素：AI 大殿背景图 / 神像呼吸光晕 / 匾额 / 财神像 / 供桌 / 正中香炉 / 殿内四件真实贴图陈设 /
-//       点亮金色辉光 / 落座金光特效 / 心意值条 / 合规说明。
-// 交互：上香免费（心意值）、四件陈设付费（独立装扮商品 decor_8/18/88/188，与打赏 tip_* 分开）。
+// 元素：AI 大殿背景图 / 神像呼吸光晕 / 匾额 / 财神像 / 供桌 / 正中香炉 / 心意值条。
 // 合规铁律：灯与香绝不售卖，屏幕上看不到「钱换香」的因果链；心意值每日清零、靠每日行为获取。
 import { HallViewModel } from '../viewmodels/HallViewModel'
-import { DecorPayDialog } from '../components/DecorPayDialog'
-import { CloudService } from '../service/CloudService'
-import { DecorProduct, decorByAmount } from '../service/IPaymentService'
-
-/** 四件殿内陈设（img 为已裁掉透明边的真实贴图，槽位内统一 Contain） */
-interface WareDef {
-  key: string
-  name: string
-  price: number
-  img: string
-}
-const WARES: WareDef[] = [
-  { key: 'lamp',  name: '宫灯',   price: 8,   img: 'props/ware_lamp.png' },
-  { key: 'vase',  name: '金瓶',   price: 18,  img: 'props/ware_vase.png' },
-  { key: 'fresh', name: '鲜花',   price: 88,  img: 'props/ware_flower.png' },
-  { key: 'basin', name: '聚宝盆', price: 188, img: 'props/ware_basin.png' }
-]
+import { BlessingImageDialog } from '../components/BlessingImageDialog'
 
 @Component
 export struct CaiShenHallPage {
@@ -41,7 +20,7 @@ export struct CaiShenHallPage {
   @State incenseLit: boolean = false
   @State stickDown: boolean = false
   @State emberOn: boolean = false
-  @State smokeBob: boolean = false
+  @State smokePhase: number = 0   // 连续相位 0..35，驱动香烟「升起→消散」单向循环
   private smokeTimer: number = -1
   /** 一次性定时器集合（上香分步动画/飘字），页面销毁时统一清理，避免对已销毁组件写状态 */
   private timers: number[] = []
@@ -50,21 +29,13 @@ export struct CaiShenHallPage {
   @State glowOn: boolean = false
   private glowTimer: number = -1
 
-  // 飘字 / toast
-  @State flyText: string = ''
-  @State flyVisible: boolean = false
+  // toast
   @State toastText: string = ''
   @State toastVisible: boolean = false
   private toastTimer: number = -1
 
-  // 落座金光特效（购买/解锁成功时在该槽位爆一圈光）
-  @State placingKey: string = ''
-  @State placingOn: boolean = false
-  private placeTimer: number = -1
-
-  private wishController: CustomDialogController | null = null
-  /** 陈设购买弹窗控制器（持有引用，避免弹窗存活期间控制器被回收） */
-  private payController: CustomDialogController | null = null
+  /** 祈福图弹窗控制器（持有引用，避免弹窗存活期间控制器被回收） */
+  private blessingController: CustomDialogController | null = null
 
   aboutToAppear(): void {
     this.hallVM.checkDaily()
@@ -94,10 +65,6 @@ export struct CaiShenHallPage {
       clearTimeout(this.toastTimer)
       this.toastTimer = -1
     }
-    if (this.placeTimer >= 0) {
-      clearTimeout(this.placeTimer)
-      this.placeTimer = -1
-    }
     for (const id of this.timers) {
       clearTimeout(id)
     }
@@ -110,28 +77,6 @@ export struct CaiShenHallPage {
   }
 
   onRev(): void {
-  }
-
-  // ── 宫灯（长明灯）：灵光独立开关；当日首次点亮仍走心意值/连续点亮逻辑 ──
-  private onLamp(): void {
-    if (this.hallVM.isWareLit('lamp')) {
-      // 收起灵光：不影响当日已点亮的灯与连续天数
-      this.hallVM.toggleWareLit('lamp')
-      this.toast('宫灯 · 已收起')
-      return
-    }
-    const r = this.hallVM.lightLamp()
-    if (r === 'noheart') {
-      this.toast('心意值不足 · 每日进殿可积攒')
-      return
-    }
-    this.hallVM.toggleWareLit('lamp')
-    if (r === 'ok') {
-      this.fly('长明灯亮')
-    } else {
-      // 当日已点亮过：再次点开只是恢复常驻，不再扣心意值
-      this.toast('宫灯 · 灵光常驻')
-    }
   }
 
   // ── 上香 ──
@@ -159,265 +104,72 @@ export struct CaiShenHallPage {
     this.later(() => {
       this.startSmoke()
     }, 300)
-    this.toast('香已入炉 · 财源广进')
+    this.toast('香已入炉 · 写下祈福话吧')
   }
 
   private startSmoke(): void {
     if (this.smokeTimer >= 0) {
       return
     }
-    this.smokeBob = false
+    this.smokePhase = 0
     this.smokeTimer = setInterval(() => {
-      this.smokeBob = !this.smokeBob
-    }, 900)
+      this.smokePhase = (this.smokePhase + 1) % 36
+    }, 260)
   }
 
-  // ── 财神像点击 → 写心愿 ──
-  private openWish(): void {
-    // 防叠加：连续点财神像会在已有弹窗没关的情况下再叠一个（实测 07:35:43 那次闪退
-    // 前 4 秒内叠了 15 个弹窗）。已有一个时忽略本次点击，等它关掉（aboutToDisappear
-    // → onClosed 释放引用）后再开。
-    if (this.wishController !== null) {
+  /** 第 i 团烟的上升进度 t∈[0,1)：相位错开 1/6，走完一圈回卷到香头（消散后再现，视觉连续） */
+  private smokeT(i: number): number {
+    return ((this.smokePhase + i * 6) % 36) / 36
+  }
+
+  /** 第 i 团烟的可见度：出生淡入 + 顶端消散，两端都为 0 → 回卷瞬间的「上→下」位移全程不可见，不会出现烟往下掉 */
+  private smokeOp(i: number): number {
+    const t = this.smokeT(i)
+    const fadeIn = Math.min(t / 0.10, 1)                // t∈[0,0.10] 淡入
+    const fadeOut = Math.max(0, 1 - (t - 0.75) / 0.25)  // t∈[0.75,1] 消散
+    return 0.72 * fadeIn * fadeOut
+  }
+
+  // ── 财神像 / 祈福按钮 → 写祈福话并生成电子祈福图 ──
+  private openBlessingImage(): void {
+    if (!this.incenseLit) {
+      this.toast('先上一炷香，再写下祈福话')
       return
     }
-    // 每次新建：跨天轮换主财神后，弹窗里的 deityId 必须取当天值
+    // 防叠加：弹窗未关时忽略重复点击，等 onClosed 释放引用后再开
+    if (this.blessingController !== null) {
+      return
+    }
     const dlg = new CustomDialogController({
-      builder: WishDialog({
+      builder: BlessingImageDialog({
         deityId: this.hallVM.todayDeity.id,
-        onSubmit: (content: string): void => {
-          this.submitWish(content)
+        deityName: this.hallVM.todayDeity.name,
+        deityDirection: this.hallVM.todayDeity.direction,
+        initialTemplate: this.hallVM.blessingTemplate,
+        onTemplateChange: (t: number): void => {
+          this.hallVM.setBlessingTemplate(t)
         },
         onClose: (): void => {
-          // 关闭兜底：用本页持有的 wishController 引用关掉心愿弹窗（该引用必然有效）
-          const c = this.wishController
+          // 关闭兜底：用本页持有的引用关掉弹窗（该引用必然有效）
+          const c = this.blessingController
           if (c !== undefined && c !== null) {
             try {
               c.close()
             } catch (err) {
-              console.error('[Hall] wish dialog onClose failed')
+              console.error('[Hall] blessing dialog onClose failed')
             }
           }
         },
         onClosed: (): void => {
-          this.wishController = null
+          this.blessingController = null
         }
       }),
       autoCancel: true,
       alignment: DialogAlignment.Center,
       customStyle: true
     })
-    this.wishController = dlg
+    this.blessingController = dlg
     dlg.open()
-  }
-
-  private submitWish(content: string): void {
-    const text = content.trim()
-    if (text === '') {
-      this.toast('写点什么再记下吧')
-      return
-    }
-    CloudService.createWish(text, this.hallVM.todayDeity.id).then((ok: boolean) => {
-      this.toast(ok ? '心愿已记下 · 财神见证' : '心愿稍后重试')
-    }).catch(() => {
-      this.toast('心愿稍后重试')
-    })
-  }
-
-  // ── 殿内四件陈设：未拥有 → 购买；已拥有 → 只切换该件自己的灵光 ──
-  private onWare(item: string): void {
-    if (!this.hallVM.isWareOwned(item)) {
-      this.openWarePay(item)
-      return
-    }
-    if (item === 'lamp') {
-      this.onLamp()
-      return
-    }
-    this.hallVM.toggleWareLit(item)
-    const def = WARES.find((d: WareDef): boolean => d.key === item)
-    if (def !== undefined) {
-      this.toast(`${def.name} · ${this.hallVM.isWareLit(item) ? '灵光常驻' : '已收起'}`)
-    }
-  }
-
-  /** 未拥有 → 直接按对应档位（¥8/18/88/188）拉起装扮解锁支付，成功后解锁该陈设 */
-  private openWarePay(item: string): void {
-    const target = WARES.find((d: WareDef): boolean => d.key === item)
-    if (target === undefined) {
-      return
-    }
-    const product: DecorProduct = decorByAmount(target.price)
-    const dlg = new CustomDialogController({
-      builder: DecorPayDialog({
-        product: product,
-        title: `财神殿陈设 · ${target.name}`,
-        onClose: (): void => {
-          // 关闭兜底：用本页持有的 payController 引用关掉解锁弹窗（该引用必然有效）
-          const c = this.payController
-          if (c !== undefined && c !== null) {
-            try {
-              c.close()
-            } catch (err) {
-              console.error('[Hall] decor dialog onClose failed')
-            }
-          }
-        },
-        onSuccess: (p: DecorProduct): void => {
-          // 必须按「实际付款档位」定位陈设，不能用点击时捕获的 target：
-          // 补单路径（上次已付款但没消耗完）回调的是历史订单档位，固定解 target
-          // 会出现「¥8 补单却解锁 ¥188 聚宝盆」的越档解锁。
-          const paid = WARES.find((d: WareDef): boolean => d.price === p.amount)
-          if (paid === undefined) {
-            console.error('[Hall] paid tier has no matching ware: amount=' + p.amount)
-            return
-          }
-          this.hallVM.setWareOwned(paid.key, true)
-          // 新陈设默认灵光常驻；宫灯保持「首次点亮走心意值」的既有逻辑
-          if (paid.key !== 'lamp' && !this.hallVM.isWareLit(paid.key)) {
-            this.hallVM.toggleWareLit(paid.key)
-          }
-          this.playPlace(paid.key)
-          // 注意：不要在这里 dlg.close()——DecorPayDialog 拉起收银台前已自行关闭，
-          // 重复 close 会命中已销毁的弹窗（闪退）。
-        }
-      }),
-      autoCancel: true,
-      alignment: DialogAlignment.Center,
-      customStyle: true
-    })
-    this.payController = dlg
-    dlg.open()
-  }
-
-  /** 播放落座金光特效：该槽位爆一圈金光并轻微放大后恢复 */
-  private playPlace(key: string): void {
-    this.placingKey = key
-    this.placingOn = true
-    if (this.placeTimer >= 0) {
-      clearTimeout(this.placeTimer)
-    }
-    this.placeTimer = setTimeout(() => {
-      this.placingOn = false
-    }, 700)
-  }
-
-  // ── 四槽位（等宽等高，唯一购买/陈列入口）──
-  @Builder
-  WareCell(def: WareDef) {
-    Stack({ alignContent: Alignment.Bottom }) {
-      if (this.hallVM.isWareOwned(def.key)) {
-        // 已拥有：独立金色灵光 + 真实贴图 + 名称条（Contain 保证不越框）
-        Stack()
-          .width('80%')
-          .aspectRatio(1)
-          .margin({ bottom: 26 })
-          .radialGradient({
-            center: ['50%', '55%'],
-            radius: '60%',
-            colors: [['rgba(255, 220, 120, 0.55)', 0.0], ['rgba(255, 220, 120, 0)', 1.0]]
-          })
-          .opacity(this.hallVM.isWareLit(def.key) ? 1 : 0)
-          .animation({ duration: 400 })
-          .hitTestBehavior(HitTestMode.None)
-
-        Image($rawfile(def.img))
-          .width('82%')
-          .height('76%')
-          .margin({ bottom: 22 })
-          .objectFit(ImageFit.Contain)
-          .brightness(this.hallVM.isWareLit(def.key) ? 1.12 : 1)
-
-        Text(def.name)
-          .width('100%')
-          .height(22)
-          .textAlign(TextAlign.Center)
-          .fontSize(10)
-          .fontColor('rgba(253, 246, 227, 0.86)')
-          .linearGradient({
-            angle: 180,
-            colors: [['rgba(24, 4, 6, 0)', 0.0], ['rgba(24, 4, 6, 0.78)', 1.0]]
-          })
-
-        if (this.hallVM.isWareLit(def.key)) {
-          Column()
-            .width(6)
-            .height(6)
-            .borderRadius(3)
-            .backgroundColor('#FFD700')
-            .position({ x: '100%', y: 7 })
-            .translate({ x: -13 })
-            .hitTestBehavior(HitTestMode.None)
-        }
-      } else {
-        // 未拥有：虚线占位（＋ + 名称 + 价格），点击走打赏购买
-        Column() {
-          Text('＋')
-            .fontSize(20)
-            .lineHeight(22)
-            .fontColor('rgba(255, 209, 0, 0.85)')
-          Text(def.name)
-            .fontSize(11)
-            .fontColor('rgba(253, 246, 227, 0.78)')
-            .margin({ top: 4 })
-          Text(`¥${def.price}`)
-            .fontSize(10)
-            .fontColor('rgba(255, 209, 0, 0.85)')
-            .margin({ top: 2 })
-        }
-        .width('100%')
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-      }
-
-      // 落座金光：刚解锁的陈设爆一圈金色辉光
-      Stack()
-        .width('100%')
-        .height('100%')
-        .radialGradient({
-          center: ['50%', '50%'],
-          radius: '70%',
-          colors: [['rgba(255, 220, 120, 0.95)', 0.0], ['rgba(255, 220, 120, 0)', 1.0]]
-        })
-        .opacity(this.placingOn && this.placingKey === def.key ? 1 : 0)
-        .animation({ duration: 600, curve: Curve.EaseOut })
-        .hitTestBehavior(HitTestMode.None)
-    }
-    .layoutWeight(1)
-    .height('100%')
-    .margin({ left: 4, right: 4 })
-    .borderRadius(14)
-    .clip(true)
-    .backgroundColor(this.hallVM.isWareOwned(def.key) ? 'rgba(60, 10, 16, 0.42)' : 'rgba(60, 10, 16, 0.26)')
-    .radialGradient({
-      center: ['50%', '42%'],
-      radius: '72%',
-      colors: this.hallVM.isWareOwned(def.key)
-        ? [['rgba(120, 60, 12, 0.35)', 0.0], ['rgba(40, 8, 10, 0.42)', 1.0]]
-        : [['rgba(60, 10, 16, 0.0)', 0.0], ['rgba(60, 10, 16, 0.0)', 1.0]]
-    })
-    .border({
-      width: 1.5,
-      color: this.hallVM.isWareOwned(def.key) ? 'rgba(255, 209, 0, 0.50)' : 'rgba(255, 209, 0, 0.42)',
-      style: this.hallVM.isWareOwned(def.key) ? BorderStyle.Solid : BorderStyle.Dashed
-    })
-    .scale({
-      x: this.placingOn && this.placingKey === def.key ? 1.06 : 1,
-      y: this.placingOn && this.placingKey === def.key ? 1.06 : 1
-    })
-    .animation({ duration: 220, curve: Curve.EaseOut })
-    .onClick(() => this.onWare(def.key))
-  }
-
-  // ── 飘字 / toast ──
-  private fly(text: string): void {
-    this.flyText = text
-    this.flyVisible = false
-    this.later(() => {
-      this.flyVisible = true
-    }, 16)
-    this.later(() => {
-      this.flyVisible = false
-    }, 1200)
   }
 
   private toast(msg: string): void {
@@ -471,21 +223,6 @@ export struct CaiShenHallPage {
           [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
         .hitTestBehavior(HitTestMode.None)
 
-      // 宫灯灵光常驻后的暖光
-      Column()
-        .width('100%')
-        .height('100%')
-        .radialGradient({
-          center: ['50%', '58%'],
-          radius: '55%',
-          colors: [['rgba(255, 190, 70, 0.30)', 0.0], ['rgba(255, 190, 70, 0)', 1.0]]
-        })
-        .opacity(this.hallVM.isWareLit('lamp') ? 0.12 : 0)
-        .animation({ duration: 1000 })
-        .expandSafeArea([SafeAreaType.SYSTEM],
-          [SafeAreaEdge.TOP, SafeAreaEdge.BOTTOM, SafeAreaEdge.START, SafeAreaEdge.END])
-        .hitTestBehavior(HitTestMode.None)
-
       // ══ 内容：固定分区 + 弹性舞台 ══
       // 沉浸式全屏下页面内容从 y=0 起排，Pura X 内屏前置摄像头为中置挖孔，
       // 必须整体下移避开状态栏/挖孔（与 MyPage/其余 Tab 页同一套 44vp 顶部安全距）。
@@ -505,9 +242,9 @@ export struct CaiShenHallPage {
           .shadow({ radius: 8, color: 'rgba(0, 0, 0, 0.45)' })
           .margin({ top: 12, bottom: 8 })
 
-        // 舞台：神像 60% / 空隙 2% / 香炉 38%，互不侵占
+        // 舞台：神像 58% / 空隙 12% / 香炉 30%，互不侵占（空隙保底：香柱上端 42vp 不触神像）
         Column() {
-          // 财神像 + 呼吸光晕（可点写心愿）
+          // 财神像 + 呼吸光晕（点香后可点，写下祈福话）
           Stack({ alignContent: Alignment.Bottom }) {
             Column()
               .width(260)
@@ -526,9 +263,9 @@ export struct CaiShenHallPage {
               .objectFit(ImageFit.Contain)
           }
           .width('100%')
-          .height('60%')
-          .constraintSize({ maxHeight: 236 })
-          .onClick(() => this.openWish())
+          .height('58%')
+          .constraintSize({ maxHeight: 220 })
+          .onClick(() => this.openBlessingImage())
 
           Blank()
             .layoutWeight(1)
@@ -555,17 +292,20 @@ export struct CaiShenHallPage {
                       ]
                     })
                     .shadow({ radius: 6, color: 'rgba(255, 140, 50, 0.75)' })
-                    .scale({ x: this.smokeBob ? 1.18 : 1, y: this.smokeBob ? 1.18 : 1 })
+                    .scale({
+                      x: 1 + 0.15 * (1 + Math.sin(this.smokePhase * Math.PI / 18)) / 2,
+                      y: 1 + 0.15 * (1 + Math.sin(this.smokePhase * Math.PI / 18)) / 2
+                    })
                     .opacity(this.emberOn ? 1 : 0)
-                    .animation({ duration: 300, curve: Curve.EaseInOut })
+                    .animation({ duration: 260, curve: Curve.EaseInOut })
                   Column()
                     .width(4)
-                    .height(44)
+                    .height(60)
                     .borderRadius(2)
                     .backgroundColor('#8A5A34')
                 }
                 .width(10)
-                .position({ x: '50%', y: -28 })
+                .position({ x: '50%', y: -42 })
                 .translate({ x: -5, y: this.stickDown ? 0 : -40 })
                 .opacity(this.stickDown ? 1 : 0)
                 .animation({ duration: 280, curve: Curve.EaseOut })
@@ -577,32 +317,45 @@ export struct CaiShenHallPage {
                 .aspectRatio(327 / 219)
                 .objectFit(ImageFit.Contain)
 
-              // 香烟
+              // 香烟：细烟线 + 6 团烟柱单向上升消散（非来回摆动）
               if (this.incenseLit) {
-                ForEach([0, 1, 2], (i: number) => {
+                // 细烟线：香头上方一缕轻烟，随烟柱周期轻微呼吸
+                Column()
+                  .width(2)
+                  .height(16)
+                  .borderRadius(1)
+                  .backgroundColor('rgba(255, 255, 255, 0.30)')
+                  .position({ x: '50%', y: -56 })
+                  .translate({ x: -1 })
+                  .opacity(0.42 + 0.18 * Math.sin(this.smokePhase * Math.PI / 18))
+                  .animation({ duration: 260, curve: Curve.Linear })
+                  .hitTestBehavior(HitTestMode.None)
+                // 烟团：6 团相位错开 1/6，每团从香头升起→变大→变淡→消散，走完一圈回卷到香头（消散后再现，视觉连续）
+                ForEach([0, 1, 2, 3, 4, 5], (i: number) => {
                   Column()
-                    .width(10)
-                    .height(10)
-                    .borderRadius(5)
+                    .width(9 + 11 * this.smokeT(i))
+                    .height(9 + 11 * this.smokeT(i))
+                    .borderRadius((9 + 11 * this.smokeT(i)) / 2)
                     .radialGradient({
                       center: ['50%', '50%'],
                       radius: '50%',
-                      colors: [['rgba(255, 255, 255, 0.65)', 0.0], ['rgba(255, 255, 255, 0)', 1.0]]
+                      colors: [['rgba(255, 255, 255, 0.90)', 0.0], ['rgba(255, 255, 255, 0)', 1.0]]
                     })
-                    .opacity(this.smokeBob ? 0.22 : 0.55)
-                    .position({ x: '50%', y: -32 })
+                    .opacity(this.smokeOp(i))
+                    .position({ x: '50%', y: -50 })
                     .translate({
-                      x: (i - 1) * 10 - 4,
-                      y: this.smokeBob ? -46 - i * 8 : -24 - i * 8
+                      x: 6 * Math.sin(this.smokeT(i) * 2 * Math.PI + i * Math.PI / 3),
+                      y: -6 - 56 * this.smokeT(i)
                     })
-                    .animation({ duration: 900, curve: Curve.Linear })
+                    // 动画时长与相位推进间隔(260ms)一致，回卷瞬间两端透明度=0，下移不可见
+                    .animation({ duration: 260, curve: Curve.Linear })
                     .hitTestBehavior(HitTestMode.None)
                 }, (i: number) => i.toString())
               }
             }
             .width('100%')
             .layoutWeight(1)
-            .constraintSize({ maxHeight: 110 })
+            .constraintSize({ maxHeight: 104 })
 
             // 供桌
             Column()
@@ -622,32 +375,34 @@ export struct CaiShenHallPage {
               .textAlign(TextAlign.Center)
           }
           .width('100%')
-          .height('38%')
-          .constraintSize({ maxHeight: 140 })
+          .height('30%')
+          .constraintSize({ maxHeight: 130 })
           .justifyContent(FlexAlign.End)
           .onClick(() => this.onCenser())
         }
         .width('100%')
         .layoutWeight(1)
 
-        // 合规说明（仅视觉效果，不承诺任何祈福效力）
-        Text('✦ 定制陈设 · 布置自己的财神殿 · 仅视觉效果 ✦')
+        // 写下祈福话 → 生成电子祈福图（点香后可用；图片可保存到手机）
+        Button('写下祈福话 · 生成祈福图')
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#1a1a0a')
+          .backgroundColor('#FFD700')
+          .borderRadius(22)
+          .height(44)
+          .width('78%')
+          .shadow({ radius: 14, color: 'rgba(255, 209, 0, 0.35)', offsetY: 3 })
+          .margin({ top: 8, bottom: 4 })
+          .onClick(() => this.openBlessingImage())
+
+        Text(this.incenseLit ? '心诚则灵 · 生成的祈福图可保存到手机' : '先点一炷香，再写下祈福话')
           .fontSize(10)
           .fontColor('rgba(253, 246, 227, 0.72)')
           .width('100%')
           .height(16)
           .textAlign(TextAlign.Center)
-          .margin({ top: 6, bottom: 4 })
-
-        // 四件陈设：等宽等高，唯一购买/陈列入口
-        Row() {
-          ForEach(WARES, (def: WareDef) => {
-            this.WareCell(def)
-          }, (def: WareDef) => def.key)
-        }
-        .width('100%')
-        .height(124)
-        .padding({ left: 14, right: 14 })
+          .margin({ bottom: 4 })
 
         // 心意值条
         Row() {
@@ -678,20 +433,6 @@ export struct CaiShenHallPage {
           .layoutWeight(1)
           .height('100%')
           .justifyContent(FlexAlign.Center)
-
-          Column() {
-            Text(`${this.hallVM.lampStreak} 天`)
-              .fontSize(16)
-              .fontWeight(FontWeight.Bold)
-              .fontColor('#FFD100')
-            Text('连续点亮')
-              .fontSize(10)
-              .fontColor('rgba(253, 246, 227, 0.68)')
-              .margin({ top: 1 })
-          }
-          .layoutWeight(1)
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
         }
         .width('100%')
         .height(44)
@@ -706,20 +447,7 @@ export struct CaiShenHallPage {
       // 顶部 44vp 安全距：匾额下移到状态栏/中置挖孔之下，背景层仍铺满全屏
       .padding({ top: 44 })
 
-      // 飘字
-      Text(this.flyText)
-        .fontSize(17)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#FFD100')
-        .shadow({ radius: 6, color: 'rgba(0, 0, 0, 0.6)', offsetY: 1 })
-        .position({ x: '50%', y: '52%' })
-        .translate({ x: '-50%' })
-        .opacity(this.flyVisible ? 1 : 0)
-        .scale({ x: this.flyVisible ? 1 : 0.9, y: this.flyVisible ? 1 : 0.9 })
-        .animation({ duration: 260, curve: Curve.EaseOut })
-        .hitTestBehavior(HitTestMode.None)
-
-      // 轻提示（心意值不足 / 已陈设 / 香火已点等）
+      // 轻提示（心意值不足 / 香火已点 / 请先点香等）
       Text(this.toastText)
         .fontSize(13)
         .fontColor('#FFD700')
@@ -736,86 +464,5 @@ export struct CaiShenHallPage {
     .width('100%')
     .height('100%')
     .backgroundColor('#100a0c')
-  }
-}
-
-// 写心愿弹窗（复用 CloudService.createWish）
-@CustomDialog
-struct WishDialog {
-  controller: CustomDialogController
-  deityId: number = 1
-  onSubmit: (content: string) => void = () => {}
-  /** 弹窗被关闭（按钮 / 点外 / 系统回收）时通知页面释放控制器引用，允许下次再开 */
-  onClosed: () => void = () => {}
-  /** 关闭兜底：注入的 controller 可能为 undefined，由创建方用自己持有的引用关闭（同 DonateDialog） */
-  onClose: () => void = () => {}
-  @State text: string = ''
-
-  /**
-   * 关闭弹窗。⚠️ 闪退修复（2026-10-20）：Pura X 实测注入的 this.controller 可能为 undefined
-   * —— 未判空直接 .close() 会 "Cannot read property close of undefined" 闪退；只判空又「点了没反应」。
-   * 因此：① 优先用注入的 controller；② 注入缺失/close 抛错时走 onClose 由创建方关闭（必然有效）。
-   */
-  private closeDialog(): void {
-    const c = this.controller
-    if (c !== undefined && c !== null) {
-      try {
-        c.close()
-        return
-      } catch (err) {
-        const msg = (err instanceof Error) ? err.message : JSON.stringify(err)
-        console.error('[WishDialog] controller.close failed: ' + msg)
-      }
-    }
-    this.onClose()
-  }
-
-  aboutToDisappear(): void {
-    this.onClosed()
-  }
-
-  build() {
-    Column() {
-      Text('写下今日心愿')
-        .fontSize(17)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#FFD700')
-        .margin({ bottom: 10 })
-      TextInput({ placeholder: '财神见证，记一笔心愿', text: this.text })
-        .onChange((v: string) => {
-          this.text = v
-        })
-        .width('100%')
-        .height(44)
-        .backgroundColor('rgba(255, 255, 255, 0.08)')
-        .fontColor('#fdf6e3')
-      Row() {
-        Button('取消')
-          .fontSize(13)
-          .backgroundColor(Color.Transparent)
-          .fontColor('#FFD700')
-          .border({ width: 1, color: 'rgba(255, 209, 0, 0.4)' })
-          .onClick(() => {
-            this.closeDialog()
-          })
-        Button('记下')
-          .fontSize(13)
-          .backgroundColor('#FFD700')
-          .fontColor('#1a1a0a')
-          .onClick(() => {
-            this.onSubmit(this.text)
-            this.closeDialog()
-          })
-      }
-      .width('100%')
-      .justifyContent(FlexAlign.SpaceBetween)
-      .margin({ top: 14 })
-    }
-    .width('84%')
-    .padding(18)
-    .backgroundColor('#580E15')
-    .borderRadius(16)
-    .border({ width: 1.5, color: 'rgba(255, 209, 0, 0.3)' })
-    .clip(true)
   }
 }

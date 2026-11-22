@@ -19,7 +19,7 @@ interface DeityStats {
   total: number
 }
 
-const PREF_NAME = 'mashen_enrich_prefs'
+const PREF_NAME = 'caishen_enrich_prefs'
 const KEY_CHECKIN = 'checkin'
 const KEY_GAME_RECORDS = 'gameRecords'
 const KEY_DIARY_NOTES = 'diaryNotes'

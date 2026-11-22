@@ -54,14 +54,31 @@ function reportDecorError(err: Object, toast: ToastFn): void {
     }
   }
   let code: number = -1
-  if (err !== undefined && err !== null) {
+  if (err instanceof PaymentError) {
+    code = err.rawCode
+  } else if (err !== undefined && err !== null) {
     const e = err as BusinessError
     if (typeof e.code === 'number') {
       code = e.code
     }
   }
   logError('purchase failed: code=' + code, err)
-  toast('解锁失败，请稍后重试')
+  // 未映射的具体错误码直接透出到 toast，省去每次抓 hilog；对高频码给可行动提示
+  if (code === 1001860001) {
+    // 1001860001 = System internal error（SDK @hms.core.iap）。官方 FAQ 排查顺序：
+    // AGC 应用内支付服务未开通/激活 → 签名证书指纹未注册（沙盒未激活）→ 商品未上架/草稿。
+    toast('解锁失败（1001860001）· 多为 AGC 应用内支付未开通 / 商品未上架 / 签名证书未配置')
+  } else if (code === 1001860005) {
+    toast('解锁失败（1001860005）· 网络连接错误，请检查网络后重试')
+  } else if (code === 1001860009) {
+    toast('解锁失败（1001860009）· 支付未完成')
+  } else if (code === 1001860011) {
+    toast('解锁失败（1001860011）· 订单处理中，稍后再试')
+  } else if (code !== -1) {
+    toast('解锁失败（' + code + '）· 请稍后重试')
+  } else {
+    toast('解锁失败，请稍后重试')
+  }
 }
 
 /** 消耗商品（finishPurchase）——本地解锁已完成，消耗失败留 recoverDecorPending 补单 */
@@ -183,7 +200,7 @@ export struct DecorPayDialog {
       Row()
         .width('100%')
         .height(4)
-        .backgroundColor('#D23B2E')
+        .backgroundColor('#A01124')
 
       Text(this.title && this.title.length > 0 ? this.title : this.product.label)
         .fontSize(19)

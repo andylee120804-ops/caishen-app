@@ -152,7 +152,7 @@ struct KowtowCard2x2 {
       })
 
       // ④ 打赏入口（兄弟节点，置于计数上方；命中测试遮断下层磕头）→ route: mine + tip=1
-      Text('♥ 打赏')
+      Text('♥ 支持作者')
         .fontSize(9)
         .fontColor('rgba(255, 215, 0, 0.85)')
         .maxLines(1)

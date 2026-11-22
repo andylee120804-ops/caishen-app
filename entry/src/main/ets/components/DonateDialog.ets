@@ -57,7 +57,7 @@ function logError(tag: string, err: Object): void {
 async function completeTip(iap: IapPaymentService, result: ExtraDrawResult, thanks: boolean,
   toast: ToastFn): Promise<void> {
   if (thanks) {
-    toast('感谢您的打赏 · 心意已收 🙏')
+    toast('感谢您的支持 · 心意已收 🙏')
   }
   // ① 云端记账 → 公益排行榜数据源。金额由服务端按商品白名单算（防篡改），
   //    purchaseToken 做幂等键，重复上报（含补单路径）不会双记。
@@ -90,11 +90,11 @@ function reportPayError(err: Object, toast: ToastFn): void {
   if (err instanceof PaymentError) {
     const pe = err as PaymentError
     if (pe.kind === PaymentErrorKind.NEED_LOGIN) {
-      toast('请先登录华为帐号后打赏')
+      toast('请先登录华为帐号后支持作者')
       return
     }
     if (pe.kind === PaymentErrorKind.REGION) {
-      toast('当前地区暂不支持打赏')
+      toast('当前地区暂不支持')
       return
     }
     if (pe.kind === PaymentErrorKind.PRODUCT) {
@@ -104,7 +104,7 @@ function reportPayError(err: Object, toast: ToastFn): void {
     if (pe.kind === PaymentErrorKind.ALREADY_OWNED) {
       // 注意：购买前的 recoverTipPending 已经查过未完成订单，走到这里说明那一次没查到
       // （华为侧同步延迟）。真实补单发生在下次启动/再次打赏时，别谎称「已恢复」。
-      toast('有未完成的打赏订单，稍后会自动补单')
+      toast('有未完成的订单，稍后会自动补单')
       return
     }
   }
@@ -116,7 +116,7 @@ function reportPayError(err: Object, toast: ToastFn): void {
     }
   }
   logError('purchase failed: code=' + code, err)
-  toast('打赏失败，请稍后重试')
+  toast('支持失败，请稍后重试')
 }
 
 /** 成功回调（页面闭包）：异常只记日志，不能把它当成支付失败去提示用户 */
@@ -221,7 +221,7 @@ export struct DonateDialog {
   /** 支付按钮文案（不用 getter，理由见 tierAt 注释） */
   private payLabel(): string {
     const p: TipProduct = this.targetProduct()
-    return `打赏 ¥${p.amount} · ${p.label}`
+    return `支持作者 ¥${p.amount} · ${p.label}`
   }
 
   /**
@@ -296,9 +296,9 @@ export struct DonateDialog {
       Row()
         .width('100%')
         .height(4)
-        .backgroundColor('#D23B2E')
+        .backgroundColor('#A01124')
 
-      Text(this.lockTitle && this.lockTitle.length > 0 ? this.lockTitle : '支持作者  ·  打赏')
+      Text(this.lockTitle && this.lockTitle.length > 0 ? this.lockTitle : '支持作者')
         .fontSize(19)
         .fontWeight(FontWeight.Bold)
         .fontColor('#FFD700')
@@ -312,7 +312,7 @@ export struct DonateDialog {
             .fontSize(14)
             .fontColor('rgba(253, 246, 227, 0.75)')
             .margin({ top: 4, bottom: 14 })
-          Text('打赏作者的一份心意 · 支持独立开发')
+          Text('支持作者的一份心意 · 支持独立开发')
             .fontSize(11)
             .fontColor('rgba(253, 246, 227, 0.75)')
             .fontStyle(FontStyle.Italic)
@@ -320,7 +320,7 @@ export struct DonateDialog {
         .width('100%')
         .alignItems(HorizontalAlign.Center)
       } else {
-        Text('打赏作者的一份心意 · 支持独立开发')
+        Text('支持作者的一份心意 · 支持独立开发')
           .fontSize(11)
           .fontColor('rgba(253, 246, 227, 0.75)')
           .fontStyle(FontStyle.Italic)
@@ -349,7 +349,7 @@ export struct DonateDialog {
         })
 
       // ── 用途小字 + 公益明细 ──
-      Text('打赏款项用于作者后续开发和维护')
+      Text('支持款项用于作者后续开发和维护')
         .fontSize(10)
         .fontColor('rgba(253, 246, 227, 0.75)')
         .margin({ top: 10, bottom: 2 })
@@ -373,7 +373,7 @@ export struct DonateDialog {
         this.getUIContext().getRouter().pushUrl({ url: 'pages/DonationDetailPage' })
       })
 
-      Text('打赏为自愿赠与 · 不承诺任何效果')
+      Text('支持为自愿赠与 · 不承诺任何效果')
         .fontSize(9)
         .fontColor('rgba(253, 246, 227, 0.75)')
         .margin({ bottom: 12 })
