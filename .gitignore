@@ -54,3 +54,6 @@ entry/src/main/resources/rawfile/agconnect-services.bak
 /_*.jpeg
 /_l2.json
 /_layout.json
+
+# 预览产物
+/preview-out/

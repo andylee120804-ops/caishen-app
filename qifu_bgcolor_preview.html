@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祈福页 · 新背景色 + 财神文字重叠修复 预览</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#120e06; color:#fdf6e3; font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    padding:26px; display:flex; flex-direction:column; align-items:center; }
+  h1 { font-size:18px; color:#FFD700; font-weight:bold; margin-bottom:4px; }
+  .sub { font-size:12.5px; color:rgba(253,246,227,0.62); margin-bottom:20px; text-align:center; max-width:1020px; line-height:1.7; }
+  .row { display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+  .cell { display:flex; flex-direction:column; align-items:center; }
+  .tag { font-size:13px; font-weight:bold; margin-bottom:10px; padding:4px 16px; border-radius:20px; }
+  .tag.old { color:#fff; background:#a53a3a; }
+  .tag.new { color:#fff; background:#6f1a24; }
+  .tag.fix { color:#1a1a0a; background:#2ecc71; }
+  .phone { width:390px; height:844px; border-radius:36px; overflow:hidden; position:relative;
+    box-shadow:0 14px 44px rgba(0,0,0,.65); }
+  .bg-old { background:linear-gradient(180deg,#D23B2E 0%,#A51D16 55%,#6F120E 100%); }
+  .bg-new { background:linear-gradient(180deg,#A01123 0%,#8F1120 55%,#86111C 100%); }
+  .glow { position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(58% 58% at 50% 12%, rgba(255,209,0,0.40) 0%, rgba(255,209,0,0) 100%); }
+  .deity-array { position:absolute; left:0; width:100%; height:50%; }
+  .deity { position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; }
+  .deity .halo { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; }
+  .deity .iconwrap { position:relative; display:flex; align-items:center; justify-content:center; }
+  .deity .ring { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; }
+  .deity img { display:block; object-fit:contain; }
+  .deity .name { font-weight:bold; color:#FFD700; margin-top:8px; white-space:nowrap; }
+  .deity .dir { font-size:10px; color:rgba(255,209,0,0.6); margin-top:4px; white-space:nowrap; }
+  .deity .meaning { font-size:10px; color:rgba(253,246,227,0.5); margin-top:2px; line-height:15px; text-align:center; white-space:pre-line; }
+  .incense { position:absolute; left:50%; top:70%; transform:translate(-50%,-50%); }
+  .incense img { width:120px; height:108px; object-fit:contain; }
+  .incense-label { position:absolute; left:50%; top:76%; transform:translate(-50%,-50%); font-size:14px; color:rgba(253,246,227,0.75); white-space:nowrap; }
+  .top-words { position:absolute; left:50%; transform:translateX(-50%); text-align:center; white-space:nowrap; }
+  .top-words .main { font-size:18px; font-weight:bold; color:#FFD700; }
+  .top-words .sub { font-size:12px; color:#fff; margin-top:4px; }
+  /* 首页副标题 + 按钮 */
+  .home-sub { position:absolute; left:50%; top:77%; transform:translate(-50%,-50%); font-size:14px; color:rgba(255,209,0,0.85); font-style:italic; white-space:nowrap; }
+  .home-btn { position:absolute; left:50%; top:84%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:10px;
+    background:#FFD700; color:#1a1a0a; font-size:18px; font-weight:bold; padding:10px 20px 10px 20px; border-radius:25px; white-space:nowrap;
+    box-shadow:0 4px 20px rgba(255,209,0,.4); }
+  .home-btn .yuanbao { font-size:20px; }
+  .almanac { position:absolute; left:50%; top:46px; transform:translateX(-50%); width:82%;
+    background:#3d0a10; border-radius:10px; padding:8px 8px; text-align:center; }
+  .almanac .t1 { font-size:10px; color:rgba(255,209,0,0.8); letter-spacing:3px; }
+  .almanac .t2 { font-size:20px; font-weight:bold; color:#FFD700; }
+  .almanac .t3 { font-size:11px; color:rgba(253,246,227,0.7); margin-top:2px; }
+  .note { margin-top:20px; font-size:12.5px; color:rgba(253,246,227,0.6); max-width:1020px; line-height:1.85; }
+  code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+  <h1>祈福页面 · 新背景色（app 图标绛红）+ 财神文字重叠修复</h1>
+  <div class="sub">
+    新背景取 app 图标同款深绛红渐变 <code>#A01123 → #8F1120 → #86111C</code>（原为亮朱红 <code>#D23B2E → #A51D16 → #6F120E</code>）。<br>
+    同时修复进香阶段「每尊财神下方文字压香炉」的问题：顶部祝语并成单行、阵型顶锚上移，给香炉留出空间。
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <div class="tag old">① 祈福 Tab 首页 · 现背景</div>
+      <div class="phone bg-old" id="home-old"><div class="glow"></div></div>
+    </div>
+    <div class="cell">
+      <div class="tag new">② 祈福 Tab 首页 · 新背景</div>
+      <div class="phone bg-new" id="home-new"><div class="glow"></div></div>
+    </div>
+    <div class="cell">
+      <div class="tag fix">③ 进香阶段 · 新背景 + 文字已修</div>
+      <div class="phone bg-new" id="prayer-fix"><div class="glow"></div></div>
+    </div>
+  </div>
+
+  <div class="note" id="note">渲染中…</div>
+
+<script>
+  const DEITIES = {
+    1:{name:'王亥',direction:'中路',meaning:'商祖开路，牛转乾坤，通达八方',color:'#F0C419',img:'1.png'},
+    2:{name:'比干',direction:'东路',meaning:'公道无私，正财稳进，童叟无欺',color:'#D98C2B',img:'2.png'},
+    3:{name:'关羽',direction:'西路',meaning:'重义守信，镇宅辟邪，合伙共赢',color:'#C0392B',img:'3.png'},
+    4:{name:'柴荣',direction:'南路',meaning:'帝王之气，破局开路，做大做强',color:'#E8741E',img:'4.png'},
+    5:{name:'赵公明',direction:'北路',meaning:'黑虎镇守，驱邪纳福，正财聚宝',color:'#8A5A1E',img:'5.png'},
+  };
+  const LAYOUT={1:{x:0.50,y:0.52,size:100},2:{x:0.22,y:0.38,size:60},3:{x:0.78,y:0.38,size:60},4:{x:0.39,y:0.12,size:52},5:{x:0.61,y:0.12,size:52}};
+  const todayId=5;
+  function anchorOf(id){ if(id===todayId)return 1; if(id===1)return todayId; return id; }
+  function hx(h,a){ const c=h.replace('#',''); return `rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`; }
+
+  function renderDeities(arrayEl, topPct, withMeaning) {
+    Object.keys(DEITIES).forEach(idStr=>{
+      const id=Number(idStr), d=DEITIES[id], L=LAYOUT[anchorOf(id)], size=L.size, hl=(id===todayId);
+      const el=document.createElement('div'); el.className='deity';
+      el.style.left=(L.x*390)+'px'; el.style.top=(L.y*(arrayEl.clientHeight))+ 'px';
+      const halo=document.createElement('div'); halo.className='halo';
+      const hs=size*1.5; halo.style.cssText=`width:${hs}px;height:${hs}px;background:radial-gradient(circle,${hx(d.color, hl?0.28:0.10)} 0%,transparent 70%);`;
+      el.appendChild(halo);
+      const wrap=document.createElement('div'); wrap.className='iconwrap'; wrap.style.cssText=`width:${size+12}px;height:${size+12}px;`;
+      const ring=document.createElement('div'); ring.className='ring'; ring.style.borderColor=d.color; wrap.appendChild(ring);
+      const img=document.createElement('img'); img.src='entry/src/main/resources/rawfile/deities/'+d.img; img.style.cssText=`width:${size}px;height:${size}px;`; wrap.appendChild(img);
+      el.appendChild(wrap);
+      const name=document.createElement('div'); name.className='name'; name.style.fontSize=(hl?18:14)+'px'; name.textContent=d.name; el.appendChild(name);
+      const dir=document.createElement('div'); dir.className='dir'; dir.textContent='· '+d.direction+' ·'; el.appendChild(dir);
+      if(withMeaning){ const m=document.createElement('div'); m.className='meaning'; m.style.width=(size*1.6)+'px'; m.textContent=d.meaning.replace('，','\n'); el.appendChild(m); }
+      arrayEl.appendChild(el);
+    });
+  }
+
+  // —— 首页（① ②）：DailyAlmanac + 五神阵 + 副标题 + 按钮 ——
+  function buildHome(ph){
+    const p=document.getElementById(ph);
+    const al=document.createElement('div'); al.className='almanac';
+    al.innerHTML='<div class="t1">— 今日主财神 —</div><div class="t2">赵公明</div><div class="t3">北路 · 黑虎镇守，驱邪纳福，正财聚宝</div>';
+    p.appendChild(al);
+    const arr=document.createElement('div'); arr.className='deity-array'; arr.style.top='20%';
+    p.appendChild(arr); renderDeities(arr,0.20,false); // 首页阵型只留名号+方位，视觉更清爽
+    const sub=document.createElement('div'); sub.className='home-sub'; sub.textContent='「心诚则灵，财运亨通」'; p.appendChild(sub);
+    const btn=document.createElement('div'); btn.className='home-btn'; btn.innerHTML='<span class="yuanbao">🪙</span>开始祈福'; p.appendChild(btn);
+    // 等布局就绪后调整阵型高度（clientHeight 依赖渲染）
+    arr.style.height='50%';
+  }
+  buildHome('home-old'); buildHome('home-new');
+
+  // —— 进香阶段（③）：祝语单行 + 五神阵顶锚12%（含寓意）+ 香炉 ——
+  function buildPrayer(ph){
+    const p=document.getElementById(ph);
+    const tw=document.createElement('div'); tw.className='top-words'; tw.style.top='44px';
+    tw.innerHTML='<div class="main">✦ 心诚则灵 · 财运亨通 ✦</div>';
+    p.appendChild(tw);
+    const arr=document.createElement('div'); arr.className='deity-array'; arr.style.top='12%'; arr.style.height='50%';
+    p.appendChild(arr); renderDeities(arr,0.12,true);
+    const inc=document.createElement('div'); inc.className='incense'; inc.innerHTML='<img src="entry/src/main/resources/rawfile/props/incense_burner.png">'; p.appendChild(inc);
+    const lab=document.createElement('div'); lab.className='incense-label'; lab.textContent='三炷香 · 敬献财神'; p.appendChild(lab);
+  }
+  buildPrayer('prayer-fix');
+
+  setTimeout(()=>{
+    document.getElementById('note').innerHTML =
+      '说明：① vs ② 只看<b>背景色</b>变化（更暗的绛红，和桌面图标呼应，金色文字对比度也会更高）；' +
+      '③ 是进香阶段——顶部祝语并成单行、五神阵上移，主位财神下方的字与香炉拉开距离，不再重叠。<br>' +
+      '若认可，我按这个改：① 各祈福页背景统一换成 <code>#A01123 → #8F1120 → #86111C</code>；' +
+      '② PrayerCard 阵型顶锚 + 祝语单行。确认后我再动 ArkTS。';
+  }, 450);
+</script>
+</body>
+</html>

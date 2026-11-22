@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23f9ca24'/%3E%3Ctext x='50' y='68' font-size='52' text-anchor='middle'%3E%E5%85%B3%3C/text%3E%3C/svg%3E">
+<title>关羽神像改版候选 · 闭眼 + 刀头朝上</title>
+<style>
+  :root {
+    --bg: #1a1a0a;
+    --panel: #241f12;
+    --gold: #f9ca24;
+    --cream: #fdf6e3;
+    --red: #e74c3c;
+    --green: #2ecc71;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 32px 20px 60px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 26px;
+    color: var(--gold);
+    letter-spacing: 4px;
+    margin-bottom: 6px;
+  }
+  .sub {
+    text-align: center;
+    color: rgba(253, 246, 227, 0.75);
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(249, 202, 36, 0.35);
+    border-radius: 14px;
+    padding: 14px;
+    width: 340px;
+    transition: transform .15s ease, border-color .15s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--gold); }
+  .card.pick {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold), 0 8px 30px rgba(249, 202, 36, 0.25);
+  }
+  .card h2 {
+    font-size: 16px;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+  .card .desc {
+    font-size: 12.5px;
+    color: rgba(253, 246, 227, 0.85);
+    line-height: 1.55;
+    margin-bottom: 10px;
+    min-height: 38px;
+  }
+  .imgwrap {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #3a3524;
+    line-height: 0;
+  }
+  .imgwrap img { width: 100%; height: auto; display: block; }
+  .checker { background: repeating-conic-gradient(#4a4534 0% 25%, #2e2a1e 0% 50%) 0 0/24px 24px; }
+  .tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 9px;
+    border-radius: 999px;
+    letter-spacing: 1px;
+  }
+  .tag.ok   { background: rgba(46, 204, 113, .92); color: #1a1a0a; }
+  .tag.warn { background: rgba(249, 202, 36, .92); color: #1a1a0a; }
+  .tag.bad  { background: rgba(231, 76, 60, .92); color: #fdf6e3; }
+  .tag.ref  { background: rgba(253, 246, 227, .85); color: #1a1a0a; }
+  .openlink {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--gold);
+    text-decoration: none;
+    text-align: center;
+    opacity: .8;
+  }
+  .openlink:hover { opacity: 1; text-decoration: underline; }
+  .note {
+    max-width: 1200px;
+    margin: 36px auto 0;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 18px 22px;
+    font-size: 13px;
+    line-height: 1.8;
+    color: rgba(253, 246, 227, 0.9);
+  }
+  .note b { color: var(--gold); }
+</style>
+</head>
+<body>
+  <h1>关羽神像改版候选</h1>
+  <p class="sub">要求：① 青龙偃月刀刀头朝上（原图朝下） ② 眼睛改为闭眼 ｜ 选定后做抠图 + 缩放 512 入库</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>① 旧版对照（已备份到 tmp/guanyu-backup/）</h2>
+      <div class="desc">修改前的原图：刀头横在底部朝下、眼睛睁开。</div>
+      <div class="imgwrap"><span class="tag ref">旧版</span><img src="tmp/guanyu-backup/guanyu.jpg" alt="旧版原图"></div>
+      <div class="imgwrap checker" style="margin-top:8px"><img src="tmp/guanyu-backup/3.png" alt="旧版透明图"></div>
+      <a class="openlink" href="tmp/guanyu-backup/guanyu.jpg" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card pick">
+      <h2>② 已选定并入库：闭眼 + 刀头朝上</h2>
+      <div class="desc">r3_final_up：已抠图（颜色键+rembg）→ 512 落位 deities/3.png、_v2/guanyu.png、media/deity_3.png。下方透明版即当前 App 实际使用的 3.png。</div>
+      <div class="imgwrap"><span class="tag ok">已入库</span><img src="tmp/guanyu-edit-candidates/r3_final_up.jpg" alt="闭眼+刀头朝上"></div>
+      <div class="imgwrap checker" style="margin-top:8px"><img src="entry/src/main/resources/rawfile/deities/3.png" alt="入库透明版"></div>
+      <a class="openlink" href="entry/src/main/resources/rawfile/deities/3.png" target="_blank">新窗口打开透明大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>③ 只改闭眼（刀保持原样）</h2>
+      <div class="desc">r2_eyes：单步闭眼成功（实心弧线闭眼）。若最终想只改眼睛、不动刀，选这版。</div>
+      <div class="imgwrap"><span class="tag ok">闭眼</span><img src="tmp/guanyu-edit-candidates/r2_eyes.jpg" alt="仅闭眼"></div>
+      <a class="openlink" href="tmp/guanyu-edit-candidates/r2_eyes.jpg" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>④ 抬刀中间步（45°斜举）</h2>
+      <div class="desc">r3_s2_high：链式抬刀的中途版本，刀已举过头顶但未完全竖直。看中间态效果。</div>
+      <div class="imgwrap"><span class="tag warn">中间态</span><img src="tmp/guanyu-edit-candidates/r3_s2_high.jpg" alt="抬刀中间态"></div>
+      <a class="openlink" href="tmp/guanyu-edit-candidates/r3_s2_high.jpg" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>⑤ 一轮备选 v1（整身缩放版）</h2>
+      <div class="desc">第一轮生成的 v1：人物缩小左移的整体重绘版。仅作风格备选，刀向未改。</div>
+      <div class="imgwrap"><span class="tag bad">刀未改</span><img src="tmp/guanyu-edit-candidates/guanyu_edit_v1.jpg" alt="一轮v1"></div>
+      <a class="openlink" href="tmp/guanyu-edit-candidates/guanyu_edit_v1.jpg" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>⑥ 一轮备选 v2（微调版）</h2>
+      <div class="desc">第一轮生成的 v2：整体轻微重绘。仅作风格备选，刀向未改。</div>
+      <div class="imgwrap"><span class="tag bad">刀未改</span><img src="tmp/guanyu-edit-candidates/guanyu_edit_v2.jpg" alt="一轮v2"></div>
+      <a class="openlink" href="tmp/guanyu-edit-candidates/guanyu_edit_v2.jpg" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>⑦ 新 App 图标（朱红底+新关公·已部署）</h2>
+      <div class="desc">按旧图标方式重做：同底色 #92111F + 新关公全身居中（76% 高）。无渐变/光晕/装饰，与旧版构图一致。</div>
+      <div class="imgwrap"><span class="tag ok">已部署</span><img src="AppScope/resources/base/media/app_icon.png" alt="新图标"></div>
+      <a class="openlink" href="AppScope/resources/base/media/app_icon.png" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+
+    <div class="card">
+      <h2>⑧ 旧图标（备份）</h2>
+      <div class="desc">修改前的图标（app_icon_backup.png），同样是朱红底 + 旧关公全身。</div>
+      <div class="imgwrap"><span class="tag ref">旧版</span><img src="AppScope/resources/base/media/app_icon_backup.png" alt="旧图标"></div>
+      <a class="openlink" href="AppScope/resources/base/media/app_icon_backup.png" target="_blank">新窗口打开大图 ↗</a>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>本轮修复（针对「脸融入背景」+「图标一塌糊涂」）</b>：
+    <br>· <b>脸颜色</b>：根因是我之前的「颜色键黑底」抠图把 alpha 搞坏了（新版只有 11% 实色，全是半透明雾）。已重新用纯 rembg 抠图（97% 实色）+ 硬掩码修脸色（脸均值 206,84,65 ≈ 旧版 205,94,68）。
+    <br>· <b>App 图标</b>：旧图标是「朱红底 #92111F + 关公全身」（无渐变/光晕/装饰）。已按同样方式用新关公重做并部署（⑦）。旧图标备份为 app_icon_backup.png（⑧）。
+    <br>· <b>隐私弹窗</b>：根因有两个 —— ① 同意回调在弹窗关闭之后才触发，Pura X 上 <code>controller</code> 为空时会先走 onClose 销毁弹窗，回调被吞 → 同意状态永远写不进去；② 同意状态存在业务文件里，且依赖 PrayerViewModel 初始化（排在 PrefsRename 异步迁移之后），初始化没完成时写入被静默丢弃、无提示无重试。已改为独立文件 <code>caishen_privacy_prefs</code> 的 PrivacyConsent（onCreate 同步拿 context、惰性读、put+flush+读回校验+重试、先回写后关窗）。构建通过（BUILD SUCCESSFUL）。
+    <br><b>如需调整</b>（脸颜色深浅 / 图标构图），告诉我即可。
+  </div>
+</body>
+</html>
