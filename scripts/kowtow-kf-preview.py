@@ -1,0 +1,36 @@
+"""生成关键帧动画预览 HTML：完整复刻 WorshipperView 的 4 帧交叉淡入淡出逻辑，
+浏览器打开即可预览磕头动画（含 3 连磕头节奏），无需构建部署。"""
+from pathlib import Path
+
+html = """<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#2b2016;color:#eee;text-align:center;padding:24px}
+.stage{width:300px;height:300px;background:#f7f1e3;border-radius:16px;margin:12px auto;position:relative;overflow:hidden}
+.stack{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:240px;height:240px}
+.stack img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+button{margin:6px;padding:8px 22px;font-size:15px}
+p{color:#cbb}
+</style></head><body>
+<h1>磕头动画预览：4 关键帧交叉淡入淡出（与 WorshipperView 逻辑一致）</h1>
+<div class="stage"><div class="stack">
+  <img id="k1" src="../entry/src/main/resources/rawfile/animations/kowtow_kf1.png">
+  <img id="k2" src="../entry/src/main/resources/rawfile/animations/kowtow_kf2.png">
+  <img id="k3" src="../entry/src/main/resources/rawfile/animations/kowtow_kf3.png">
+  <img id="k4" src="../entry/src/main/resources/rawfile/animations/kowtow_kf4.png">
+</div></div>
+<button onclick="play3()">磕 3 个头</button><button onclick="stop()">停</button>
+<p>bowFrame 0→50，40ms/帧；淡入淡出节点 t=0.14-0.40 / 0.44-0.58 / 0.60-0.70</p>
+<script>
+const seg=(t,a,b)=>b<=a?(t>=b?1:0):Math.min(1,Math.max(0,(t-a)/(b-a)));
+function apply(f){const t=Math.min(1,Math.max(0,f/50));
+  const o=[1-seg(t,.14,.40),seg(t,.14,.40)*(1-seg(t,.44,.58)),seg(t,.44,.58)*(1-seg(t,.60,.70)),seg(t,.60,.70)];
+  for(let i=1;i<=4;i++)document.getElementById('k'+i).style.opacity=o[i-1];}
+let timer=null,bows=0;
+function play3(){stop();bows=3;step(0);}
+function step(f){apply(f);
+  if(f<50){timer=setTimeout(()=>step(f+1),40);}
+  else{bows--;if(bows>0){timer=setTimeout(()=>step(0),500);}else{apply(0);}}}
+function stop(){if(timer)clearTimeout(timer);timer=null;}
+apply(0);
+</script></body></html>"""
+Path("scripts/kowtow-kf-preview.html").write_text(html, encoding="utf-8")
+print("preview -> scripts/kowtow-kf-preview.html")

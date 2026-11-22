@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祈福进香 · 参考 mashen 排列方案对比</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#120e06; color:#fdf6e3; font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    padding:26px; display:flex; flex-direction:column; align-items:center; }
+  h1 { font-size:18px; color:#FFD700; font-weight:bold; margin-bottom:4px; }
+  .sub { font-size:12.5px; color:rgba(253,246,227,0.62); margin-bottom:20px; text-align:center; max-width:1020px; line-height:1.7; }
+  .row { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; justify-content:center; }
+  .cell { display:flex; flex-direction:column; align-items:center; }
+  .tag { font-size:13px; font-weight:bold; margin-bottom:10px; padding:4px 16px; border-radius:20px; }
+  .tag.a { color:#fff; background:#a53a3a; }
+  .tag.b { color:#1a1a0a; background:#2ecc71; }
+  .phone { width:390px; height:844px; border-radius:36px; overflow:hidden; position:relative;
+    box-shadow:0 14px 44px rgba(0,0,0,.65);
+    background:linear-gradient(180deg,#A01123 0%,#8F1120 55%,#86111C 100%); }
+  .glow { position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(58% 58% at 50% 12%, rgba(255,209,0,0.40) 0%, rgba(255,209,0,0) 100%); }
+  .deity-array { position:absolute; left:0; width:100%; height:50%; }
+  .deity { position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; }
+  .deity .halo { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; }
+  .deity .iconwrap { position:relative; display:flex; align-items:center; justify-content:center; }
+  .deity .ring { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; }
+  .deity img { display:block; object-fit:contain; }
+  .deity .name { font-weight:bold; color:#FFD700; margin-top:8px; white-space:nowrap; }
+  .deity .dir { font-size:10px; color:rgba(255,209,0,0.6); margin-top:4px; white-space:nowrap; }
+  .deity .meaning { font-size:10px; color:rgba(253,246,227,0.5); margin-top:2px; line-height:15px; text-align:center; white-space:pre-line; }
+  .incense { position:absolute; left:50%; top:70%; transform:translate(-50%,-50%); }
+  .incense img { width:120px; height:108px; object-fit:contain; }
+  .incense-label { position:absolute; left:50%; top:76%; transform:translate(-50%,-50%); font-size:14px; color:rgba(253,246,227,0.75); white-space:nowrap; }
+  .top-words { position:absolute; left:50%; transform:translateX(-50%); text-align:center; white-space:nowrap; }
+  .top-words .main { font-size:18px; font-weight:bold; color:#FFD700; }
+  .top-words .sub { font-size:12px; color:#fff; margin-top:4px; }
+  .note { margin-top:20px; font-size:12.5px; color:rgba(253,246,227,0.6); max-width:1020px; line-height:1.85; }
+  code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+  <h1>祈福 · 进香阶段：参考 mashen 紧凑排列</h1>
+  <div class="sub">
+    参照 mashen-app：把五路财神整体缩小（主位 100→80、侧神 60→54、顶神 52→48，横排更靠外 18%/82%），
+    再把阵型顶锚上移、顶部祝语并成单行。<br>
+    A=现状（大财神压香炉），B=仿 mashen 紧凑排列。
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <div class="tag a">A · 现状（财神大，文字压香炉）</div>
+      <div class="phone" id="phone-A"><div class="glow"></div><div class="deity-array" data-ph="A"></div><div class="incense"><img src="entry/src/main/resources/rawfile/props/incense_burner.png"></div><div class="incense-label">三炷香 · 敬献财神</div><div class="top-words" style="top:64px"><div class="main">✦ 心诚则灵 ✦</div><div class="sub">诚心叩拜 · 财运亨通</div></div></div>
+    </div>
+    <div class="cell">
+      <div class="tag b">B · 仿 mashen 紧凑排列</div>
+      <div class="phone" id="phone-B"><div class="glow"></div><div class="deity-array" data-ph="B"></div><div class="incense"><img src="entry/src/main/resources/rawfile/props/incense_burner.png"></div><div class="incense-label">三炷香 · 敬献财神</div><div class="top-words" style="top:44px"><div class="main">✦ 心诚则灵 · 财运亨通 ✦</div></div></div>
+    </div>
+  </div>
+
+  <div class="note" id="note">渲染中…</div>
+
+<script>
+  const DEITIES = {
+    1:{name:'王亥',direction:'中路',meaning:'商祖开路，牛转乾坤，通达八方',color:'#F0C419',img:'1.png'},
+    2:{name:'比干',direction:'东路',meaning:'公道无私，正财稳进，童叟无欺',color:'#D98C2B',img:'2.png'},
+    3:{name:'关羽',direction:'西路',meaning:'重义守信，镇宅辟邪，合伙共赢',color:'#C0392B',img:'3.png'},
+    4:{name:'柴荣',direction:'南路',meaning:'帝王之气，破局开路，做大做强',color:'#E8741E',img:'4.png'},
+    5:{name:'赵公明',direction:'北路',meaning:'黑虎镇守，驱邪纳福，正财聚宝',color:'#8A5A1E',img:'5.png'},
+  };
+  // 锚点布局：A=现状 caishen，B=仿 mashen
+  const LAYOUTS = {
+    A: { 1:{x:0.50,y:0.52,size:100}, 2:{x:0.22,y:0.38,size:60}, 3:{x:0.78,y:0.38,size:60}, 4:{x:0.39,y:0.12,size:52}, 5:{x:0.61,y:0.12,size:52}, top:'25%' },
+    B: { 1:{x:0.50,y:0.54,size:80},  2:{x:0.18,y:0.38,size:54}, 3:{x:0.82,y:0.38,size:54}, 4:{x:0.38,y:0.12,size:48}, 5:{x:0.62,y:0.12,size:48}, top:'10%' },
+  };
+  const todayId=5;
+  function anchorOf(id){ if(id===todayId)return 1; if(id===1)return todayId; return id; }
+  function hx(h,a){ const c=h.replace('#',''); return `rgba(${parseInt(c.slice(0,2),16)},${parseInt(c.slice(2,4),16)},${parseInt(c.slice(4,6),16)},${a})`; }
+
+  function render(ph){
+    const phone=document.getElementById('phone-'+ph);
+    const arr=phone.querySelector('.deity-array');
+    const cfg=LAYOUTS[ph]; arr.style.top=cfg.top;
+    Object.keys(DEITIES).forEach(idStr=>{
+      const id=Number(idStr), d=DEITIES[id], L=cfg[anchorOf(id)], size=L.size, hl=(id===todayId);
+      const el=document.createElement('div'); el.className='deity';
+      el.style.left=(L.x*390)+'px'; el.style.top=(L.y*(phone.clientHeight*0.5))+'px';
+      const halo=document.createElement('div'); halo.className='halo';
+      const hs=size*1.5; halo.style.cssText=`width:${hs}px;height:${hs}px;background:radial-gradient(circle,${hx(d.color, hl?0.28:0.10)} 0%,transparent 70%);`;
+      el.appendChild(halo);
+      const wrap=document.createElement('div'); wrap.className='iconwrap'; wrap.style.cssText=`width:${size+12}px;height:${size+12}px;`;
+      const ring=document.createElement('div'); ring.className='ring'; ring.style.borderColor=d.color; wrap.appendChild(ring);
+      const img=document.createElement('img'); img.src='entry/src/main/resources/rawfile/deities/'+d.img; img.style.cssText=`width:${size}px;height:${size}px;`; wrap.appendChild(img);
+      el.appendChild(wrap);
+      const name=document.createElement('div'); name.className='name'; name.style.fontSize=(hl?18:14)+'px'; name.textContent=d.name; el.appendChild(name);
+      const dir=document.createElement('div'); dir.className='dir'; dir.textContent='· '+d.direction+' ·'; el.appendChild(dir);
+      const m=document.createElement('div'); m.className='meaning'; m.style.width=(size*1.6)+'px'; m.textContent=d.meaning.replace('，','\n'); el.appendChild(m);
+      arr.appendChild(el);
+    });
+    arr.style.height='50%';
+  }
+  render('A'); render('B');
+
+  setTimeout(()=>{
+    const lines=[];
+    ['A','B'].forEach(ph=>{
+      const phone=document.getElementById('phone-'+ph), pr=phone.getBoundingClientRect();
+      const deities=[...phone.querySelectorAll('.deity')];
+      const main=deities.find(d=>d.querySelector('.name').textContent==='赵公明');
+      const topD=deities.filter(d=>['王亥','柴荣'].includes(d.querySelector('.name').textContent));
+      const tw=phone.querySelector('.top-words').getBoundingClientRect();
+      const inc=phone.querySelector('.incense img').getBoundingClientRect();
+      const topHalo=Math.min(...topD.map(d=>d.querySelector('.halo').getBoundingClientRect().top-pr.top));
+      const mainBottom=main.getBoundingClientRect().bottom-pr.top;
+      const tsep=topHalo-(tw.bottom-pr.top), bsep=(inc.top-pr.top)-mainBottom;
+      lines.push(`${ph}:  顶部间隙 ${tsep>=12?'✓':'⚠'}  ${tsep.toFixed(0)}px ｜ 底部(主神字→香炉) ${bsep>=12?'✓':'⚠'}  ${bsep.toFixed(0)}px`);
+    });
+    document.getElementById('note').innerHTML='📏 实测：<br>　'+lines.join('<br>　')+
+      '<br><br>B 方案改动：<code>DeityArrayView</code> 的尺寸照 mashen 调小（主位80/侧54/顶48、横向 18%/82%），阵型容器顶锚 <code>position{y:\'10%\'}</code>，顶部祝语并成单行 <code>y:44</code>。<br>确认后我再动 ArkTS。';
+  }, 450);
+</script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祈福进香阶段 · 五神阵 vs 香炉 重叠修复对比</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1405; color: #fdf6e3;
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 28px; display: flex; flex-direction: column; align-items: center;
+  }
+  h1 { font-size: 18px; color: #FFD700; font-weight: bold; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: rgba(253,246,227,0.6); margin-bottom: 22px; text-align: center; max-width: 860px; line-height: 1.7; }
+  .row { display: flex; gap: 48px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+  .cell { display: flex; flex-direction: column; align-items: center; }
+  .tag {
+    font-size: 13px; font-weight: bold; margin-bottom: 10px; padding: 4px 16px; border-radius: 20px;
+  }
+  .tag.before { color: #1a1a0a; background: #e74c3c; }
+  .tag.after { color: #1a1a0a; background: #2ecc71; }
+  .phone {
+    width: 390px; height: 844px; border-radius: 36px; overflow: hidden;
+    position: relative; box-shadow: 0 14px 44px rgba(0,0,0,0.65);
+    background: linear-gradient(180deg, #D23B2E 0%, #A51D16 55%, #6F120E 100%);
+  }
+  .glow { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(58% 58% at 50% 12%, rgba(255,209,0,0.40) 0%, rgba(255,209,0,0) 100%); }
+  .deity-array { position: absolute; left: 0; width: 100%; height: 50%; }
+  .phone.before .deity-array { top: 25%; }   /* 现状：被 Stack 垂直居中 */
+  .phone.after  .deity-array { top: 12%; }   /* 建议：显式顶锚 */
+  .deity { position: absolute; transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center; }
+  .deity img { display: block; object-fit: contain; }
+  .deity .ring { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    border: 3px solid transparent; border-radius: 50%; }
+  .deity .name { font-weight: bold; color: #FFD700; margin-top: 8px; white-space: nowrap; }
+  .deity .direction { font-size: 10px; color: rgba(255,209,0,0.6); margin-top: 4px; white-space: nowrap; }
+  .deity .meaning { font-size: 10px; color: rgba(253,246,227,0.5); margin-top: 2px;
+    line-height: 15px; text-align: center; white-space: pre-line; }
+  .incense { position: absolute; left: 50%; top: 70%; transform: translate(-50%,-50%); }
+  .incense img { width: 120px; height: 108px; object-fit: contain; }
+  .incense-label { position: absolute; left: 50%; top: 76%; transform: translate(-50%,-50%);
+    font-size: 14px; color: rgba(253,246,227,0.75); white-space: nowrap; }
+  .top-words { position: absolute; left: 50%; top: 64px; transform: translateX(-50%);
+    text-align: center; white-space: nowrap; }
+  .top-words .main { font-size: 18px; font-weight: bold; color: #FFD700; }
+  .top-words .sub { font-size: 12px; color: #ffffff; margin-top: 4px; }
+  /* 冲突高亮框 */
+  .overlap-box { position: absolute; left: 50%; transform: translateX(-50%);
+    border: 2px dashed #ff5a4e; border-radius: 8px; background: rgba(255,90,78,0.10); }
+  .note { margin-top: 18px; font-size: 12px; color: rgba(253,246,227,0.55); max-width: 860px; line-height: 1.8; }
+</style>
+</head>
+<body>
+  <h1>祈福 · 进香阶段：五神阵名号文字 与 香炉 重叠</h1>
+  <div class="sub">
+    现状：五神弧形阵所在的 50% 高容器被 Stack 默认<b>垂直居中</b>，阵型整体下沉，
+    主位财神的「名号 + 方位 + 寓意」四行文字一路探到香炉位置，和俯视香炉/三炷香叠在一起。
+    <br>建议：把该容器<b>显式顶锚</b>到顶部，阵型回到上方「远景」，与香炉「近景」留出清晰间距。
+  </div>
+
+  <div class="row">
+    <div class="cell">
+      <div class="tag before">改前 · 现状（文字压住香炉）</div>
+      <div class="phone before" id="phone-before">
+        <div class="glow"></div>
+        <div class="deity-array" data-phone="before"></div>
+        <div class="incense"><img src="entry/src/main/resources/rawfile/props/incense_burner.png"></div>
+        <div class="incense-label">三炷香 · 敬献财神</div>
+        <div class="top-words"><div class="main">✦ 心诚则灵 ✦</div><div class="sub">诚心叩拜 · 财运亨通</div></div>
+      </div>
+    </div>
+
+    <div class="cell">
+      <div class="tag after">改后 · 建议（阵型回到上方，与香炉分离）</div>
+      <div class="phone after" id="phone-after">
+        <div class="glow"></div>
+        <div class="deity-array" data-phone="after"></div>
+        <div class="incense"><img src="entry/src/main/resources/rawfile/props/incense_burner.png"></div>
+        <div class="incense-label">三炷香 · 敬献财神</div>
+        <div class="top-words"><div class="main">✦ 心诚则灵 ✦</div><div class="sub">诚心叩拜 · 财运亨通</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" id="note">渲染中…</div>
+
+<script>
+  const DEITIES = {
+    1: { name:'王亥', direction:'中路', meaning:'商祖开路，牛转乾坤，通达八方', color:'#F0C419', img:'1.png' },
+    2: { name:'比干', direction:'东路', meaning:'公道无私，正财稳进，童叟无欺', color:'#D98C2B', img:'2.png' },
+    3: { name:'关羽', direction:'西路', meaning:'重义守信，镇宅辟邪，合伙共赢', color:'#C0392B', img:'3.png' },
+    4: { name:'柴荣', direction:'南路', meaning:'帝王之气，破局开路，做大做强', color:'#E8741E', img:'4.png' },
+    5: { name:'赵公明', direction:'北路', meaning:'黑虎镇守，驱邪纳福，正财聚宝', color:'#8A5A1E', img:'5.png' },
+  };
+  // 锚点布局（DeityArrayView.ets）：y 为容器百分比，size 为形象尺寸
+  const LAYOUT = {
+    1: { x:0.50, y:0.52, size:100 }, // 中路·主位（弧底，最大）
+    2: { x:0.22, y:0.38, size:60 },  // 东路
+    3: { x:0.78, y:0.38, size:60 },  // 西路
+    4: { x:0.39, y:0.12, size:52 },  // 南路
+    5: { x:0.61, y:0.12, size:52 },  // 北路
+  };
+  const todayId = 5; // 2026-10-22 今日主财神 = 赵公明
+  function anchorOf(id) {
+    if (id === todayId) return 1;
+    if (id === 1) return todayId;
+    return id;
+  }
+
+  function hexToRgba(hex, a) {
+    const h = hex.replace('#','');
+    const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  ['before','after'].forEach(tag => {
+    const phone = document.getElementById('phone-' + tag);
+    const array = phone.querySelector('.deity-array');
+    const arrayH = phone.clientHeight * 0.5;
+    Object.keys(DEITIES).forEach(idStr => {
+      const id = Number(idStr);
+      const d = DEITIES[id];
+      const anchor = anchorOf(id);
+      const L = LAYOUT[anchor];
+      const isHighlight = id === todayId;
+      const size = L.size;
+      const el = document.createElement('div');
+      el.className = 'deity';
+      el.style.left = (L.x*390) + 'px';
+      el.style.top = (L.y*arrayH) + 'px';
+
+      // 代表色光晕
+      const halo = document.createElement('div');
+      halo.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${size*1.5}px;height:${size*1.5}px;border-radius:50%;background:radial-gradient(circle,${hexToRgba(d.color, isHighlight?0.28:0.10)} 0%,transparent 70%);`;
+      el.appendChild(halo);
+
+      const wrap = document.createElement('div');
+      wrap.style.cssText = `position:relative;width:${size+12}px;height:${size+12}px;display:flex;align-items:center;justify-content:center;`;
+      const ring = document.createElement('div');
+      ring.style.cssText = `position:absolute;inset:0;border:3px solid ${d.color};border-radius:50%;`;
+      wrap.appendChild(ring);
+      const img = document.createElement('img');
+      img.src = 'entry/src/main/resources/rawfile/deities/' + d.img;
+      img.style.cssText = `width:${size}px;height:${size}px;`;
+      wrap.appendChild(img);
+      el.appendChild(wrap);
+
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.style.fontSize = (isHighlight?18:14)+'px';
+      name.textContent = d.name;
+      el.appendChild(name);
+
+      const dir = document.createElement('div');
+      dir.className = 'direction';
+      dir.textContent = '· '+d.direction+' ·';
+      el.appendChild(dir);
+
+      const meaning = document.createElement('div');
+      meaning.className = 'meaning';
+      meaning.style.width = (size*1.6)+'px';
+      meaning.textContent = d.meaning.replace('，','\n');
+      el.appendChild(meaning);
+
+      array.appendChild(el);
+    });
+  });
+
+  setTimeout(() => {
+    const notes = [];
+    ['before','after'].forEach(tag => {
+      const phone = document.getElementById('phone-'+tag);
+      const pr = phone.getBoundingClientRect();
+      const main = [...document.querySelectorAll('#phone-'+tag+' .deity')].find(d => d.querySelector('.name').textContent === DEITIES[todayId].name);
+      const mainBottom = main.getBoundingClientRect().bottom - pr.top;
+      const incTop = phone.querySelector('.incense img').getBoundingClientRect().top - pr.top;
+      notes.push(`${tag==='before'?'改前':'改后'}：主位「${DEITIES[todayId].name}」文字底缘 y=${mainBottom.toFixed(0)}px，香炉俯视顶缘约 y=${(incTop-0).toFixed(0)}px → ${mainBottom >= incTop-8 ? '⚠ 重叠/紧贴' : '✓ 已分离（间距 '+(incTop-mainBottom).toFixed(0)+'px）'}`);
+      // 在"改前"手机里把重叠的香炉区域高亮出来
+      if (tag === 'before') {
+        const box = document.createElement('div');
+        box.className = 'overlap-box';
+        box.style.top = (incTop - 4)+'px';
+        box.style.width = '200px'; box.style.height = (mainBottom - incTop + 24)+'px';
+        box.style.left = '50%';
+        phone.appendChild(box);
+      }
+    });
+    document.getElementById('note').innerHTML =
+      '📏 实测（390×844vp，进香阶段）：<br>　' + notes.join('<br>　') +
+      '<br><br>状态：ArkTS 代码<b>尚未改动</b>，先请你确认预览。确认后我再改 PrayerCard（给阵型容器加显式顶锚 <code>position{x:0, y:\'12%\'}</code>）。';
+  }, 400);
+</script>
+</body>
+</html>

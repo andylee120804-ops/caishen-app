@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今日主财神卡片重设计 · 4 个弧形方案预览</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#120e06; color:#fdf6e3; font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    padding:26px; display:flex; flex-direction:column; align-items:center; }
+  h1 { font-size:18px; color:#FFD700; font-weight:bold; margin-bottom:6px; }
+  .sub { font-size:12.5px; color:rgba(253,246,227,0.66); margin-bottom:8px; text-align:center; max-width:1180px; line-height:1.8; }
+  .sub b { color:#FFD700; font-weight:normal; }
+  .row { display:flex; gap:26px; align-items:flex-start; flex-wrap:wrap; justify-content:center; margin-top:14px; }
+  .cell { display:flex; flex-direction:column; align-items:center; }
+  .tag { font-size:13px; font-weight:bold; margin-bottom:10px; padding:4px 16px; border-radius:20px; }
+  .tag.cur { color:#fff; background:#55503f; }
+  .tag.a { color:#fff; background:#9c3a3a; }
+  .tag.b { color:#1a1a0a; background:#F3C64B; }
+  .tag.c { color:#fff; background:#6f8a24; }
+  .tag.d { color:#fff; background:#8a5a3a; }
+  .phone { width:390px; height:844px; border-radius:36px; overflow:hidden; position:relative;
+    box-shadow:0 14px 44px rgba(0,0,0,.65); }
+  .bg-red { background:linear-gradient(180deg,#A01124 0%,#931120 55%,#86121C 100%); }
+  .glow { position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(58% 58% at 50% 12%, rgba(255,209,0,0.28) 0%, rgba(255,209,0,0) 100%); }
+  .statusbar { position:absolute; top:6px; left:0; right:0; display:flex; justify-content:space-between;
+    padding:0 26px; font-size:12px; color:rgba(255,255,255,0.8); z-index:5; }
+  /* ── 卡片通用 ── */
+  .card { position:absolute; left:50%; transform:translateX(-50%); width:340px; }
+  .card svg { display:block; width:340px; overflow:visible; }
+  .card text { font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; }
+  /* ── 当前版（元宝底 + 棕字，对照组） ── */
+  .cur-label { font-size:10px; color:rgba(255,209,0,0.85); letter-spacing:3px; text-align:center; margin-bottom:6px; }
+  .cur-ingot { position:relative; width:100%; height:126px; }
+  .cur-ingot img { width:100%; height:126px; object-fit:fill; }
+  .cur-text { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:30px 28px 10px; text-align:center; }
+  .cur-text .n { font-size:20px; font-weight:bold; color:#5A1E00; }
+  .cur-text .d { font-size:11px; color:#6B3A00; margin-top:2px; }
+  .cur-text .sep { width:80%; border-top:1px solid rgba(120,70,0,0.35); margin:5px 0 4px; }
+  .cur-text .a { font-size:10px; color:rgba(90,50,0,0.85); white-space:nowrap; }
+  /* ── 五神弧形阵（忠实还原 DeityArrayView 锚点） ── */
+  .deity-array { position:absolute; left:0; top:30%; width:100%; height:50%; }
+  /* 短屏验证行：720 屏，百分比基准 = 内容区 644（−84 Tab 栏 +8 回弹余量） */
+  .scanvas { position:relative; width:100%; height:644px; overflow:hidden; }
+  .deity { position:absolute; transform:translate(-50%,-50%); display:flex; flex-direction:column; align-items:center; }
+  .deity .iconwrap { position:relative; display:flex; align-items:center; justify-content:center; }
+  .deity .halo { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); border-radius:50%; }
+  .deity .ring { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; }
+  .deity img { display:block; object-fit:contain; position:relative; }
+  .deity .nameline { margin-top:8px; white-space:nowrap; }
+  .deity .nameline b { color:#FFD700; font-weight:bold; }
+  .deity .nameline small { font-size:8px; color:rgba(255,209,0,0.65); }
+  .deity .meaning { font-size:8px; color:rgba(253,246,227,0.5); margin-top:2px; text-align:center; line-height:13px; }
+  .deity.hl .halo { box-shadow:none; }
+  /* ── 页面其余元素 ── */
+  .home-sub { position:absolute; left:50%; top:77%; transform:translate(-50%,-50%); font-size:14px;
+    color:rgba(255,209,0,0.85); font-style:italic; white-space:nowrap; }
+  .home-btn { position:absolute; left:50%; top:84%; transform:translate(-50%,-50%); background:#FFD700; color:#1a1a0a;
+    font-size:18px; font-weight:bold; padding:10px 28px; border-radius:25px; white-space:nowrap;
+    box-shadow:0 4px 20px rgba(255,209,0,.4); display:flex; align-items:center; }
+  .home-btn img { width:26px; height:26px; object-fit:contain; margin-right:10px; }
+  .tabbar { position:absolute; bottom:0; left:0; right:0; height:84px; display:flex;
+    background:linear-gradient(180deg,#931120 0%,#86121C 100%); }
+  .tabitem { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-size:10px; color:rgba(253,246,227,0.72); padding-bottom:24px; gap:3px; }
+  .tabitem.sel { color:#FFD700; background:rgba(255,209,0,0.08); }
+  .tabitem .em { font-size:22px; line-height:1; }
+  .tabitem img { width:24px; height:24px; object-fit:contain; }
+  .cap { margin-top:12px; font-size:12px; color:rgba(253,246,227,0.6); max-width:360px; text-align:center; line-height:1.7; }
+  .cap b { color:#FFD700; font-weight:normal; }
+  .note { margin-top:26px; font-size:12.5px; color:rgba(253,246,227,0.62); max-width:1180px; line-height:1.9; }
+  .note b { color:#FFD700; font-weight:normal; }
+  code { background:rgba(255,255,255,0.08); padding:1px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+<h1>今日主财神卡片重设计 · 4 个弧形方案（页面实境对比）</h1>
+<div class="sub">
+  <b>诊断</b>：当前版是"金底棕字"的大金属块——和整页"红底金字"的语言正好相反，还把顶部金色光晕区堵死，所以显得突兀。
+  四个新方案全部回到 <b>红底金字 + 弧形轮廓</b> 的页面语言，弧形轮廓同时与下方五神弧形阵呼应。<br>
+  <b>预览说明</b>：五台手机均按 App 同一套公式实时计算今日主神 / 农历 / 黄历（与 App 显示一致），卡下方的五神弧形阵、副标题、按钮、Tab 栏均为现有页面实况还原，用于检验和谐度。<br>
+  <b>对比度（AGC 审核线 ≥4.5）</b>：金字 #FFD700 @漆红 12.3 ｜ 金 0.85 @漆红 9.1 ｜ 米字 0.72 @漆红 8.6 ｜ 金 0.85 @页面红 5.0 ｜ 米 0.8 @页面红 5.4 ｜ 深字 #1a1a0a @金带 ≥10.8 —— 全部过线。
+</div>
+<div class="row" id="row"></div>
+<div class="note" id="note"></div>
+
+<script>
+/* ───────── 与 App 完全一致的数据与公式 ───────── */
+const DEITIES = [
+  { id:1, name:'王亥',   dir:'中路', color:'#F0C419', meaning:'商祖开路，牛转乾坤，通达八方', img:'entry/src/main/resources/rawfile/deities/1.png' },
+  { id:2, name:'比干',   dir:'东路', color:'#D98C2B', meaning:'公道无私，正财稳进，童叟不欺', img:'entry/src/main/resources/rawfile/deities/2.png' },
+  { id:3, name:'关羽',   dir:'西路', color:'#C0392B', meaning:'重义守信，镇宅辟邪，合伙共赢', img:'entry/src/main/resources/rawfile/deities/3.png' },
+  { id:4, name:'柴荣',   dir:'南路', color:'#E8741E', meaning:'帝王之气，破局开路，做大做强', img:'entry/src/main/resources/rawfile/deities/4.png' },
+  { id:5, name:'赵公明', dir:'北路', color:'#8A5A1E', meaning:'黑虎镇守，驱邪纳福，正财聚宝', img:'entry/src/main/resources/rawfile/deities/5.png' },
+]
+const ALMANAC = [
+  ['坐东朝西','心浮气躁','稳扎稳打'],['坐南朝北','贪心冒进','见好就收'],['坐西朝东','犹豫不决','当机立断'],
+  ['坐北朝南','急功近利','耐心等待'],['坐东朝西','目中无人','低调行事'],['坐南朝北','贪心不足','适可而止'],
+  ['坐西朝东','心猿意马','专注一事'],['坐北朝南','怨天尤人','自省吾身'],['坐东朝西','得意忘形','戒骄戒躁'],
+  ['坐南朝北','急于求成','步步为营'],['坐西朝东','刚愎自用','广纳良言'],['坐北朝南','患得患失','放平心态'],
+  ['坐东朝西','贪多嚼不烂','集中精力'],['坐南朝北','贸然进攻','以守为攻'],['坐西朝东','轻敌冒进','重视对手'],
+  ['坐北朝南','情绪上头','冷静克制'],['坐东朝西','瞻前顾后','果断出击'],['坐南朝北','好高骛远','脚踏实地'],
+  ['坐西朝东','自乱阵脚','沉着冷静'],['坐北朝南','畏首畏尾','大胆出手'],['坐东朝西','心浮气躁','平心静气'],
+  ['坐南朝北','贪大求全','小胜即安'],['坐西朝东','急功近利','厚积薄发'],['坐北朝南','一意孤行','听取建议'],
+  ['坐东朝西','半途而废','坚持到底'],['坐南朝北','患得患失','笑看得失'],['坐西朝东','心不在焉','全神贯注'],
+  ['坐北朝南','怨天尤人','顺其自然'],['坐东朝西','意气用事','理智判断'],['坐南朝北','骄傲自满','虚心进取'],
+]
+const MONTHS = ['正月','二月','三月','四月','五月','六月','七月','八月','九月','十月','冬月','腊月']
+const DAYS = ['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十']
+const WEEKDAYS = ['周日','周一','周二','周三','周四','周五','周六']
+
+const now = new Date()
+const startOfYear = new Date(now.getFullYear(), 0, 1)
+const doy = Math.floor((now.getTime() - startOfYear.getTime()) / 86400000) + 1
+const todayId = ((doy - 1) % 5) + 1
+const today = DEITIES.find(d => d.id === todayId)
+const alm = ALMANAC[doy % ALMANAC.length]
+const lunar = MONTHS[(now.getMonth() + 11) % 12] + DAYS[(now.getDate() + 30) % 30]
+const weekday = WEEKDAYS[now.getDay()]
+const almanacLine = `${lunar}·${weekday}｜宜${alm[2]}·忌${alm[1]}｜吉位${alm[0]}`
+const dirMeaning = `${today.dir} · ${today.meaning}`
+const nameLabel = '今日主财神'
+
+/* ───────── 弧形阵锚点（DeityArrayView 同表） ───────── */
+const ANCHORS = { 1:[50,62,80], 2:[18,38,54], 3:[82,38,54], 4:[38,12,48], 5:[62,12,48] }
+function anchorOf(id) { return id === todayId ? 1 : (id === 1 ? todayId : id) }
+
+function rgba(hex, a) {
+  const h = hex.replace('#','')
+  return `rgba(${parseInt(h.slice(0,2),16)},${parseInt(h.slice(2,4),16)},${parseInt(h.slice(4,6),16)},${a})`
+}
+function deityArrayInner() {
+  let s = ''
+  for (const d of DEITIES) {
+    const [ax, ay, size] = ANCHORS[anchorOf(d.id)]
+    const hl = d.id === todayId
+    const halo = size * 1.5
+    const ring = size + 12
+    const m1 = d.meaning.split('，')
+    const meaning2 = m1[0] + '<br>' + d.meaning.slice(m1[0].length + 1)
+    s += `<div class="deity${hl ? ' hl' : ''}" style="left:${ax}%;top:${ay}%;width:${size*1.6}px">
+      <div class="iconwrap" style="width:${ring}px;height:${ring}px">
+        <div class="halo" style="width:${halo}px;height:${halo}px;background:${rgba(d.color, hl?0.28:0.10)}"></div>
+        <div class="ring" style="border-color:${d.color}"></div>
+        <img src="${d.img}" style="width:${size}px;height:${size}px">
+      </div>
+      <div class="nameline"><b style="font-size:${hl?18:14}px">${d.name}</b><small> · ${d.dir}</small></div>
+      <div class="meaning" style="font-size:${hl?10:8}px;line-height:${hl?15:13}px">${meaning2}</div>
+    </div>`
+  }
+  return s
+}
+function deityArrayHTML() {
+  return `<div class="deity-array">${deityArrayInner()}</div>`
+}
+function tabbarInner() {
+  return `
+    <div class="tabitem sel"><img src="entry/src/main/resources/rawfile/props/yuanbao.png">祈福</div>
+    <div class="tabitem"><span class="em">🎋</span>求签</div>
+    <div class="tabitem"><span class="em">🪵</span>木鱼</div>
+    <div class="tabitem"><span class="em">☯</span>运势</div>
+    <div class="tabitem"><span class="em">🪙</span>财神殿</div>`
+}
+function pageShell(cardHTML) {
+  return `<div class="statusbar"><span>9:41</span><span>100%</span></div>
+  ${cardHTML}
+  ${deityArrayHTML()}
+  <div class="home-sub">「心诚则灵，财运亨通」</div>
+  <div class="home-btn"><img src="entry/src/main/resources/rawfile/props/yuanbao.png">开始祈福</div>
+  <div class="tabbar">${tabbarInner()}</div>`
+}
+/* 短屏验证手机：720 屏，百分比基准 = 内容区 644px（720 − 84 Tab 栏 + 8 回弹余量），
+   arrayTopPx = 神阵区顶部（修复前 193.2 = 30%×644；修复后 210 = 兜底下限） */
+function shortPhoneShell(cardHTML, arrayTopPx) {
+  return `<div class="phone bg-red" style="height:720px">
+    <div class="scanvas">
+      <div class="glow"></div>
+      <div class="statusbar"><span>9:41</span><span>100%</span></div>
+      ${cardHTML}
+      <div class="deity-array" style="top:${arrayTopPx}px;height:322px">${deityArrayInner()}</div>
+      <div class="home-sub" style="top:78%">「心诚则灵，财运亨通」</div>
+      <div class="home-btn" style="top:84%"><img src="entry/src/main/resources/rawfile/props/yuanbao.png">开始祈福</div>
+    </div>
+    <div class="tabbar">${tabbarInner()}</div>
+  </div>`
+}
+
+/* ───────── 方案 SVG ───────── */
+const FONT = 'system-ui,-apple-system,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,sans-serif'
+
+/* 当前版（对照组，忠实还原 DailyAlmanac 现状） */
+function cardCur() {
+  return `<div class="card" style="top:46px">
+    <div class="cur-label">— ${nameLabel} —</div>
+    <div class="cur-ingot">
+      <img src="entry/src/main/resources/rawfile/props/ingot_gold.png">
+      <div class="cur-text">
+        <div class="n">${today.name}</div>
+        <div class="d">${dirMeaning}</div>
+        <div class="sep"></div>
+        <div class="a">${almanacLine}</div>
+      </div>
+    </div>
+  </div>`
+}
+
+/* 方案A · 拱门神龛：月洞门式拱形漆红卡 + 挂匾 + 金字 + 弧形云纹分隔 */
+function cardA() {
+  return `<div class="card" style="top:46px">
+  <svg viewBox="0 0 340 138" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lacA" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4A0A12"/><stop offset="0.45" stop-color="#3B060D"/><stop offset="1" stop-color="#2A050B"/>
+      </linearGradient>
+      <linearGradient id="plqA" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#F3C64B"/>
+      </linearGradient>
+    </defs>
+    <!-- 挂绳（从匾底垂到拱顶边缘） -->
+    <path d="M116,11 L104,26 M224,11 L236,26" stroke="rgba(255,209,0,0.6)" stroke-width="1.2" fill="none"/>
+    <!-- 拱形神龛主体 -->
+    <path d="M14,126 V86 Q14,26 74,26 H266 Q326,26 326,86 V126 Q170,138 14,126 Z"
+      fill="url(#lacA)" stroke="#FFD700" stroke-width="2"/>
+    <path d="M20,122 V87 Q20,32 76,32 H264 Q320,32 320,87 V122 Q170,131 20,122 Z"
+      fill="none" stroke="rgba(255,209,0,0.45)" stroke-width="1"/>
+    <!-- 拱顶宝珠 -->
+    <circle cx="170" cy="26" r="3" fill="#FFD700"/>
+    <!-- 挂匾（金底 + 弧形下缘） -->
+    <path d="M108,0 H232 V10 Q170,23 108,10 Z" fill="url(#plqA)" stroke="#9C6B12" stroke-width="1"/>
+    <text x="170" y="13" text-anchor="middle" font-size="10" font-weight="bold"
+      letter-spacing="3" fill="#4A2500" font-family="${FONT}">${nameLabel}</text>
+    <!-- 神名 + 朱印 -->
+    <text x="163" y="58" text-anchor="middle" font-size="21" font-weight="bold"
+      letter-spacing="2" fill="#FFD700" font-family="${FONT}">${today.name}</text>
+    <rect x="212" y="42" width="16" height="16" rx="3" fill="#C0392B"/>
+    <text x="220" y="54" text-anchor="middle" font-size="10" fill="#fdf6e3" font-family="${FONT}">財</text>
+    <!-- 方位 · 蓄意 -->
+    <text x="170" y="80" text-anchor="middle" font-size="11" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${dirMeaning}</text>
+    <!-- 弧形云纹分隔 -->
+    <path d="M74,92 Q170,102 266,92" stroke="rgba(255,209,0,0.55)" stroke-width="1.2" fill="none"/>
+    <circle cx="170" cy="97" r="1.5" fill="rgba(255,209,0,0.7)"/>
+    <!-- 黄历行 -->
+    <text x="170" y="114" text-anchor="middle" font-size="10" fill="rgba(253,246,227,0.72)" font-family="${FONT}">${almanacLine}</text>
+  </svg>
+  </div>`
+}
+
+/* 方案B · 金虹拱带：一道金虹横跨 + 两端铜钱压角（最"弧"最喜庆） */
+function cardB() {
+  return `<div class="card" style="top:46px">
+  <svg viewBox="0 0 340 128" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="goldB" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9A8"/><stop offset="0.55" stop-color="#F3C64B"/><stop offset="1" stop-color="#D89B28"/>
+      </linearGradient>
+      <radialGradient id="radB" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="rgba(255,209,0,0.25)"/><stop offset="1" stop-color="rgba(255,209,0,0)"/>
+      </radialGradient>
+    </defs>
+    <text x="170" y="12" text-anchor="middle" font-size="10" font-weight="bold"
+      letter-spacing="3" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${nameLabel}</text>
+    <ellipse cx="170" cy="74" rx="150" ry="40" fill="url(#radB)"/>
+    <!-- 金虹拱带 -->
+    <path d="M8,114 Q170,-26 332,114 L318,122 Q170,78 22,122 Z"
+      fill="url(#goldB)" stroke="#9C6B12" stroke-width="1.5"/>
+    <path d="M8,114 Q170,-26 332,114" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1"/>
+    <!-- 两端铜钱（方孔）压住弧带收口 -->
+    <g><circle cx="10" cy="118" r="10" fill="#F3C64B" stroke="#9C6B12" stroke-width="1.5"/>
+       <rect x="6" y="114" width="8" height="8" fill="#931120" stroke="#9C6B12" stroke-width="0.75"/></g>
+    <g><circle cx="330" cy="118" r="10" fill="#F3C64B" stroke="#9C6B12" stroke-width="1.5"/>
+       <rect x="326" y="114" width="8" height="8" fill="#931120" stroke="#9C6B12" stroke-width="0.75"/></g>
+    <text x="170" y="79" text-anchor="middle" font-size="20" font-weight="bold"
+      letter-spacing="1" fill="#1a1a0a" font-family="${FONT}">${today.name}</text>
+    <text x="170" y="94" text-anchor="middle" font-size="10.5" fill="#5A1E00" font-family="${FONT}">${dirMeaning}</text>
+    <text x="170" y="116" text-anchor="middle" font-size="10" fill="rgba(253,246,227,0.8)" font-family="${FONT}">${almanacLine}</text>
+  </svg>
+  </div>`
+}
+
+/* 方案C · 聚宝盆：盆形弧底 + 金光丘 + 铜钱，财运最直白 */
+function cardC() {
+  return `<div class="card" style="top:46px">
+  <svg viewBox="0 0 340 134" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lacC" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4A0A12"/><stop offset="1" stop-color="#2A050B"/>
+      </linearGradient>
+      <linearGradient id="goldC" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#E8A832"/>
+      </linearGradient>
+      <radialGradient id="radC" cx="0.5" cy="0.5" r="0.5">
+        <stop offset="0" stop-color="rgba(255,209,0,0.22)"/><stop offset="1" stop-color="rgba(255,209,0,0)"/>
+      </radialGradient>
+    </defs>
+    <text x="170" y="12" text-anchor="middle" font-size="10" font-weight="bold"
+      letter-spacing="3" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${nameLabel}</text>
+    <ellipse cx="170" cy="34" rx="105" ry="40" fill="url(#radC)"/>
+    <!-- 盆口上方两枚铜钱 -->
+    <g><circle cx="86" cy="30" r="9" fill="#F3C64B" stroke="#9C6B12" stroke-width="1.2"/>
+       <rect x="83" y="27" width="6" height="6" fill="#931120"/></g>
+    <g><circle cx="254" cy="30" r="9" fill="#F3C64B" stroke="#9C6B12" stroke-width="1.2"/>
+       <rect x="251" y="27" width="6" height="6" fill="#931120"/></g>
+    <!-- 神名（立于金光之上） -->
+    <text x="170" y="56" text-anchor="middle" font-size="20" font-weight="bold"
+      letter-spacing="2" fill="#FFD700" font-family="${FONT}">${today.name}</text>
+    <!-- 聚宝盆：盆身 -->
+    <path d="M22,70 L318,70 Q320,108 170,122 Q20,108 22,70 Z"
+      fill="url(#lacC)" stroke="#FFD700" stroke-width="1.8"/>
+    <!-- 金色弧形盆沿 -->
+    <path d="M12,60 Q170,76 328,60 L328,72 Q170,88 12,72 Z"
+      fill="url(#goldC)" stroke="#9C6B12" stroke-width="1.2"/>
+    <!-- 盆内：方位寓意 + 小铜钱 -->
+    <text x="170" y="96" text-anchor="middle" font-size="11" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${dirMeaning}</text>
+    <g><circle cx="86" cy="106" r="5.5" fill="#F3C64B" stroke="#9C6B12" stroke-width="0.8"/></g>
+    <g><circle cx="254" cy="106" r="5.5" fill="#F3C64B" stroke="#9C6B12" stroke-width="0.8"/></g>
+    <!-- 黄历行（盆底之下） -->
+    <text x="170" y="131" text-anchor="middle" font-size="10" fill="rgba(253,246,227,0.8)" font-family="${FONT}">${almanacLine}</text>
+  </svg>
+  </div>`
+}
+
+/* 方案D · 如意云牌：两端如意云头卷 + 上下缘外弧，最雅致 */
+function cardD() {
+  return `<div class="card" style="top:46px">
+  <svg viewBox="0 0 340 126" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lacD" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4A0A12"/><stop offset="0.45" stop-color="#3B060D"/><stop offset="1" stop-color="#2A050B"/>
+      </linearGradient>
+    </defs>
+    <!-- 主牌：上缘外弧、下缘外弧、两端大圆角 -->
+    <path d="M36,24 Q170,10 304,24 Q326,29 326,64 Q326,99 304,104 Q170,118 36,104 Q14,99 14,64 Q14,29 36,24 Z"
+      fill="url(#lacD)" stroke="#FFD700" stroke-width="2"/>
+    <path d="M40,28 Q170,15 300,28 Q319,33 319,64 Q319,95 300,100 Q170,113 40,100 Q21,95 21,64 Q21,33 40,28 Z"
+      fill="none" stroke="rgba(255,209,0,0.4)" stroke-width="1"/>
+    <!-- 两端如意云头卷（对称） -->
+    <path d="M28,64 C28,48 42,40 54,46 C64,51 62,64 51,65 C43,66 39,59 45,55 C49,52 54,56 52,61"
+      stroke="rgba(255,209,0,0.75)" stroke-width="1.5" fill="none"/>
+    <path d="M312,64 C312,48 298,40 286,46 C276,51 278,64 289,65 C297,66 301,59 295,55 C291,52 286,56 288,61"
+      stroke="rgba(255,209,0,0.75)" stroke-width="1.5" fill="none"/>
+    <text x="170" y="34" text-anchor="middle" font-size="10" font-weight="bold"
+      letter-spacing="3" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${nameLabel}</text>
+    <text x="170" y="62" text-anchor="middle" font-size="21" font-weight="bold"
+      letter-spacing="2" fill="#FFD700" font-family="${FONT}">${today.name}</text>
+    <text x="170" y="82" text-anchor="middle" font-size="11" fill="rgba(255,209,0,0.85)" font-family="${FONT}">${dirMeaning}</text>
+    <path d="M112,90 Q170,96 228,90" stroke="rgba(255,209,0,0.5)" stroke-width="1" fill="none"/>
+    <circle cx="170" cy="93" r="1.5" fill="rgba(255,209,0,0.65)"/>
+    <text x="170" y="104" text-anchor="middle" font-size="10" fill="rgba(253,246,227,0.72)" font-family="${FONT}">${almanacLine}</text>
+  </svg>
+  </div>`
+}
+/* ───────── 组装 ───────── */
+const variants = [
+  { key:'cur', tag:'当前版 · 元宝底', cls:'cur', fn:cardCur,
+    cap:'现状对照：金底棕字大金属块，抢掉顶部光晕、与红底金字语言相反。' },
+  { key:'a', tag:'A · 拱门神龛', cls:'a', fn:cardA,
+    cap:'<b>月洞门/神龛拱</b>：漆红拱卡+挂匾「今日主财神」+金字神名+朱印財字。庙门定场感，弧顶正对下方主神，最稳。' },
+  { key:'b', tag:'B · 金虹拱带', cls:'b', fn:cardB,
+    cap:'<b>金虹跨顶</b>：一道金虹弧带+两端方孔铜钱压角，神名坐虹心。四版中最"弧"，最喜庆直给。' },
+  { key:'c', tag:'C · 聚宝盆', cls:'c', fn:cardC,
+    cap:'<b>聚宝盆</b>：弧形盆身+金光丘从盆口升起+铜钱，神名立金光之上。财运符号最直白，盆纳百财。' },
+  { key:'d', tag:'D · 如意云牌', cls:'d', fn:cardD,
+    cap:'<b>如意云牌</b>：两端如意云头卷+上下缘外弧+金线绣边，神仙幡幢感。最雅致耐看。' },
+]
+const row = document.getElementById('row')
+for (const v of variants) {
+  const cell = document.createElement('div')
+  cell.className = 'cell'
+  cell.innerHTML = `<div class="tag ${v.cls}">${v.tag}</div>
+    <div class="phone bg-red"><div class="glow"></div>${pageShell(v.fn())}</div>
+    <div class="cap">${v.cap}</div>`
+  row.appendChild(cell)
+}
+
+/* ── 短屏重合问题 · 修复前后验证行 ── */
+const fixHead = document.createElement('div')
+fixHead.style.cssText = 'width:100%;margin-top:34px;text-align:center'
+fixHead.innerHTML = `<h1 style="margin-bottom:6px">真机反馈修复：顶部两神外圈与卡片重合（短屏）</h1>
+  <div class="sub" style="margin-bottom:0"><b>根因</b>：卡片按固定 vp 从屏顶定位（底缘恒 178 = 46 + 132），
+  神阵区却按内容区高的百分比定位——屏越矮百分比越收缩，顶部两神外圈（锚点上方探出约 58vp）被顶上越线。
+  旧元宝卡底缘 194 其实压得更深，但彩色细圆环叠在金底上看不出来；换深漆红拱卡后压到金色底边就非常显眼。<br>
+  <b>修复</b>：神阵区顶部 y = max(30%×内容高, <b>210vp</b>)——短屏兜底下压，常规屏（≥780）布局完全不变。
+  下两台按内容区高 644vp 复现（≈720vp 高的屏）。</div>`
+const fixRow = document.createElement('div')
+fixRow.className = 'row'
+fixRow.innerHTML = `
+  <div class="cell">
+    <div class="tag cur">修复前 · 神阵区 30%</div>
+    ${shortPhoneShell(cardA(), 193.2)}
+    <div class="cap">30%×644 = 193vp：顶部两神<b>外圈顶 174vp，压进卡底 178vp 约 4vp</b>——即真机所见重合。</div>
+  </div>
+  <div class="cell">
+    <div class="tag a">修复后 · 下限 210vp</div>
+    ${shortPhoneShell(cardA(), 210)}
+    <div class="cap">外圈顶 191vp，让出 <b>13vp 间隙</b>；副标题、按钮、阵内各神相对位置不动。</div>
+  </div>`
+const note = document.getElementById('note')
+note.before(fixHead, fixRow)
+document.getElementById('note').innerHTML =
+  `<b>今日实况</b>：${lunar}·${weekday}，今日主财神 <b>${today.name}</b>（${today.dir}），五台内容一致、仅换卡片设计，可与 App 当日截图直接对照。<br>
+  <b>共同约束</b>：卡宽 ~88%、总高 ≤140（不挤压下方弧形阵的 30% 起点）；信息完全一致（标签 / 神名 / 方位寓意 / 黄历行）。<br>
+  <b>可混搭</b>：例如「A 的挂匾 + C 的聚宝盆底」或「B 的金虹 + A 的朱印」——挑好方向后告诉我组合。<br>
+  <b>实现路径</b>：定稿后把 SVG 按 3x 导出 PNG 放入 <code>props/</code>，<code>DailyAlmanac.ets</code> 只需替换 <code>ingot_gold.png</code> 的引用与文字配色（文字仍是 ArkTS Text 动态叠加，黄历/神名照常轮换）。`
+
+/* 自检：控制台输出今日计算结果，便于和 App 对照 */
+console.log('[preview] 今日:', lunar, weekday, '| 主神:', today.name, todayId, '| 黄历:', almanacLine)
+</script>
+</body>
+</html>

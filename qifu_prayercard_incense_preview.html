@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>祈福 PrayerCard · 进香阶段预览（390×844）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #2a2a2a;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 24px; font-family: system-ui, -apple-system, sans-serif;
+  }
+  .note {
+    color: #bbb; font-size: 13px; margin-bottom: 14px; max-width: 480px;
+    line-height: 1.6; white-space: pre-line;
+  }
+  .phone {
+    width: 390px; height: 844px;
+    border-radius: 32px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,.6);
+    position: relative;
+    background: linear-gradient(180deg, #D23B2E 0%, #A51D16 55%, #6F120E 100%);
+  }
+  /* 光晕 overlay */
+  .glow {
+    position: absolute; inset: 0;
+    background: radial-gradient(58% 58% at 50% 12%, rgba(255,209,0,0.40) 0%, rgba(255,209,0,0) 100%);
+    pointer-events: none;
+  }
+  /* 五神弧形阵容器：修复后显式顶锚（.position{y:'12%'} → 12%~62%） */
+  .deity-array {
+    position: absolute; top: 12%; left: 0; width: 100%; height: 50%;
+  }
+  .deity {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .deity .image-wrap {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .deity .ring {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    border: 3px solid transparent; border-radius: 50%;
+  }
+  .deity img {
+    display: block; object-fit: contain;
+  }
+  .deity .name {
+    font-weight: bold; color: #FFD700; margin-top: 8px;
+    white-space: nowrap;
+  }
+  .deity .direction {
+    font-size: 10px; color: rgba(255,209,0,0.6); margin-top: 4px;
+    white-space: nowrap;
+  }
+  .deity .meaning {
+    font-size: 10px; color: rgba(253,246,227,0.5); margin-top: 2px;
+    line-height: 15px; text-align: center; max-width: 100%;
+  }
+  /* 香炉 */
+  .incense {
+    position: absolute; left: 50%; top: 70%;
+    transform: translate(-50%, -50%);
+  }
+  .incense img { width: 120px; height: 108px; object-fit: contain; }
+  .incense-label {
+    position: absolute; left: 50%; top: 76%;
+    transform: translate(-50%, -50%);
+    font-size: 14px; color: rgba(253,246,227,0.75);
+    white-space: nowrap;
+  }
+  /* 顶部祝福语 */
+  .top-words {
+    position: absolute; left: 50%; top: 64px;
+    transform: translateX(-50%);
+    text-align: center; white-space: nowrap;
+  }
+  .top-words .main { font-size: 18px; font-weight: bold; color: #FFD700; }
+  .top-words .sub { font-size: 12px; color: #ffffff; margin-top: 4px; }
+  /* 标记文字占位框（显示每尊神文字的实际区域） */
+  .deity .textblock {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    border: 1px dashed rgba(255,255,255,0.4);
+  }
+</style>
+</head>
+<body>
+  <div class="note" id="note"></div>
+  <div class="phone" id="phone">
+    <div class="glow"></div>
+    <div class="deity-array" id="deity-array"></div>
+    <div class="incense"><img src="entry/src/main/resources/rawfile/props/incense_burner.png"></div>
+    <div class="incense-label">三炷香 · 敬献财神</div>
+    <div class="top-words">
+      <div class="main">✦ 心诚则灵 ✦</div>
+      <div class="sub">诚心叩拜 · 财运亨通</div>
+    </div>
+  </div>
+
+<script>
+  // ── 数据（与 PrayerTypes.ets 一致）──
+  const DEITIES = {
+    1: { name:'王亥', direction:'中路', meaning:'商祖开路，牛转乾坤，通达八方', color:'#F0C419', img:'1.png' },
+    2: { name:'比干', direction:'东路', meaning:'公道无私，正财稳进，童叟无欺', color:'#D98C2B', img:'2.png' },
+    3: { name:'关羽', direction:'西路', meaning:'重义守信，镇宅辟邪，合伙共赢', color:'#C0392B', img:'3.png' },
+    4: { name:'柴荣', direction:'南路', meaning:'帝王之气，破局开路，做大做强', color:'#E8741E', img:'4.png' },
+    5: { name:'赵公明', direction:'北路', meaning:'黑虎镇守，驱邪纳福，正财聚宝', color:'#8A5A1E', img:'5.png' },
+  };
+  // 锚点布局表（与 DeityArrayView.ets 一致）：y/x 为容器百分比，size 为 icon 尺寸
+  const LAYOUT = {
+    1: { x:0.50, y:0.52, size:100 }, // 中路·主位
+    2: { x:0.22, y:0.38, size:60 },  // 东路
+    3: { x:0.78, y:0.38, size:60 },  // 西路
+    4: { x:0.39, y:0.12, size:52 },  // 南路
+    5: { x:0.61, y:0.12, size:52 },  // 北路
+  };
+  // 今日主神 = 柴荣(id4) → 锚点对调（DeityRotator.anchorOf）
+  const todayId = 4;
+  function anchorOf(deityId) {
+    if (deityId === todayId) return 1;
+    if (deityId === 1) return todayId;
+    return deityId;
+  }
+
+  const phone = document.getElementById('phone');
+  const array = document.getElementById('deity-array');
+  const H = 844, arrayH = H * 0.5;
+
+  Object.keys(DEITIES).forEach(idStr => {
+    const id = Number(idStr);
+    const d = DEITIES[id];
+    const anchor = anchorOf(id);
+    const L = LAYOUT[anchor];
+    const isHighlight = id === todayId;
+
+    const el = document.createElement('div');
+    el.className = 'deity';
+    const x = L.x * 390, y = L.y * arrayH;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+
+    const size = L.size;
+    // 光晕
+    const halo = document.createElement('div');
+    halo.style.cssText = `position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:${size*1.5}px;height:${size*1.5}px;border-radius:50%;background:radial-gradient(circle, ${hexToRgba(d.color, isHighlight?0.28:0.10)} 0%, transparent 70%);`;
+    el.appendChild(halo);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'image-wrap';
+    wrap.style.width = (size+12) + 'px';
+    wrap.style.height = (size+12) + 'px';
+
+    const ring = document.createElement('div');
+    ring.className = 'ring';
+    ring.style.width = (size+12) + 'px';
+    ring.style.height = (size+12) + 'px';
+    ring.style.borderColor = d.color;
+    wrap.appendChild(ring);
+
+    const img = document.createElement('img');
+    img.src = 'entry/src/main/resources/rawfile/deities/' + d.img;
+    img.style.width = size + 'px';
+    img.style.height = size + 'px';
+    wrap.appendChild(img);
+    el.appendChild(wrap);
+
+    const name = document.createElement('div');
+    name.className = 'name';
+    name.style.fontSize = (isHighlight ? 18 : 14) + 'px';
+    name.textContent = d.name;
+    el.appendChild(name);
+
+    const dir = document.createElement('div');
+    dir.className = 'direction';
+    dir.textContent = '· ' + d.direction + ' ·';
+    el.appendChild(dir);
+
+    const meaning = document.createElement('div');
+    meaning.className = 'meaning';
+    meaning.style.width = (size*1.6) + 'px';
+    // 四字逗号处换行
+    meaning.textContent = d.meaning.replace('，', '\n');
+    el.appendChild(meaning);
+
+    array.appendChild(el);
+
+    // 文字块占位框：标注 name/direction/meaning 区域底部 y
+    const rectInfo = document.createElement('div');
+    rectInfo.style.cssText = `position:absolute;left:50%;top:100%;transform:translateX(-50%);color:rgba(255,255,255,0.35);font-size:9px;white-space:nowrap;`;
+    array.appendChild(rectInfo);
+  });
+
+  function hexToRgba(hex, alpha) {
+    const h = hex.replace('#','');
+    const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  // 标注每个财神文字底缘 vs 香柱顶缘（用于判断重叠）
+  setTimeout(() => {
+    const deities = document.querySelectorAll('.deity');
+    const lines = [];
+    deities.forEach(d => {
+      const imgEl = d.querySelector('img');
+      const nameEl = d.querySelector('.name');
+      const rect = d.getBoundingClientRect();
+      const phoneRect = phone.getBoundingClientRect();
+      const textBottom = rect.bottom - phoneRect.top;
+      lines.push(`${d.querySelector('.name').textContent}(${d.querySelector('.direction').textContent.replace(/\s/g,'')}): 文字底缘 y=${textBottom.toFixed(0)}px`);
+    });
+    // 香炉中心 y=591；香柱顶端约在 70% - 108*0.42 ≈ 546px
+    const incenseTop = 591 - 108*0.42;
+    lines.push(`香柱顶缘 ≈ y=${incenseTop.toFixed(0)}px`);
+    lines.push(`冲突判定：文字底缘 > ${incenseTop.toFixed(0)} 即与香柱重叠`);
+    document.getElementById('note').textContent = '祈福 PrayerCard · 进香/磕头阶段（今日主神=柴荣）\n' + lines.join('\n');
+  }, 300);
+</script>
+</body>
+</html>
